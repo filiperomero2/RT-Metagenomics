@@ -1,6 +1,6 @@
 helpers = require('./helpers');
 
-const source = './test/';
+const source = './test_data/';
 const destination = './data/';
 const files = helpers.listFiles(source);
 let counter = 0;
