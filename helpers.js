@@ -1,5 +1,8 @@
 const fs = require('fs');
 const {exec} = require('child_process');
+const createMinimalInterface = require('./createMinimalInterface')
+
+const HTMLFiles = [];
 
 const createDir = (dirName) =>{
     try {
@@ -47,7 +50,7 @@ const copyAllFiles = (source, destination, allFiles) =>{
     }
 }
 
-const concatenateFilesAndCallMetagenomicsApps = (partialPath,sampleDir) => {
+const concatenateFilesAndCallMetagenomicsApps = (partialPath,sampleDir,numberOfSamples) => {
     const concatenatedFile = sampleDir + 'cat.fastq';
     if(fs.existsSync(concatenatedFile)) {
         fs.rmSync(concatenatedFile, { recursive: true, force: true });
@@ -55,12 +58,12 @@ const concatenateFilesAndCallMetagenomicsApps = (partialPath,sampleDir) => {
     execShellCommand(`cat ${sampleDir}* > ${concatenatedFile}`)
         .then(()=>{
             console.log(`Concatenated file (${concatenatedFile}) has been created.`);
-            performTaxonomicAssignment(partialPath,concatenatedFile);
+            performTaxonomicAssignment(partialPath,concatenatedFile,numberOfSamples);
         })
 }
 
 
-const performTaxonomicAssignment = (partialPath,concatenatedFile) =>{    
+const performTaxonomicAssignment = (partialPath,concatenatedFile,numberOfSamples) =>{    
     const kraken2DB = '/home/filipe/kraken-db/minikraken2_v2_8GB_201904_UPDATE/';
     const numberOfThreads = '4';
     const sampleResultsPath = `./results/${partialPath}`;
@@ -73,28 +76,32 @@ const performTaxonomicAssignment = (partialPath,concatenatedFile) =>{
             console.log('#################################################################');
             console.log(`Taxonomic assignment has been performed for ${concatenatedFile}`);
             console.log(resolve);
-            createKronaInputFile(kraken2OutputFile);
+            createKronaInputFile(kraken2OutputFile,numberOfSamples);
         })
 }
 
-const createKronaInputFile = kraken2OutputFile =>{
+const createKronaInputFile = (kraken2OutputFile,numberOfSamples) =>{
     const kronaInputFile = `${kraken2OutputFile}.krona`
     const kronaInputFileInstructions = `cat ${kraken2OutputFile} | cut -f 2,3 > ${kronaInputFile}`
     execShellCommand(kronaInputFileInstructions)
         .then(()=>{
             console.log(`Krona input file created -> ${kronaInputFile}`);
             console.log('#################################################################');
-            createKronaPlot(kronaInputFile);
+            createKronaPlot(kronaInputFile,numberOfSamples);
         })
 }
 
-const createKronaPlot = (kronaInputFile) =>{
+const createKronaPlot = (kronaInputFile,numberOfSamples) =>{
     const kronaOutputFile = `${kronaInputFile}.html`;
     const kronaDB = '/home/filipe/krona-db/taxonomy';
     kronaPlotInstructions = `ktImportTaxonomy ${kronaInputFile} -tax ${kronaDB}  -o ${kronaOutputFile}`;
     execShellCommand(kronaPlotInstructions)
         .then(()=>{
             console.log(`Krona plot was created -> ${kronaOutputFile}`);
+            HTMLFiles.push(kronaOutputFile);
+            if(HTMLFiles.length === numberOfSamples){
+                createMinimalInterface(HTMLFiles);
+            }
         })
 }
 
