@@ -1,5 +1,7 @@
+// Load fs module
 fs = require('fs');
 
+// Hardcoded html parts in strings
 const firstPart = `<!DOCTYPE html>
 <html>
 <head>
@@ -46,9 +48,9 @@ const secondPart = `</ul>
 </body>
 </html>`;
 
-
+// Function that creates the unified HTML file with
+// all krona plots.
 const createMinimalInterface = (HTMLFiles) =>{
-    //console.log(HTMLFiles);
     let content = firstPart;
     HTMLFiles.forEach(file =>{
         const filePath = `.${file}`
@@ -57,7 +59,6 @@ const createMinimalInterface = (HTMLFiles) =>{
         console.log();
     })
     content += secondPart;
-    //console.log(content);
     fs.writeFileSync('./interface/index.temp.html', content);
     console.log('HTML file saved on ./interface/index.temp.html');
 }

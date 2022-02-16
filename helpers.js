@@ -1,9 +1,12 @@
+// Load modules
 const fs = require('fs');
 const {exec} = require('child_process');
 const createMinimalInterface = require('./createMinimalInterface')
 
+// Declare array with all krona HTML files
 const HTMLFiles = [];
 
+// Sync function to create directories, erase them if existant
 const createDir = (dirName) =>{
     try {
         if (fs.existsSync(dirName)) {
@@ -16,6 +19,7 @@ const createDir = (dirName) =>{
     }
 }
 
+// Sync function to list contents of a directory
 const list= (dataDir) =>{
     try{
         const files = fs.readdirSync(dataDir);
@@ -25,6 +29,7 @@ const list= (dataDir) =>{
     }
 }
 
+// Sync function to copy file
 const copyFile = (source, destination) => {
     try{
         fs.copyFileSync(source, destination);
@@ -34,6 +39,8 @@ const copyFile = (source, destination) => {
     }   
 }
 
+// Sync function to create temp directory and copy fastq files.
+// It returns a list of processed files, useful for sync app.
 const copyAllFiles = (source, destination, allFiles) =>{
     try{
         const processedFiles = [];
@@ -50,6 +57,9 @@ const copyAllFiles = (source, destination, allFiles) =>{
     }
 }
 
+// Async function that starts the analysis flow.
+// First, it concatenates files and when the promise is fulfilled,
+// it calls the function reponsible for taxonomic assignment with kraken2
 const concatenateFilesAndCallMetagenomicsApps = (partialPath,sampleDir,numberOfSamples) => {
     const concatenatedFile = sampleDir + 'cat.fastq';
     if(fs.existsSync(concatenatedFile)) {
@@ -62,7 +72,8 @@ const concatenateFilesAndCallMetagenomicsApps = (partialPath,sampleDir,numberOfS
         })
 }
 
-
+// Async function that sets paths, executes kraken 2 and launches
+// the creation of the krona input file. 
 const performTaxonomicAssignment = (partialPath,concatenatedFile,numberOfSamples) =>{    
     const kraken2DB = '/home/filipe/kraken-db/minikraken2_v2_8GB_201904_UPDATE/';
     const numberOfThreads = '4';
@@ -80,6 +91,9 @@ const performTaxonomicAssignment = (partialPath,concatenatedFile,numberOfSamples
         })
 }
 
+
+// Async function that creates krona input files and calls the
+// function that effectively creates the plots
 const createKronaInputFile = (kraken2OutputFile,numberOfSamples) =>{
     const kronaInputFile = `${kraken2OutputFile}.krona`
     const kronaInputFileInstructions = `cat ${kraken2OutputFile} | cut -f 2,3 > ${kronaInputFile}`
@@ -91,6 +105,8 @@ const createKronaInputFile = (kraken2OutputFile,numberOfSamples) =>{
         })
 }
 
+// Create krona plots and, when all samples have been analyzed,
+// it creates a single html page with all analysis results.
 const createKronaPlot = (kronaInputFile,numberOfSamples) =>{
     const kronaOutputFile = `${kronaInputFile}.html`;
     const kronaDB = '/home/filipe/krona-db/taxonomy';
@@ -105,7 +121,8 @@ const createKronaPlot = (kronaInputFile,numberOfSamples) =>{
         })
 }
 
-
+// Super usefull function that returns promisses, 
+// allowing the execution of shell commands in parallel
 const execShellCommand = (cmd) =>{
     return new Promise((resolve,reject) =>{
         exec(cmd,(err,stdout,stderr)=>{
@@ -118,6 +135,7 @@ const execShellCommand = (cmd) =>{
 }
 
 
+// Export node modules
 module.exports = {
     createDir,
     list,
