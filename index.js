@@ -4,21 +4,29 @@ const helpers = require('./helpers.js');
 helpers.createDir('./temp/');
 helpers.createDir('./results/');
 
-// List directory with the original data
-const allFiles = helpers.listFiles('./data/');
+// In here list directories
+const allSamples = helpers.list('./data/');
 
-// Copy files to temporary directory
-const processedFiles = helpers.copyAllFiles(allFiles);
+const iterateOverSamplesAndPerformAnalysis = (allSamples) =>{
+    allSamples.forEach(sample =>{
+        const partialPath = sample + '/';
+        const source = './data/' + partialPath;
+        const destination = './temp/' + partialPath;
+        const allFiles = helpers.list(source);
+        const processedFiles = helpers.copyAllFiles(source, destination, allFiles);
+        helpers.concatenateFilesAndCallMetagenomicsApps(partialPath,destination);
+    })
+}
 
-// Concatenate files and run metagenomics apps
-helpers.concatenateFilesAndCallMetagenomicsApps('./temp/')
+iterateOverSamplesAndPerformAnalysis(allSamples);
 
 
 /**
-Create code that will conduct the analysis repetitively
-- Put the program to sleep for a minute
-- Execute analysis if new fastq files are detected
-- Skips if there are none
-Update minikraken2 db
+Program version adapted for multiple samples.
+The next step is to convert it to a sync app.
+It would be great to have some nanopore data for validations.
+Lots of stuff still hardcoded.
+No front end development whatsoever.
+
  */
 

@@ -13,7 +13,7 @@ const createDir = (dirName) =>{
     }
 }
 
-const listFiles = (dataDir) =>{
+const list= (dataDir) =>{
     try{
         const files = fs.readdirSync(dataDir);
         return files;
@@ -31,45 +31,48 @@ const copyFile = (source, destination) => {
     }   
 }
 
-const copyAllFiles = (allFiles) =>{
+const copyAllFiles = (source, destination, allFiles) =>{
     try{
         const processedFiles = [];
-        console.log("I'm copying all files to ./temp/")
+        createDir(destination);
         allFiles.forEach(file =>{
-            const source = `./data/${file}`;
-            const destination = `./temp/${file}`;
-            copyFile(source,destination);
+            const sourceFile = source + file;
+            const destinationFile = destination + file;
+            copyFile(sourceFile,destinationFile);
             processedFiles.push(file);
-            return processedFiles;
-        })
+        });
+        return processedFiles;
     }catch(err){
         console.log(err);
     }
 }
 
-const concatenateFilesAndCallMetagenomicsApps = tempDir => {
-    const concatenatedFile = tempDir + 'cat.fastq';
+const concatenateFilesAndCallMetagenomicsApps = (partialPath,sampleDir) => {
+    const concatenatedFile = sampleDir + 'cat.fastq';
     if(fs.existsSync(concatenatedFile)) {
         fs.rmSync(concatenatedFile, { recursive: true, force: true });
     }
-    execShellCommand(`cat ${tempDir}* > ${concatenatedFile}`)
+    execShellCommand(`cat ${sampleDir}* > ${concatenatedFile}`)
         .then(()=>{
             console.log(`Concatenated file (${concatenatedFile}) has been created.`);
-            performTaxonomicAssignment(concatenatedFile);
+            performTaxonomicAssignment(partialPath,concatenatedFile);
         })
 }
 
 
-const performTaxonomicAssignment = (concatenatedFile) =>{
+const performTaxonomicAssignment = (partialPath,concatenatedFile) =>{    
     const kraken2DB = '/home/filipe/kraken-db/minikraken2_v2_8GB_201904_UPDATE/';
     const numberOfThreads = '4';
-    const kraken2ReportFile = './results/report.txt';
-    const kraken2OutputFile = './results/results.kraken2.txt'
+    const sampleResultsPath = `./results/${partialPath}`;
+    createDir(sampleResultsPath);
+    const kraken2ReportFile = `${sampleResultsPath}report.txt`
+    const kraken2OutputFile = `${sampleResultsPath}results.kraken2.txt`
     const kraken2Call = `kraken2 --db ${kraken2DB} --threads ${numberOfThreads} --report ${kraken2ReportFile} --output ${kraken2OutputFile} ${concatenatedFile}`;
     execShellCommand(kraken2Call)
         .then((resolve)=>{
+            console.log('#################################################################');
+            console.log(`Taxonomic assignment has been performed for ${concatenatedFile}`);
             console.log(resolve);
-            console.log('Taxonomic assignment has been performed');
             createKronaInputFile(kraken2OutputFile);
         })
 }
@@ -80,6 +83,7 @@ const createKronaInputFile = kraken2OutputFile =>{
     execShellCommand(kronaInputFileInstructions)
         .then(()=>{
             console.log(`Krona input file created -> ${kronaInputFile}`);
+            console.log('#################################################################');
             createKronaPlot(kronaInputFile);
         })
 }
@@ -90,7 +94,7 @@ const createKronaPlot = (kronaInputFile) =>{
     kronaPlotInstructions = `ktImportTaxonomy ${kronaInputFile} -tax ${kronaDB}  -o ${kronaOutputFile}`;
     execShellCommand(kronaPlotInstructions)
         .then(()=>{
-            console.log(`Krona plot was created -> ${kronaOutputFile}`)
+            console.log(`Krona plot was created -> ${kronaOutputFile}`);
         })
 }
 
@@ -109,7 +113,7 @@ const execShellCommand = (cmd) =>{
 
 module.exports = {
     createDir,
-    listFiles,
+    list,
     copyFile,
     copyAllFiles,
     concatenateFilesAndCallMetagenomicsApps
