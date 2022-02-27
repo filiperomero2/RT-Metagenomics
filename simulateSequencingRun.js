@@ -1,8 +1,8 @@
 helpers = require('./helpers');
 
 const source = './test_data/';
-const destination = './data/sample2/';
-const files = helpers.listFiles(source);
+const destination = './data/sample4/';
+const files = helpers.list(source);
 let counter = 0;
 
 helpers.createDir(destination);

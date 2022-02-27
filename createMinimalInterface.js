@@ -48,19 +48,20 @@ const secondPart = `</ul>
 </body>
 </html>`;
 
-// Function that creates the unified HTML file with
-// all krona plots.
-const createMinimalInterface = (HTMLFiles) =>{
+// Function that creates the unified HTML file with all krona plots.
+// It uses the pieces array to parse paths properly.
+const createMinimalInterface = (HTMLFiles,interface) =>{
     let content = firstPart;
     HTMLFiles.forEach(file =>{
-        const filePath = `.${file}`
-        const sampleName = filePath.split('/')[2];
-        content += `<li><button class="sample-button" value="${filePath}">${sampleName}</button></li>`;
-        console.log();
+        const pieces = file.split('/');
+        const filePath = '../results/'+ pieces[pieces.length-2] + "/" + pieces[pieces.length-1];
+        const sampleName = pieces[pieces.length-2];
+        content += `<li><button class="sample-button" value="${filePath}">${sampleName}</button></li>\n`;
     })
     content += secondPart;
-    fs.writeFileSync('./interface/index.temp.html', content);
-    console.log('HTML file saved on ./interface/index.temp.html');
+    const HTMLFilePath = `${interface}index.html`;
+    fs.writeFileSync(HTMLFilePath, content);
+    console.log(`HTML file saved on ${HTMLFilePath}`);
 }
 
 module.exports = createMinimalInterface;

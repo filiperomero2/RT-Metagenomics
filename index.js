@@ -1,10 +1,8 @@
 /**
 
 Program version adapted for multiple samples with a minimal frontend interface.
-
-Lots of stuff still hardcoded.
-
-The next step is to convert it to a sync app.
+It works with simple command line arguments and doesn't work with hardcoded paths.
+The next step is to write better docs and generate the sync app version.
 
 
  */
@@ -13,29 +11,115 @@ The next step is to convert it to a sync app.
 // Load helper module
 const helpers = require('./helpers.js');
 
+
+// The follow function validate parameters and prepare
+// the environment with the paths provided. 
+const validateParameters = (parameters) =>{
+
+    if (fs.existsSync(parameters.library)) {
+        console.log(`Libraries directory is ${parameters.library}`);
+    }else{
+        console.log(`Specified path for library directory does not exist -> ${parameters.library}`);
+        process.exit();
+    }
+
+    if (fs.existsSync(parameters.output)) {
+        console.log(`Libraries directory already exists -> ${parameters.output}.
+        Please indicate other to avoid overwriting previous analysis`);
+        process.exit();
+    }else{
+        console.log(`Output library directory created -> ${parameters.output}`);
+        // Load paths into parameters object
+        parameters.temp = `${parameters.output}/temp/`;
+        parameters.results = `${parameters.output}/results/`;
+        parameters.interface = `${parameters.output}/interface/`;
+        // Create output directories
+        helpers.createDir(parameters.output);
+        helpers.createDir(parameters.temp);
+        helpers.createDir(parameters.results);
+        helpers.createDir(parameters.interface);
+        // copy all assets
+        const temp = process.argv[1].split('/');
+        temp.pop();
+        const assetsPath = temp.join('/') + "/interface/"
+        helpers.copyAllFiles(assetsPath,parameters.interface)
+    }
+
+    if (fs.existsSync(parameters.kraken)) {
+        console.log(`kraken2-db directory is ${parameters.kraken}`)
+    }else{
+        console.log(`Specified path for kraken2-db directory does not exist -> ${parameters.kraken}`)
+        process.exit()
+    }
+
+    if (fs.existsSync(parameters.krona)) {
+        console.log(`krona-db directory is ${parameters.krona}`)
+    }else{
+        console.log(`Specified path for krona-db directory does not exist -> ${parameters.krona}`)
+        process.exit()
+    }
+
+    if(typeof(parameters.threads)=== "undefined"){
+        parameters.threads = 1;
+        console.log(`Number of processing threads has not being set, using only ${parameters.threads}`)
+    }else{
+        console.log(`Number of processing threads has been set -> ${parameters.threads}`)
+    }
+
+}
+
+
+// Print help message in required cases
+const printHelpMessage = () =>{
+    console.log('This is RT-Meta - a simple app for fast metagenomic analysis');
+    console.log(`The script takes five positional arguments, being: 
+    (1) the root of library directory;
+    (2) the output directory path;
+    (3) the path for the kraken-db;
+    (4) the path for the krona-db;
+    (5) the number of processing threads (Optional)`);
+    console.log(`If unsure about the meaning of these parameters, visit https://github.com/filiperomero2/RT-Metagenomics`);
+    console.log('Example usage: node test.js /mnt/c/Users/filip/OneDrive/Desktop/dev/RT-Metagenomics/data/  /home/fmoreira/kraken-db/minikraken2_v2_8GB_201904_UPDATE /home/fmoreira/krona/taxonomy 4')
+}
+
+// Process the inputs provided on the command line.
+// Returns the parameter objective with all important paths.
+const processInput = () =>{
+    if(process.argv.includes('-help') || process.argv.includes('-h') || process.argv.includes('--help')){
+        printHelpMessage();
+    }else{
+        const parameters = {
+            "library": process.argv[2],
+            "output": process.argv[3],
+            "kraken": process.argv[4],
+            "krona": process.argv[5],
+            "threads": process.argv[6]
+        }
+        validateParameters(parameters);
+        //console.log(parameters)
+        return parameters;
+    }
+}
+
 // Declare main function
-const iterateOverSamplesAndPerformAnalysis = () =>{
-    // Create relevant directories for the project
-    helpers.createDir('./temp/');
-    helpers.createDir('./results/');
+const iterateOverSamplesAndPerformAnalysis = (parameters) =>{
 
     //List all samples directories
-    const allSamples = helpers.list('./data/');
-    const numberOfSamples = allSamples.length;
+    const allSamples = helpers.list(parameters.library);
+    parameters.numberOfSamples = allSamples.length;
 
     // Iterate over samples, set paths, list fastq files,
     // copy them to a safe directory and run analysis.
     allSamples.forEach(sample =>{
-        console.log(sample)
         const partialPath = sample + '/';
-        const source = './data/' + partialPath;
-        const destination = './temp/' + partialPath;
-        const allFiles = helpers.list(source);
-        const processedFiles = helpers.copyAllFiles(source, destination, allFiles);
-        helpers.concatenateFilesAndCallMetagenomicsApps(partialPath,destination,numberOfSamples);
+        const source = parameters.library + partialPath;
+        const destination = parameters.temp + partialPath;
+        helpers.copyAllFiles(source, destination);
+        helpers.concatenateFilesAndCallMetagenomicsApps(partialPath,destination,parameters);
     })
 
 }
 
 // Call function to do the job
-iterateOverSamplesAndPerformAnalysis()
+const parameters = processInput();
+iterateOverSamplesAndPerformAnalysis(parameters);
