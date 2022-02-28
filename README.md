@@ -2,8 +2,7 @@
 
 ## Status
 Application still on the early stage of development. It works as an async app for characterizing metagenomes after sequencing run. 
-To do: 
-    - fix hardcoded paths;
+To do:
     - Further develop async app;
     - Better develop frontend (maybe with React).
 
@@ -58,13 +57,12 @@ Please notice that the --realtime mode is still unavailable. Users are encourage
 ### Examples
 
 Basic usage:
-    $ node index.js --postrun /home/Projects/RT-Metagenomics/data/ /home/Projects/RT-Metagenomics/output /home/kraken-db/minikraken2_v2_8GB_201904_UPDATE/ /home/krona-db/taxonomy/ 6
+
+    node index.js --postrun /home/Projects/RT-Metagenomics/data/ /home/Projects/RT-Metagenomics/output /home/kraken-db/minikraken2_v2_8GB_201904_UPDATE/ /home/krona-db/taxonomy/ 6
 
 ## Citation
 
-A scientific publication fully describing this pipeline is being prepared. Meanwhile, feel free to cite it directly to this GitHub repo. 
-
-You should also cite:
+A scientific publication fully describing this pipeline is being prepared. Meanwhile, feel free to cite it directly to this GitHub repo. You should also cite:
 
 <a href="https://doi.org/10.1186/s13059-019-1891-0">kraken2</a> - Wood, D.E., Lu, J. & Langmead, B. Improved metagenomic analysis with Kraken 2. Genome Biol 20, 257 (2019). 
 
