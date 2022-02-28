@@ -1,8 +1,8 @@
 # RT-META: Real Time Metagenomic Analysis
 
 ## Status
-Application still on the early stage of development. It works as an async app for characterizing metagenomes after sequencing run. 
-To do:
+Application still on the early stage of development. It works as an async app for characterizing metagenomes after sequencing run. To do:
+
     - Further develop async app;
     - Better develop frontend (maybe with React).
 
