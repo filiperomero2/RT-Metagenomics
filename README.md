@@ -43,7 +43,7 @@ In regards of krona, a standard outdated DB is installed in the conda environmen
     ktUpdateTaxonomy.sh ~/krona/taxonomy
 
 ## Usage
-The pipeline is currently under development process. So far, it is executed as a single node script (index.js) that recquires few positional arguments, as:
+The pipeline is currently under development process. It is executed as a single node script (index.js) that requires few positional arguments, as:
 
     (1) Analysis mode: either --postrun or --realtime;
     (2) the absolute path for the root of libraries directory;
@@ -52,7 +52,9 @@ The pipeline is currently under development process. So far, it is executed as a
     (5) the absolute path for the krona taxonomic database directory;
     (6) the number of processing threads (Optional)
 
-Please notice that the --realtime mode is still unavailable. Users are encourage to always provide absolute paths.
+Users are encouraged to always provide absolute paths. The directory in (1) is the one that contains one subdirectory per sample with associated fastq files.
+
+Please notice that the --realtime mode is still unavailable. 
 
 ### Examples
 
