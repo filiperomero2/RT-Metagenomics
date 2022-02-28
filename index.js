@@ -1,9 +1,6 @@
 /**
 
-Program version adapted for multiple samples with a minimal frontend interface.
-It works with simple command line arguments and doesn't work with hardcoded paths.
-The next step is to write better docs and generate the sync app version.
-
+Working on sync app
 
  */
 
@@ -79,7 +76,7 @@ const printHelpMessage = () =>{
     (5) the path for the krona-db;
     (6) the number of processing threads (Optional)`);
     console.log(`If unsure about the meaning of these parameters, visit https://github.com/filiperomero2/RT-Metagenomics`);
-    console.log('Example usage: node index.js --postrun /mnt/c/Users/filip/OneDrive/Desktop/dev/RT-Metagenomics/data/  /home/fmoreira/kraken-db/minikraken2_v2_8GB_201904_UPDATE /home/fmoreira/krona/taxonomy 4')
+    console.log('Example usage: node index.js --postrun /mnt/c/Users/filip/OneDrive/Desktop/dev/RT-Metagenomics/data/ /mnt/c/Users/filip/OneDrive/Desktop/dev/RT-Metagenomics/data/output /home/fmoreira/kraken-db/minikraken2_v2_8GB_201904_UPDATE /home/fmoreira/krona/taxonomy 4')
 }
 
 // Process the inputs provided on the command line.
@@ -95,7 +92,8 @@ const processInput = () =>{
             "output": process.argv[4],
             "kraken": process.argv[5],
             "krona": process.argv[6],
-            "threads": process.argv[7]
+            "threads": process.argv[7],
+            "generation": 0
         }
         validateParameters(parameters);
         //console.log(parameters)
@@ -103,23 +101,27 @@ const processInput = () =>{
     }
 }
 
-// Declare main function
-const iterateOverSamplesAndPerformAnalysis = (parameters) =>{
 
-    //List all samples directories
-    const allSamples = helpers.list(parameters.library);
-    parameters.numberOfSamples = allSamples.length;
+const executeAnalysis = (parameters) =>{
+    helpers.iterateOverSamplesAndPerformAnalysis(parameters);
+}
 
-    // Iterate over samples, set paths, list fastq files,
-    // copy them to a safe directory and run analysis.
-    allSamples.forEach(sample =>{
-        const partialPath = sample + '/';
-        const source = parameters.library + partialPath;
-        const destination = parameters.temp + partialPath;
-        helpers.copyAllFiles(source, destination);
-        helpers.concatenateFilesAndCallMetagenomicsApps(partialPath,destination,parameters);
-    })
+// Call functions to do the job
+const parameters = processInput();
+executeAnalysis(parameters);
 
+
+
+/**
+ * 
+const performRealTimeAnalysis = async (parameters) =>{
+    let counter = 0;
+    while(true){
+        counter++;
+        console.log(`This is the generation number ${counter}`);
+        iterateOverSamplesAndPerformAnalysis(parameters); 
+        await helpers.sleep(10*1000);
+    }
 }
 
 // Call function to do the job
@@ -127,12 +129,12 @@ const parameters = processInput();
 if(parameters.mode === "--postrun" || parameters.mode === "--pr"){
     iterateOverSamplesAndPerformAnalysis(parameters);
 }else if(parameters.mode === "--realtime" || parameters.mode === "--rt"){
-    console.log('Do other stuff.')
+    performRealTimeAnalysis(parameters);
 }else{
     console.log(`Unknown analysis mode: ${parameters.mode}.
-    Use --realtime or --postrun.`)
+    Use --realtime or --postrun.`);
 }
 
 
-// Create function to do it in real time here.
-// Add mode option to indicate if analysis is realtime or postrun
+ * 
+ */

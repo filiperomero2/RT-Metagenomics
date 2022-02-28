@@ -79,13 +79,14 @@ const performTaxonomicAssignment = (partialPath,concatenatedFile,parameters) =>{
     const kraken2DB = parameters.kraken;
     const numberOfThreads = parameters.numberOfSamples;
     const sampleResultsPath = `${parameters.results}${partialPath}`;
-    createDir(sampleResultsPath);
+    if(!fs.existsSync(sampleResultsPath)) {
+        createDir(sampleResultsPath);
+    } 
     const kraken2ReportFile = `${sampleResultsPath}report.txt`
     const kraken2OutputFile = `${sampleResultsPath}results.kraken2.txt`
     const kraken2Call = `kraken2 --db ${kraken2DB} --threads ${numberOfThreads} --report ${kraken2ReportFile} --output ${kraken2OutputFile} ${concatenatedFile}`;
     execShellCommand(kraken2Call)
         .then((resolve)=>{
-            console.log('#################################################################');
             console.log(`Taxonomic assignment has been performed for ${concatenatedFile}`);
             console.log(resolve);
             createKronaInputFile(kraken2OutputFile,parameters);
@@ -101,7 +102,6 @@ const createKronaInputFile = (kraken2OutputFile,parameters) =>{
     execShellCommand(kronaInputFileInstructions)
         .then(()=>{
             console.log(`Krona input file created -> ${kronaInputFile}`);
-            console.log('#################################################################');
             createKronaPlot(kronaInputFile,parameters);
         })
 }
@@ -118,6 +118,15 @@ const createKronaPlot = (kronaInputFile,parameters) =>{
             HTMLFiles.push(kronaOutputFile);
             if(HTMLFiles.length === parameters.numberOfSamples){
                 createMinimalInterface(HTMLFiles,parameters.interface);
+                HTMLFiles.length = 0;
+                if(parameters.mode === "--postrun" || parameters.mode === "--pr"){
+                    console.log(`Analysis finished.`);
+                    process.exit();
+                }else if(parameters.mode === "--realtime" || parameters.mode === "--rt"){
+                    console.log(`Performing real time analysis -> Generation ${parameters.generation}`)
+                    iterateOverSamplesAndPerformAnalysis(parameters);
+                }
+                parameters.generation++;
             }
         })
 }
@@ -135,6 +144,27 @@ const execShellCommand = (cmd) =>{
     })
 }
 
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+// Declare main function
+const iterateOverSamplesAndPerformAnalysis = (parameters) =>{
+
+    //List all samples directories
+    const allSamples = list(parameters.library);
+    parameters.numberOfSamples = allSamples.length;
+
+    // Iterate over samples, set paths, list fastq files,
+    // copy them to a safe directory and run analysis.
+    allSamples.forEach(sample =>{
+        const partialPath = sample + '/';
+        const source = parameters.library + partialPath;
+        const destination = parameters.temp + partialPath;
+        copyAllFiles(source, destination);
+        concatenateFilesAndCallMetagenomicsApps(partialPath,destination,parameters);
+    })
+
+}
+
 
 // Export node modules
 module.exports = {
@@ -142,6 +172,8 @@ module.exports = {
     list,
     copyFile,
     copyAllFiles,
-    concatenateFilesAndCallMetagenomicsApps
+    concatenateFilesAndCallMetagenomicsApps,
+    sleep,
+    iterateOverSamplesAndPerformAnalysis
 }
 
