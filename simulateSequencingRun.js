@@ -1,7 +1,16 @@
+/**
+ * This is a simple script to simulate a sequencing run.
+ * It takes two positional arguments: (1) the path for the
+ * directory containing template data and (2) the path where
+ * data will be received.
+ * 
+ */
+
 helpers = require('./helpers');
 
-const source = './test_data/';
-const destination = './data/sample4/';
+const source = process.argv[2];
+const destination = process.argv[3] + "/";
+
 const files = helpers.list(source);
 let counter = 0;
 
