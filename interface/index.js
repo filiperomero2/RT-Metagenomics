@@ -11,7 +11,8 @@ samples.forEach(sample=>{
             parent.removeChild(parent.querySelector(".active-button"));
             return
         }
-        parent.insertAdjacentHTML("beforeend",`<p class =\"active-button\" id=card><iframe src=\"${sampleFile}\" width=\"1000px\" height=\"500\" title=\"${sampleName}\"></iframe></p>`);
+        //parent.insertAdjacentHTML("beforeend",`<p class =\"active-button\" id=card><iframe src=\"${sampleFile}\" width=\"1000px\" height=\"500\" title=\"${sampleName}\"></iframe></p>`);
+        parent.insertAdjacentHTML("beforeend",`<p class =\"active-button\" id=card><iframe class=\"iframes\" src=\"${sampleFile}\" width=\"1000px\" height=\"500\" title=\"${sampleName}\"></iframe></p>`);
     })
 })
 
@@ -47,3 +48,23 @@ document.querySelector("#contact-button").addEventListener("click",event=>{
     document.querySelector("#citation").style.setProperty("display","none");
     document.querySelector("#contact").style.setProperty("display","inline");
 })
+
+
+
+/**
+ * The code bellow has not been tested
+ * neither the iframes class. Must check it.
+ */
+
+// Declare function to reload iframes
+const reloadIframes = () =>{
+    // suppose class name is a thing
+    const iframes = document.querySelectorAll(".iframes");
+    iframes.forEach(iframe=>{
+        // check if the following will work
+        iframe.location.reload();
+    })
+}
+
+// Reload iframes every minute
+setTimeout(reloadIframes(),60*1000);
