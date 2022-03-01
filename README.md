@@ -12,7 +12,7 @@ The development of Oxford Nanopore Technologies offers unprecedented opportuniti
 RT-META is entirely written as a collection of Node scripts that processes data, organizing downstream analysis using standard metagenomic analysis tools. Briefily, the script iteratively scans the basecalled directory, and moves data to a safe temporary directory. Taxonomic assignment with kraken2 is then performed for each sample and results are continually stored. Krona is used to generate iteractive taxonomic profile plots. These visualizations are integrated in a single page, allowing extremely fast pathogen identification. 
 
 ## Installation
-RT-Meta recquires a handful of dependencies which are conviniently available in conda repositories. To install the entire environment, simply download the rt-meta:
+RT-Meta recquires a handful of dependencies which are conveniently available in conda repositories. To install the entire environment, simply download the rt-meta:
 
     git clone https://github.com/filiperomero2/RT-Metagenomics
     
