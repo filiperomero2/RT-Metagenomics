@@ -1,0 +1,134 @@
+body {
+	font-family: 'Montserrat', sans-serif;
+  color: #f7f7fa;
+}
+
+header {
+	background: url("bg.jpg");  
+	padding: 20px 0;
+}
+
+.box {
+	position: relative;
+	width: 940px;
+  height: 130px;    
+	margin: 0 auto;
+}
+
+.box h1{
+  text-align: center;
+  font-size: 50px;
+  margin-top: 30px;
+}
+
+nav {
+	position: absolute;
+	top: 110px;
+	right: -150px;
+}
+
+nav li {
+	display: inline;
+	margin: 0 0 0 15px;
+  text-align: center;
+}
+
+li button {
+  background: url("bg.jpg");
+  border: none;
+  color: #f7f7fa;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 22px;
+}
+
+li button:hover{
+  text-decoration: underline;
+}
+
+
+.main {
+	padding: 3em 0;
+	background: #f7f7fa;
+	margin: 0 auto;
+  color: #1a1a1a;
+}
+
+
+.main-title {
+	text-align: center;
+	font-size: 45px;
+	margin: 0 0 1em;
+	clear: left;
+}
+
+
+.main p {
+	margin: 2% 10%;
+	line-height: 2
+}
+
+.main strong {
+	font-weight: bold;
+}
+
+.main em {
+	font-style: italic;
+}
+
+.sample-list{
+  display: table;
+  margin: 0 auto;
+}
+
+.sample-list li{
+  margin: 30px 0;
+}
+
+.sample-button{
+  background: url("bg.jpg");
+  border: none;
+  color: #f7f7fa;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 22px;
+  height: 50px;
+  width: 1300px;
+}
+
+.active-button{
+  margin: 50px 0;
+  text-align: center;
+}
+
+#citation{
+  display: none;
+}
+
+#contact{
+  display: none;
+}
+
+footer {
+	text-align: center;
+	background: url("bg.jpg");
+	padding: 40px 0;
+}
+
+.phyloimg{
+	width: 45%;
+}
+
+.phyloimg-tail{
+	width: 20%;
+	-webkit-filter: invert(1);
+   filter: invert(1);
+}
+
+.copyright {
+	color: #FFFFFF;
+	font-size: 13px;
+	margin: 20px 0 0;
+}
