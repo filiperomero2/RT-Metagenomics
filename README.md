@@ -7,7 +7,7 @@ Application still on the early stage of development. It works as an async app fo
     - Better develop frontend (maybe with React).
 
 ## Introduction
-The development of Oxford Nanopore Technologies offers unprecedented opportunities for conducting fast identification of pathogens accross several epidemiological settings by metagenomic sequencing. As bases may be called at time of sequencing, it is theoretically possible to perform taxonomic assignment of sequencing reads in real time. Nevertheless, popular tools used for metagenomic analysis are not designed to take full advantage of this amazing feature. In this sense, we developed RT-META, a pipeline that performs metagenomic analysis in real time and display results in a interactive, usefull manner. 
+The development of Oxford Nanopore Technologies offers unprecedented opportunities for conducting fast identification of pathogens accross several epidemiological settings by metagenomic sequencing. As bases may be called at time of sequencing, it is possible to perform taxonomic assignment of sequencing reads in real time. Nevertheless, popular tools used for metagenomic analysis are not designed to take full advantage of this amazing feature. In this sense, we developed RT-META, a pipeline that performs metagenomic analysis in real time and display results in a interactive, usefull manner. 
 
 RT-META is entirely written as a collection of Node scripts that processes data, organizing downstream analysis using standard metagenomic analysis tools. Briefily, the script iteratively scans the basecalled directory, and moves data to a safe temporary directory. Taxonomic assignment with kraken2 is then performed for each sample and results are continually stored. Krona is used to generate iteractive taxonomic profile plots. These visualizations are integrated in a single page, allowing extremely fast pathogen identification. 
 
@@ -62,9 +62,14 @@ Please notice that the --realtime mode is still unavailable.
 
 ### Examples
 
-Basic usage:
+Basic usage after sequencing run:
 
     node index.js --postrun /home/Projects/RT-Metagenomics/data/ /home/Projects/RT-Metagenomics/output /home/kraken-db/minikraken2_v2_8GB_201904_UPDATE/ /home/krona-db/taxonomy/ 6
+
+Basic usage for real time analysis:
+
+    node index.js --realtime /home/Projects/RT-Metagenomics/data/ /home/Projects/RT-Metagenomics/output /home/kraken-db/minikraken2_v2_8GB_201904_UPDATE/ /home/krona-db/taxonomy/ 6
+
 
 ## Citation
 
