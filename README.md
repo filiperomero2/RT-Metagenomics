@@ -58,7 +58,7 @@ The pipeline is currently under development process. It is executed as a single 
 
 Users are encouraged to always provide absolute paths. The directory in (1) is the one that contains one subdirectory per sample with associated fastq files.
 
-Please notice that the --realtime mode is still unavailable. 
+Please notice that the --realtime mode is still under development. 
 
 ### Examples
 
