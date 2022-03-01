@@ -31,7 +31,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 executeLoop = async() =>{
     while(true){
         simulateSequencingRun(); 
-        await sleep(1000);
+        await sleep(30*1000);
     }
 }
 

@@ -1,10 +1,3 @@
-/**
-
-Working on sync app
-
- */
-
-
 // Load helper module
 const helpers = require('./helpers.js');
 
@@ -12,6 +5,16 @@ const helpers = require('./helpers.js');
 // The follow function validate parameters and prepare
 // the environment with the paths provided. 
 const validateParameters = (parameters) =>{
+
+    if(parameters.mode === "--postrun" || parameters.mode === "--pr"){
+        console.log('Application launched in post run mode.');
+    }else if(parameters.mode === "--realtime" || parameters.mode === "--rt"){
+        console.log('Application launched in real time mode.');
+    }else{
+        console.log(`Unknown analysis mode: ${parameters.mode}.
+        Use --realtime or --postrun.`);
+        process.exit();
+    }
 
     if (fs.existsSync(parameters.library)) {
         console.log(`Libraries directory -> ${parameters.library}`);
@@ -101,7 +104,6 @@ const processInput = () =>{
     }
 }
 
-
 const executeAnalysis = (parameters) =>{
     helpers.iterateOverSamplesAndPerformAnalysis(parameters);
 }
@@ -111,30 +113,3 @@ const parameters = processInput();
 executeAnalysis(parameters);
 
 
-
-/**
- * 
-const performRealTimeAnalysis = async (parameters) =>{
-    let counter = 0;
-    while(true){
-        counter++;
-        console.log(`This is the generation number ${counter}`);
-        iterateOverSamplesAndPerformAnalysis(parameters); 
-        await helpers.sleep(10*1000);
-    }
-}
-
-// Call function to do the job
-const parameters = processInput();
-if(parameters.mode === "--postrun" || parameters.mode === "--pr"){
-    iterateOverSamplesAndPerformAnalysis(parameters);
-}else if(parameters.mode === "--realtime" || parameters.mode === "--rt"){
-    performRealTimeAnalysis(parameters);
-}else{
-    console.log(`Unknown analysis mode: ${parameters.mode}.
-    Use --realtime or --postrun.`);
-}
-
-
- * 
- */

@@ -123,7 +123,7 @@ const createKronaPlot = (kronaInputFile,parameters) =>{
                     console.log(`Analysis finished.`);
                     process.exit();
                 }else if(parameters.mode === "--realtime" || parameters.mode === "--rt"){
-                    console.log(`Performing real time analysis -> Generation ${parameters.generation}`)
+                    console.log(`### Performing real time analysis -> Generation ${parameters.generation} ###`)
                     iterateOverSamplesAndPerformAnalysis(parameters);
                 }
                 parameters.generation++;
@@ -143,8 +143,6 @@ const execShellCommand = (cmd) =>{
         })
     })
 }
-
-const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 // Declare main function
 const iterateOverSamplesAndPerformAnalysis = (parameters) =>{
@@ -172,8 +170,6 @@ module.exports = {
     list,
     copyFile,
     copyAllFiles,
-    concatenateFilesAndCallMetagenomicsApps,
-    sleep,
     iterateOverSamplesAndPerformAnalysis
 }
 
