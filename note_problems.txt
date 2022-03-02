@@ -1,0 +1,2 @@
+Note:
+- Issue with kraken2 -> memory crash due to overflow of async jobs. Must figure out a different strategy. In addition, IO must be improved considering demux structure.
