@@ -60,7 +60,6 @@ const copyAllFiles = (source, destination) =>{
 
 
 // Declare main function
-//const iterateOverSamplesAndPerformAnalysis = (parameters) =>{
 const iterateOverSamplesAndPerformAnalysis = async (parameters) =>{
 
     //List all samples directories
@@ -69,19 +68,6 @@ const iterateOverSamplesAndPerformAnalysis = async (parameters) =>{
 
     // Iterate over samples, set paths, list fastq files,
     // copy them to a safe directory and run analysis.
-
-    /*
-    allSamples.forEach(sample =>{
-        const partialPath = sample + '/';
-        const source = parameters.library + partialPath;
-        const destination = parameters.temp + partialPath;
-        copyAllFiles(source, destination);
-        concatenateFilesAndCallMetagenomicsApps(partialPath,destination,parameters);
-    })
-    **/
-
-     
-    // Trying to work around sync problem
     for(let counter = 0; counter <= allSamples.length - 1; counter++){
         const partialPath = allSamples[counter] + '/';
         const source = parameters.library + partialPath;

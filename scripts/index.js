@@ -1,9 +1,7 @@
 /**
  * 
- * Test sync app with nanopore data (Ingra).
- * The test indicated a memory overflow when number of samples is large.
- * Bioinfo jobs work in parallel, loading all kraken2-dbs in memory at the same time.
- * Reorganize the script so that it would not be a problem
+ * Async app completely working. 
+ * Must test rt mode.
  */
 
 
