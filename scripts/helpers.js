@@ -58,24 +58,58 @@ const copyAllFiles = (source, destination) =>{
     }
 }
 
+
+// Declare main function
+//const iterateOverSamplesAndPerformAnalysis = (parameters) =>{
+const iterateOverSamplesAndPerformAnalysis = async (parameters) =>{
+
+    //List all samples directories
+    const allSamples = list(parameters.library);
+    parameters.numberOfSamples = allSamples.length;
+
+    // Iterate over samples, set paths, list fastq files,
+    // copy them to a safe directory and run analysis.
+
+    /*
+    allSamples.forEach(sample =>{
+        const partialPath = sample + '/';
+        const source = parameters.library + partialPath;
+        const destination = parameters.temp + partialPath;
+        copyAllFiles(source, destination);
+        concatenateFilesAndCallMetagenomicsApps(partialPath,destination,parameters);
+    })
+    **/
+
+     
+    // Trying to work around sync problem
+    for(let counter = 0; counter <= allSamples.length - 1; counter++){
+        const partialPath = allSamples[counter] + '/';
+        const source = parameters.library + partialPath;
+        const destination = parameters.temp + partialPath;
+        copyAllFiles(source, destination);
+        await concatenateFilesAndCallMetagenomicsApps(partialPath,destination,parameters);
+    }
+    
+}
+
 // Async function that starts the analysis flow.
 // First, it concatenates files and when the promise is fulfilled,
 // it calls the function reponsible for taxonomic assignment with kraken2
-const concatenateFilesAndCallMetagenomicsApps = (partialPath,destination,parameters) => {
+const concatenateFilesAndCallMetagenomicsApps = async (partialPath,destination,parameters) => {
     const concatenatedFile = destination + 'cat.fastq';
     if(fs.existsSync(concatenatedFile)) {
         fs.rmSync(concatenatedFile, { recursive: true, force: true });
     }
-    execShellCommand(`cat ${destination}* > ${concatenatedFile}`)
-        .then(()=>{
+    await execShellCommand(`cat ${destination}* > ${concatenatedFile}`)
+        .then(async()=>{
             console.log(`Concatenated file (${concatenatedFile}) has been created.`);
-            performTaxonomicAssignment(partialPath,concatenatedFile,parameters);
+            await performTaxonomicAssignment(partialPath,concatenatedFile,parameters);
         })
 }
 
 // Async function that sets paths, executes kraken 2 and launches
 // the creation of the krona input file. 
-const performTaxonomicAssignment = (partialPath,concatenatedFile,parameters) =>{
+const performTaxonomicAssignment = async (partialPath,concatenatedFile,parameters) =>{
     const kraken2DB = parameters.kraken;
     const numberOfThreads = parameters.numberOfSamples;
     const sampleResultsPath = `${parameters.results}${partialPath}`;
@@ -85,46 +119,46 @@ const performTaxonomicAssignment = (partialPath,concatenatedFile,parameters) =>{
     const kraken2ReportFile = `${sampleResultsPath}report.txt`
     const kraken2OutputFile = `${sampleResultsPath}results.kraken2.txt`
     const kraken2Call = `kraken2 --db ${kraken2DB} --threads ${numberOfThreads} --report ${kraken2ReportFile} --output ${kraken2OutputFile} ${concatenatedFile}`;
-    execShellCommand(kraken2Call)
-        .then((resolve)=>{
+    await execShellCommand(kraken2Call)
+        .then(async (resolve)=>{
             console.log(`Taxonomic assignment has been performed for ${concatenatedFile}`);
             console.log(resolve);
-            createKronaInputFile(kraken2OutputFile,parameters);
+            await createKronaInputFile(kraken2OutputFile,parameters);
         })
 }
 
 
 // Async function that creates krona input files and calls the
 // function that effectively creates the plots
-const createKronaInputFile = (kraken2OutputFile,parameters) =>{
+const createKronaInputFile = async (kraken2OutputFile,parameters) =>{
     const kronaInputFile = `${kraken2OutputFile}.krona`
     const kronaInputFileInstructions = `cat ${kraken2OutputFile} | cut -f 2,3 > ${kronaInputFile}`
-    execShellCommand(kronaInputFileInstructions)
-        .then(()=>{
+    await execShellCommand(kronaInputFileInstructions)
+        .then(async()=>{
             console.log(`Krona input file created -> ${kronaInputFile}`);
-            createKronaPlot(kronaInputFile,parameters);
+            await createKronaPlot(kronaInputFile,parameters);
         })
 }
 
 // Create krona plots and, when all samples have been analyzed,
 // it creates a single html page with all analysis results.
-const createKronaPlot = (kronaInputFile,parameters) =>{
+const createKronaPlot = async (kronaInputFile,parameters) =>{
     const kronaOutputFile = `${kronaInputFile}.html`;
     const kronaDB = parameters.krona
     kronaPlotInstructions = `ktImportTaxonomy ${kronaInputFile} -tax ${kronaDB}  -o ${kronaOutputFile}`;
-    execShellCommand(kronaPlotInstructions)
-        .then(()=>{
+    await execShellCommand(kronaPlotInstructions)
+        .then(async()=>{
             console.log(`Krona plot was created -> ${kronaOutputFile}`);
             HTMLFiles.push(kronaOutputFile);
             if(HTMLFiles.length === parameters.numberOfSamples){
-                createMinimalInterface(HTMLFiles,parameters.interface);
+                await createMinimalInterface(HTMLFiles,parameters.interface);
                 HTMLFiles.length = 0;
                 if(parameters.mode === "--postrun" || parameters.mode === "--pr"){
                     console.log(`Analysis finished.`);
                     process.exit();
                 }else if(parameters.mode === "--realtime" || parameters.mode === "--rt"){
                     console.log(`### Performing real time analysis -> Generation ${parameters.generation} ###`)
-                    iterateOverSamplesAndPerformAnalysis(parameters);
+                    await iterateOverSamplesAndPerformAnalysis(parameters);
                 }
                 parameters.generation++;
             }
@@ -144,24 +178,6 @@ const execShellCommand = (cmd) =>{
     })
 }
 
-// Declare main function
-const iterateOverSamplesAndPerformAnalysis = (parameters) =>{
-
-    //List all samples directories
-    const allSamples = list(parameters.library);
-    parameters.numberOfSamples = allSamples.length;
-
-    // Iterate over samples, set paths, list fastq files,
-    // copy them to a safe directory and run analysis.
-    allSamples.forEach(sample =>{
-        const partialPath = sample + '/';
-        const source = parameters.library + partialPath;
-        const destination = parameters.temp + partialPath;
-        copyAllFiles(source, destination);
-        concatenateFilesAndCallMetagenomicsApps(partialPath,destination,parameters);
-    })
-
-}
 
 
 // Export node modules
