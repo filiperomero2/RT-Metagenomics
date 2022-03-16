@@ -1,7 +1,11 @@
 /**
  * 
- * Async app completely working. 
- * Must test rt mode.
+ * Async  working in both modes. 
+ * Must:
+ *  - test rt mode at a more accurate rate;
+ *  - Develop demux engine integrating guppy;
+ *  - Advance frontend development.
+ * 
  */
 
 

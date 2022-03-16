@@ -143,10 +143,10 @@ const createKronaPlot = async (kronaInputFile,parameters) =>{
                     console.log(`Analysis finished.`);
                     process.exit();
                 }else if(parameters.mode === "--realtime" || parameters.mode === "--rt"){
-                    console.log(`### Performing real time analysis -> Generation ${parameters.generation} ###`)
+                    console.log(`### Performing real time analysis -> Generation ${parameters.generation} ###`);
+                    parameters.generation++;
                     await iterateOverSamplesAndPerformAnalysis(parameters);
                 }
-                parameters.generation++;
             }
         })
 }
