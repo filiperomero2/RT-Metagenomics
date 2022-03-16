@@ -3,8 +3,9 @@
 ## Status
 Application still on the early stage of development. It works as an async app for characterizing metagenomes after sequencing run. To do:
 
-    - Further develop async app;
-    - Better develop frontend (maybe with React).
+    - Further test sync app;
+    - Work out guppy_barcoder integration;
+    - Better develop frontend.
 
 ## Introduction
 The development of Oxford Nanopore Technologies offers unprecedented opportunities for conducting fast identification of pathogens accross several epidemiological settings by metagenomic sequencing. As bases may be called at time of sequencing, it is possible to perform taxonomic assignment of sequencing reads in real time. Nevertheless, popular tools used for metagenomic analysis are not designed to take full advantage of this amazing feature. In this sense, we developed RT-META, a pipeline that performs metagenomic analysis in real time and display results in a interactive, usefull manner. 
