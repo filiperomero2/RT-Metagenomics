@@ -1,2 +1,6 @@
-Note:
-- Issue with kraken2 -> memory crash due to overflow of async jobs. Must figure out a different strategy. In addition, IO must be improved considering demux structure.
+
+App working in both modes. 
+Must:
+ - test rt mode at a more accurate rate;
+ - Develop demux engine integrating guppy;
+ - Advance frontend development.
