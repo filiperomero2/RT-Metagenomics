@@ -48,14 +48,14 @@ In regards of krona, a standard outdated DB is installed in the conda environmen
     ktUpdateTaxonomy.sh ~/krona/taxonomy
 
 ## Usage
-The pipeline is currently under development process. It is executed as a single node script (index.js) that requires few positional arguments, as:
+The pipeline is currently under development process. It is executed as a single node script (index.js) that requires few arguments, as:
 
-    (1) Analysis mode: either --postrun or --realtime;
-    (2) the absolute path for the root of libraries directory;
-    (3) the absolute path for the output directory;
-    (4) the absolute path for the kraken2 database directory;
-    (5) the absolute path for the krona taxonomic database directory;
-    (6) the number of processing threads (Optional)
+    --mode: either postrun or realtime;
+    --input: the absolute path for the root of libraries directory;
+    --output: the absolute path for the output directory;
+    --kraken2-database: the absolute path for the kraken2 database directory;
+    --krona-database: the absolute path for the krona taxonomic database directory;
+    --threads: the number of processing threads (Optional)
 
 Users are encouraged to always provide absolute paths. The directory in (1) is the one that contains one subdirectory per sample with associated fastq files.
 
@@ -65,11 +65,11 @@ Please notice that the --realtime mode is still under development.
 
 Basic usage after sequencing run:
 
-    node index.js --postrun /home/Projects/RT-Metagenomics/data/ /home/Projects/RT-Metagenomics/output /home/kraken-db/minikraken2_v2_8GB_201904_UPDATE/ /home/krona-db/taxonomy/ 6
+     node scripts/index.js -m postrun -i /mnt/c/Users/filip/OneDrive/Desktop/RT-Metagenomics/data/ -o /mnt/c/Users/filip/OneDrive/Desktop/RT-Metagenomics/output/ --kraken2-db ~/kraken-db/minikraken2_v2_8GB_201904_UPDATE/ --krona-db ~/krona/taxonomy/ -t 10
 
 Basic usage for real time analysis:
 
-    node index.js --realtime /home/Projects/RT-Metagenomics/data/ /home/Projects/RT-Metagenomics/output /home/kraken-db/minikraken2_v2_8GB_201904_UPDATE/ /home/krona-db/taxonomy/ 6
+     node scripts/index.js -m realtime -i /mnt/c/Users/filip/OneDrive/Desktop/RT-Metagenomics/data/ -o /mnt/c/Users/filip/OneDrive/Desktop/RT-Metagenomics/output/ --kraken2-db ~/kraken-db/minikraken2_v2_8GB_201904_UPDATE/ --krona-db ~/krona/taxonomy/ -t 10
 
 
 ## Citation
