@@ -1,6 +1,6 @@
 /**
  * 
- * Async  working in both modes. 
+ * App working in both modes. 
  * Must:
  *  - test rt mode at a more accurate rate;
  *  - Develop demux engine integrating guppy;
@@ -13,18 +13,47 @@
 // Load helper module
 const helpers = require('./helpers.js');
 
+// Read command line args
+const argv = require("yargs/yargs")(process.argv.slice(2))
+.option("mode", {
+    alias: "m",
+    describe: "Analysis mode: either postrun or realtime"
+  })
+.option("input", {
+  alias: "i",
+  describe: "Absolute path for samples root directory"
+})
+.option("output", {
+  alias: "o",
+  describe: "Absolute path for output directory"
+})
+.option("kraken2-database", {
+    alias: "kraken2-db",
+    describe: "Absolute path for selected kraken2 database directory"
+})
+.option("krona-database", {
+    alias: "krona-db",
+    describe: "Absolute path for selected krona database directory"
+})
+.option("threads", {
+    alias: "t",
+    describe: "Number of threads (Optional, default = 1)"
+})
+.demandOption(["mode","input","output","kraken2-database","krona-db"], "Please specify all required arguments.")
+.help().argv;
+
 
 // The follow function validate parameters and prepare
 // the environment with the paths provided. 
 const validateParameters = (parameters) =>{
 
-    if(parameters.mode === "--postrun" || parameters.mode === "--pr"){
+    if(parameters.mode === "postrun" || parameters.mode === "pr"){
         console.log('Application launched in post run mode.');
-    }else if(parameters.mode === "--realtime" || parameters.mode === "--rt"){
+    }else if(parameters.mode === "realtime" || parameters.mode === "rt"){
         console.log('Application launched in real time mode.');
     }else{
         console.log(`Unknown analysis mode: ${parameters.mode}.
-        Use --realtime or --postrun.`);
+        Use --mode realtime or --mode postrun.`);
         process.exit();
     }
 
@@ -80,40 +109,21 @@ const validateParameters = (parameters) =>{
 }
 
 
-// Print help message in required cases
-const printHelpMessage = () =>{
-    console.log('This is RT-Meta - a simple app for fast metagenomic analysis');
-    console.log(`The script takes six positional arguments, being: 
-    (1) Analysis mode: either --postrun or --realtime;
-    (2) the root of library directory;
-    (3) the output directory path;
-    (4) the path for the kraken-db;
-    (5) the path for the krona-db;
-    (6) the number of processing threads (Optional)`);
-    console.log(`If unsure about the meaning of these parameters, visit https://github.com/filiperomero2/RT-Metagenomics`);
-    console.log('Example usage: node index.js --postrun /mnt/c/Users/filip/OneDrive/Desktop/dev/RT-Metagenomics/data/ /mnt/c/Users/filip/OneDrive/Desktop/dev/RT-Metagenomics/data/output /home/fmoreira/kraken-db/minikraken2_v2_8GB_201904_UPDATE /home/fmoreira/krona/taxonomy 4')
-}
 
 // Process the inputs provided on the command line.
 // Returns the parameter objective with all important paths.
-const processInput = () =>{
-    if(process.argv.includes('-help') || process.argv.includes('-h') || process.argv.includes('--help')){
-        printHelpMessage();
-        process.exit();
-    }else{
-        const parameters = {
-            "mode": process.argv[2],
-            "library": process.argv[3],
-            "output": process.argv[4],
-            "kraken": process.argv[5],
-            "krona": process.argv[6],
-            "threads": process.argv[7],
-            "generation": 0
-        }
-        validateParameters(parameters);
-        //console.log(parameters)
-        return parameters;
+const processInput = () =>{ 
+    const parameters = {
+        "mode": argv.mode,
+        "library": argv.input,
+        "output": argv.output,
+        "kraken": argv.kraken2Database,
+        "krona": argv.kronaDatabase,
+        "threads": process.threads,
+        "generation": 0
     }
+    validateParameters(parameters);
+    return parameters;
 }
 
 const executeAnalysis = (parameters) =>{
@@ -123,5 +133,4 @@ const executeAnalysis = (parameters) =>{
 // Call functions to do the job
 const parameters = processInput();
 executeAnalysis(parameters);
-
 

@@ -139,10 +139,10 @@ const createKronaPlot = async (kronaInputFile,parameters) =>{
             if(HTMLFiles.length === parameters.numberOfSamples){
                 await createMinimalInterface(HTMLFiles,parameters.interface);
                 HTMLFiles.length = 0;
-                if(parameters.mode === "--postrun" || parameters.mode === "--pr"){
+                if(parameters.mode === "postrun" || parameters.mode === "pr"){
                     console.log(`Analysis finished.`);
                     process.exit();
-                }else if(parameters.mode === "--realtime" || parameters.mode === "--rt"){
+                }else if(parameters.mode === "realtime" || parameters.mode === "rt"){
                     console.log(`### Performing real time analysis -> Generation ${parameters.generation} ###`);
                     parameters.generation++;
                     await iterateOverSamplesAndPerformAnalysis(parameters);
