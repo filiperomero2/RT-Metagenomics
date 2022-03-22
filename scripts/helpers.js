@@ -58,24 +58,40 @@ const copyAllFiles = (source, destination) =>{
     }
 }
 
+const performDemuxAndLaunchAnalysis = async (parameters) => {
+    guppyBarcoderPath = parameters.guppy + '/guppy_barcoder'
+    // Remember to add flexibility to barcode kit option
+    demuxCall = `${guppyBarcoderPath} --require_barcodes_both_ends -i ${parameters.library} -s ${parameters.temp} --barcode_kits "EXP-NBD104 EXP-NBD114"  -t ${parameters.threads} -r`;
+    await execShellCommand(demuxCall)
+        .then((resolve)=>{
+            console.log(resolve);
+            console.log('Demux finished.');
+            iterateOverSamples(parameters);
+        })
+}
 
 // Declare main function
-const iterateOverSamplesAndPerformAnalysis = async (parameters) =>{
+const iterateOverSamples = async (parameters) =>{
 
     //List all samples directories
-    const allSamples = list(parameters.library);
+    const allItems = list(parameters.temp);
+    const allSamples = allItems.filter(item =>{
+        return item.startsWith("barcode");
+    })
+    //console.log(allItems);
+    //console.log(allSamples)
+
     parameters.numberOfSamples = allSamples.length;
 
     // Iterate over samples, set paths, list fastq files,
     // copy them to a safe directory and run analysis.
     for(let counter = 0; counter <= allSamples.length - 1; counter++){
         const partialPath = allSamples[counter] + '/';
-        const source = parameters.library + partialPath;
+        //const source = parameters.library + partialPath;
         const destination = parameters.temp + partialPath;
-        copyAllFiles(source, destination);
+        //copyAllFiles(source, destination);
         await concatenateFilesAndCallMetagenomicsApps(partialPath,destination,parameters);
     }
-    
 }
 
 // Async function that starts the analysis flow.
@@ -145,7 +161,7 @@ const createKronaPlot = async (kronaInputFile,parameters) =>{
                 }else if(parameters.mode === "realtime" || parameters.mode === "rt"){
                     console.log(`### Performing real time analysis -> Generation ${parameters.generation} ###`);
                     parameters.generation++;
-                    await iterateOverSamplesAndPerformAnalysis(parameters);
+                    await performDemuxAndLaunchAnalysis(parameters);
                 }
             }
         })
@@ -172,6 +188,6 @@ module.exports = {
     list,
     copyFile,
     copyAllFiles,
-    iterateOverSamplesAndPerformAnalysis
+    performDemuxAndLaunchAnalysis
 }
 

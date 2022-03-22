@@ -3,7 +3,6 @@
  * App working in both modes. 
  * Must:
  *  - test rt mode at a more accurate rate;
- *  - Develop demux engine integrating guppy;
  *  - Advance frontend development.
  * 
  */
@@ -35,11 +34,15 @@ const argv = require("yargs/yargs")(process.argv.slice(2))
     alias: "krona-db",
     describe: "Absolute path for selected krona database directory"
 })
+.option("guppy", {
+    alias: "g",
+    describe: "Absolute path for guppy binaries directory"
+})
 .option("threads", {
     alias: "t",
     describe: "Number of threads (Optional, default = 1)"
 })
-.demandOption(["mode","input","output","kraken2-database","krona-db"], "Please specify all required arguments.")
+.demandOption(["mode","input","output","kraken2-database","krona-db","guppy"], "Please specify all required arguments.")
 .help().argv;
 
 
@@ -99,6 +102,13 @@ const validateParameters = (parameters) =>{
         process.exit()
     }
 
+    if (fs.existsSync(parameters.guppy)) {
+        console.log(`Guppy binaries directory -> ${parameters.guppy}`)
+    }else{
+        console.log(`Guppy binaries directory does not exist -> ${parameters.guppy}`)
+        process.exit()
+    }
+
     if(typeof(parameters.threads)=== "undefined"){
         parameters.threads = 1;
         console.log(`Number of processing threads has not being set, using only ${parameters.threads}`)
@@ -119,7 +129,8 @@ const processInput = () =>{
         "output": argv.output,
         "kraken": argv.kraken2Database,
         "krona": argv.kronaDatabase,
-        "threads": process.threads,
+        "guppy": argv.guppy,
+        "threads": argv.threads,
         "generation": 0
     }
     validateParameters(parameters);
@@ -127,7 +138,7 @@ const processInput = () =>{
 }
 
 const executeAnalysis = (parameters) =>{
-    helpers.iterateOverSamplesAndPerformAnalysis(parameters);
+    helpers.performDemuxAndLaunchAnalysis(parameters);
 }
 
 // Call functions to do the job

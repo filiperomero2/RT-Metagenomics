@@ -9,11 +9,14 @@
 
 helpers = require('./helpers');
 
-const source = process.argv[2];
+const source = process.argv[2] + "/";
 const destination = process.argv[3] + "/";
 const awaitingTime = process.argv[4];
 
-const files = helpers.list(source);
+const allFiles = helpers.list(source);
+const files = allFiles.filter(file=>{
+    return file.endsWith(".fastq");
+})
 let counter = 0;
 
 helpers.createDir(destination);
