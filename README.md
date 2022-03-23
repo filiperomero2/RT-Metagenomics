@@ -1,12 +1,5 @@
 # RT-META: Real Time Metagenomic Analysis
 
-## Status
-Application still on the early stage of development. It works as an async app for characterizing metagenomes after sequencing run. To do:
-
-    - Further test sync app;
-    - Work out guppy_barcoder integration;
-    - Better develop frontend.
-
 ## Introduction
 The development of Oxford Nanopore Technologies offers unprecedented opportunities for conducting fast identification of pathogens accross several epidemiological settings by metagenomic sequencing. As bases may be called at time of sequencing, it is possible to perform taxonomic assignment of sequencing reads in real time. Nevertheless, popular tools used for metagenomic analysis are not designed to take full advantage of this amazing feature. In this sense, we developed RT-META, a pipeline that performs metagenomic analysis in real time and display results in a interactive, usefull manner. 
 
@@ -56,7 +49,9 @@ The pipeline is currently under development process. It is executed as a single 
     --kraken2-database: the absolute path for the kraken2 database directory;
     --krona-database: the absolute path for the krona taxonomic database directory;
     --guppy: the absolute path for guppy binaries;
-    --threads: the number of processing threads (Optional).
+    --threads: the number of processing threads (Optional);
+    --help: display help message;
+    --version: display software version.
 
 Users are encouraged to always provide absolute paths. The directory in --input is the one that contains one subdirectory per sample with associated fastq files.
 

@@ -2,5 +2,5 @@
 App working in both modes. 
 Must:
  - test rt mode at a more accurate rate;
- - Develop demux engine integrating guppy;
+ - Optimize performance (tweaks on IO issues);
  - Advance frontend development.
