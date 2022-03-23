@@ -38,11 +38,15 @@ const argv = require("yargs/yargs")(process.argv.slice(2))
     alias: "g",
     describe: "Absolute path for guppy binaries directory"
 })
+.option("barcode-kit", {
+    alias: "b",
+    describe: "Barcode kit used in the sequencing run."
+})
 .option("threads", {
     alias: "t",
     describe: "Number of threads (Optional, default = 1)"
 })
-.demandOption(["mode","input","output","kraken2-database","krona-db","guppy"], "Please specify all required arguments.")
+.demandOption(["mode","input","output","kraken2-database","krona-db","guppy","barcode-kit"], "Please specify all required arguments.")
 .help().argv;
 
 
@@ -109,6 +113,18 @@ const validateParameters = (parameters) =>{
         process.exit()
     }
 
+    if(parameters.barcode.startsWith("EXP-")){
+        console.log(`Kit code matches pattern EXP -> ${parameters.barcode}`)
+    }else if(parameters.barcode.startsWith("OND-")){
+        console.log(`Kit code matches pattern OND -> ${parameters.barcode}`)
+    }else if(parameters.barcode.startsWith("SQK-")){
+        console.log(`Kit code matches pattern SQK -> ${parameters.barcode}`)
+    }else if(parameters.barcode.startsWith("VSK-")){
+        console.log(`Kit code matches pattern VSK -> ${parameters.barcode}`)
+    }else{
+        console.log("Kit code out of pattern. Please provide a kit consistent with the list provided in 'guppy_barcoder --print_kits'")
+    }
+
     if(typeof(parameters.threads)=== "undefined"){
         parameters.threads = 1;
         console.log(`Number of processing threads has not being set, using only ${parameters.threads}`)
@@ -130,6 +146,7 @@ const processInput = () =>{
         "kraken": argv.kraken2Database,
         "krona": argv.kronaDatabase,
         "guppy": argv.guppy,
+        "barcode": argv.barcodeKit,
         "threads": argv.threads,
         "generation": 0
     }

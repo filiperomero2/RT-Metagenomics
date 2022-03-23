@@ -61,7 +61,7 @@ const copyAllFiles = (source, destination) =>{
 const performDemuxAndLaunchAnalysis = async (parameters) => {
     guppyBarcoderPath = parameters.guppy + '/guppy_barcoder'
     // Remember to add flexibility to barcode kit option
-    demuxCall = `${guppyBarcoderPath} --require_barcodes_both_ends -i ${parameters.library} -s ${parameters.temp} --barcode_kits "EXP-NBD104 EXP-NBD114"  -t ${parameters.threads} -r`;
+    demuxCall = `${guppyBarcoderPath} --require_barcodes_both_ends -i ${parameters.library} -s ${parameters.temp} --barcode_kits "${parameters.barcode}"  -t ${parameters.threads} -r`;
     await execShellCommand(demuxCall)
         .then((resolve)=>{
             console.log(resolve);
