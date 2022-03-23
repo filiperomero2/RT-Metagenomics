@@ -1,14 +1,3 @@
-/**
- * 
- * App working in both modes. 
- * Must:
- *  - test rt mode at a more accurate rate;
- *  - Advance frontend development.
- * 
- */
-
-
-
 // Load helper module
 const helpers = require('./helpers.js');
 
@@ -42,11 +31,16 @@ const argv = require("yargs/yargs")(process.argv.slice(2))
     alias: "b",
     describe: "Barcode kit used in the sequencing run."
 })
+.option("nodemux",{
+    alias: "nd",
+    boolean: "nd",
+    describe: "No demux option, assumes the whole sequencing runs characterizes a single sample."
+})
 .option("threads", {
     alias: "t",
     describe: "Number of threads (Optional, default = 1)"
 })
-.demandOption(["mode","input","output","kraken2-database","krona-db","guppy","barcode-kit"], "Please specify all required arguments.")
+.demandOption(["mode","input","output","kraken2-database","krona-db"], "Please specify all required arguments.")
 .help().argv;
 
 
@@ -106,6 +100,17 @@ const validateParameters = (parameters) =>{
         process.exit()
     }
 
+    if(typeof(parameters.threads)=== "undefined"){
+        parameters.threads = 1;
+        console.log(`Number of processing threads has not being set, using only ${parameters.threads}`)
+    }else{
+        console.log(`Number of processing threads has been set -> ${parameters.threads}`)
+    }
+
+    if(parameters.nodemux){
+        return
+    }
+
     if (fs.existsSync(parameters.guppy)) {
         console.log(`Guppy binaries directory -> ${parameters.guppy}`)
     }else{
@@ -125,12 +130,7 @@ const validateParameters = (parameters) =>{
         console.log("Kit code out of pattern. Please provide a kit consistent with the list provided in 'guppy_barcoder --print_kits'")
     }
 
-    if(typeof(parameters.threads)=== "undefined"){
-        parameters.threads = 1;
-        console.log(`Number of processing threads has not being set, using only ${parameters.threads}`)
-    }else{
-        console.log(`Number of processing threads has been set -> ${parameters.threads}`)
-    }
+
 
 }
 
@@ -140,15 +140,20 @@ const validateParameters = (parameters) =>{
 // Returns the parameter objective with all important paths.
 const processInput = () =>{ 
     const parameters = {
+        "generation": 0,
+        "threads": argv.threads,
         "mode": argv.mode,
         "library": argv.input,
         "output": argv.output,
         "kraken": argv.kraken2Database,
         "krona": argv.kronaDatabase,
         "guppy": argv.guppy,
-        "barcode": argv.barcodeKit,
-        "threads": argv.threads,
-        "generation": 0
+        "barcode": argv.barcodeKit        
+    }
+    if(Object.keys(argv).includes("nd")){
+        console.log("No demux flag specified, ignoring --guppy and --barcode arguments.")
+        parameters.nodemux = true;
+        parameters.numberOfSamples = 1;
     }
     validateParameters(parameters);
     return parameters;

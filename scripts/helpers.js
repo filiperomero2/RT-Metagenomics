@@ -59,15 +59,23 @@ const copyAllFiles = (source, destination) =>{
 }
 
 const performDemuxAndLaunchAnalysis = async (parameters) => {
-    guppyBarcoderPath = parameters.guppy + '/guppy_barcoder'
-    // Remember to add flexibility to barcode kit option
-    demuxCall = `${guppyBarcoderPath} --require_barcodes_both_ends -i ${parameters.library} -s ${parameters.temp} --barcode_kits "${parameters.barcode}"  -t ${parameters.threads} -r`;
-    await execShellCommand(demuxCall)
-        .then((resolve)=>{
-            console.log(resolve);
-            console.log('Demux finished.');
-            iterateOverSamples(parameters);
-        })
+    if(parameters.nodemux){
+        // copy files and call concatenateFilesAndCallMetagenomicsApps()
+        const partialPath = "sample/"
+        const uniqueSamplePath = parameters.temp + partialPath;
+        copyAllFiles(parameters.library,uniqueSamplePath);
+        concatenateFilesAndCallMetagenomicsApps(partialPath,uniqueSamplePath,parameters)
+    }else{
+        guppyBarcoderPath = parameters.guppy + '/guppy_barcoder';
+        demuxCall = `${guppyBarcoderPath} --require_barcodes_both_ends -i ${parameters.library} -s ${parameters.temp} --barcode_kits "${parameters.barcode}"  -t ${parameters.threads} -r`;
+        await execShellCommand(demuxCall)
+            .then((resolve)=>{
+                console.log(resolve);
+                console.log('Demux finished.');
+                iterateOverSamples(parameters);
+            })
+    }
+    
 }
 
 // Declare main function
@@ -78,8 +86,6 @@ const iterateOverSamples = async (parameters) =>{
     const allSamples = allItems.filter(item =>{
         return item.startsWith("barcode");
     })
-    //console.log(allItems);
-    //console.log(allSamples)
 
     parameters.numberOfSamples = allSamples.length;
 
@@ -87,9 +93,7 @@ const iterateOverSamples = async (parameters) =>{
     // copy them to a safe directory and run analysis.
     for(let counter = 0; counter <= allSamples.length - 1; counter++){
         const partialPath = allSamples[counter] + '/';
-        //const source = parameters.library + partialPath;
         const destination = parameters.temp + partialPath;
-        //copyAllFiles(source, destination);
         await concatenateFilesAndCallMetagenomicsApps(partialPath,destination,parameters);
     }
 }
