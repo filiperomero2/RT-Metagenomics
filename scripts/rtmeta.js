@@ -1,5 +1,5 @@
 // Load helper module
-const helpers = require('./helpers.js');
+const helpers = require('./rtmetaLib');
 
 // Read command line args
 const argv = require("yargs/yargs")(process.argv.slice(2))

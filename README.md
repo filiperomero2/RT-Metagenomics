@@ -41,7 +41,7 @@ In regards of krona, a standard outdated DB is installed in the conda environmen
     ktUpdateTaxonomy.sh ~/krona/taxonomy
 
 ## Usage
-The pipeline is currently under development process. It is executed as a single node script (index.js) that requires few arguments, as:
+The pipeline is currently under development process. It is executed as a single node script (rtmeta.js) that requires few arguments, as:
 
     --mode: either postrun or realtime;
     --input: the absolute path for the root of libraries directory;
@@ -62,15 +62,15 @@ Users are encouraged to always provide absolute paths. The directory in --input 
 
 Basic usage after sequencing run:
 
-     node scripts/index.js --mode postrun --input /mnt/c/Users/filip/OneDrive/Desktop/RT-Metagenomics/test_data/ --output /mnt/c/Users/filip/OneDrive/Desktop/RT-Metagenomics/output/ --kraken2-db ~/kraken-db/minikraken2_v2_8GB_201904_UPDATE/ --krona-db ~/krona/taxonomy/ --guppy ~/ont-guppy-cpu/bin/ --barcode-kit "EXP-NBD104 EXP-NBD114" --threads 8 
+     node scripts/rtmeta.js --mode postrun --input /mnt/c/Users/filip/OneDrive/Desktop/RT-Metagenomics/test_data/ --output /mnt/c/Users/filip/OneDrive/Desktop/RT-Metagenomics/output/ --kraken2-db ~/kraken-db/minikraken2_v2_8GB_201904_UPDATE/ --krona-db ~/krona/taxonomy/ --guppy ~/ont-guppy-cpu/bin/ --barcode-kit "EXP-NBD104 EXP-NBD114" --threads 8 
 
 Basic usage for real time analysis:
 
-     node scripts/index.js --mode realtime --input /mnt/c/Users/filip/OneDrive/Desktop/RT-Metagenomics/test_data/ --output /mnt/c/Users/filip/OneDrive/Desktop/RT-Metagenomics/output/ --kraken2-db ~/kraken-db/minikraken2_v2_8GB_201904_UPDATE/ --krona-db ~/krona/taxonomy/ --guppy ~/ont-guppy-cpu/bin/ --barcode-kit "EXP-NBD104 EXP-NBD114" --threads 8
+     node scripts/rtmeta.js --mode realtime --input /mnt/c/Users/filip/OneDrive/Desktop/RT-Metagenomics/test_data/ --output /mnt/c/Users/filip/OneDrive/Desktop/RT-Metagenomics/output/ --kraken2-db ~/kraken-db/minikraken2_v2_8GB_201904_UPDATE/ --krona-db ~/krona/taxonomy/ --guppy ~/ont-guppy-cpu/bin/ --barcode-kit "EXP-NBD104 EXP-NBD114" --threads 8
 
 If no multiplexing scheme was used, use the --nodemux flag (--guppy and --barcode-kit arguments are not required):
 
-    node scripts/index.js --mode postrun --input /mnt/c/Users/filip/OneDrive/Desktop/RT-Metagenomics/test_data/ --output /mnt/c/Users/filip/OneDrive/Desktop/RT-Metagenomics/output/ --kraken2-db ~/kraken-db/minikraken2_v2_8GB_201904_UPDATE/ --krona-db ~/krona/taxonomy/ --threads 8 --nodemux
+    node scripts/rtmeta.js --mode postrun --input /mnt/c/Users/filip/OneDrive/Desktop/RT-Metagenomics/test_data/ --output /mnt/c/Users/filip/OneDrive/Desktop/RT-Metagenomics/output/ --kraken2-db ~/kraken-db/minikraken2_v2_8GB_201904_UPDATE/ --krona-db ~/krona/taxonomy/ --threads 8 --nodemux
 
 ## Citation
 

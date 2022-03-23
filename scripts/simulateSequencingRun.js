@@ -7,7 +7,7 @@
  * 
  */
 
-helpers = require('./helpers');
+helpers = require('./rtmetaLib');
 
 const source = process.argv[2] + "/";
 const destination = process.argv[3] + "/";
