@@ -76,9 +76,9 @@ If no multiplexing scheme was used, use the --nodemux flag (--guppy and --barcod
 
 This pipeline has been developed and validated using the following dependencies versions:
 
-*kraken2 v2.1.2
-*krona v2.8.1
-*guppy v6.0.6+8a98bbc
+* kraken2 v2.1.2
+* krona v2.8.1
+* guppy v6.0.6+8a98bbc
 
 ## Citation
 
