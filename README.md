@@ -72,9 +72,10 @@ If no multiplexing scheme was used, use the --nodemux flag (--guppy and --barcod
 
     node scripts/rtmeta.js --mode postrun --input /mnt/c/Users/filip/OneDrive/Desktop/RT-Metagenomics/test_data/ --output /mnt/c/Users/filip/OneDrive/Desktop/RT-Metagenomics/output/ --kraken2-db ~/kraken-db/minikraken2_v2_8GB_201904_UPDATE/ --krona-db ~/krona/taxonomy/ --threads 8 --nodemux
 
-## Dependencies version
+## Notes
 
 This pipeline has been developed and validated using the following dependencies versions:
+
 *kraken2 v2.1.2
 *krona v2.8.1
 *guppy v6.0.6+8a98bbc
