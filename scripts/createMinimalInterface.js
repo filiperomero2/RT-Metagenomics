@@ -50,12 +50,17 @@ const secondPart = `</ul>
 
 // Function that creates the unified HTML file with all krona plots.
 // It uses the pieces array to parse paths properly.
-const createMinimalInterface = (HTMLFiles,interface) =>{
+const createMinimalInterface = (HTMLFiles,parameters) =>{
+    const interface = parameters.interface;
     let content = firstPart;
+    let counter = 0;
+    // include sequence name and barcode here
     HTMLFiles.forEach(file =>{
         const pieces = file.split('/');
         const filePath = '../results/'+ pieces[pieces.length-2] + "/" + pieces[pieces.length-1];
-        const sampleName = pieces[pieces.length-2];
+        //const sampleName = pieces[pieces.length-2];
+        const sampleName = `${parameters.samples.names[counter]} - ${parameters.samples.barcodes[counter]}`;
+        counter++;
         content += `<li><button class="sample-button" value="${filePath}">${sampleName}</button></li>\n`;
     })
     content += secondPart;

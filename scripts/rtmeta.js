@@ -23,6 +23,15 @@ const argv = require("yargs/yargs")(process.argv.slice(2))
     alias: "krona-db",
     describe: "Absolute path for selected krona database directory"
 })
+.option("nodemux",{
+    alias: "nd",
+    boolean: "nd",
+    describe: "No demux option, assumes the whole sequencing runs characterizes a single sample."
+})
+.option("samplesheet",{
+    alias: "s",
+    describe: "Absolute path for samplesheet csv file (see docs)."
+})
 .option("guppy", {
     alias: "g",
     describe: "Absolute path for guppy binaries directory"
@@ -30,11 +39,6 @@ const argv = require("yargs/yargs")(process.argv.slice(2))
 .option("barcode-kit", {
     alias: "b",
     describe: "Barcode kit used in the sequencing run."
-})
-.option("nodemux",{
-    alias: "nd",
-    boolean: "nd",
-    describe: "No demux option, assumes the whole sequencing runs characterizes a single sample."
 })
 .option("threads", {
     alias: "t",
@@ -111,6 +115,15 @@ const validateParameters = (parameters) =>{
         return
     }
 
+    if (fs.existsSync(parameters.samplesheet)) {
+        console.log(`Samplesheet file found -> ${parameters.samplesheet}`);
+        const samples = validateSampleSheet(parameters.samplesheet);
+        parameters.samples = samples;
+    }else{
+        console.log(`Samplesheet file not found -> ${parameters.samplesheet}`);
+        process.exit();
+    }
+
     if (fs.existsSync(parameters.guppy)) {
         console.log(`Guppy binaries directory -> ${parameters.guppy}`)
     }else{
@@ -130,8 +143,42 @@ const validateParameters = (parameters) =>{
         console.log("Kit code out of pattern. Please provide a kit consistent with the list provided in 'guppy_barcoder --print_kits'")
     }
 
+}
 
 
+
+const validateSampleSheet = (inputFile) =>{
+    const samples = {
+        names: [],
+        barcodes: []
+    }
+        
+    const text = fs.readFileSync(inputFile,'utf-8');
+    text.split(/\r?\n/).forEach(line =>  {
+        const values = line.split(',');
+        const sampleName = values[0].replace(/\s+/g,'');
+        const sampleBarcode = values[1].replace(/\s+/g,'');
+        if(!sampleBarcode.startsWith("barcode")){
+            console.log(`Inconsistent pattern in csv file, barcode name not formatted: ${sampleBarcode}`);
+            console.log(`Please use barcode01,barcode02...`);
+            process.exit();
+        }
+        if(samples.names.includes(sampleName)){
+            console.log(`Inconsistent pattern in csv file, repeated name: ${sampleName}`);
+            process.exit()
+        }
+        if(samples.barcodes.includes(sampleBarcode)){
+            console.log(`Inconsistent pattern in csv file, repeated barcode: ${sampleName}`);
+            process.exit()
+        }
+
+        samples.names.push(sampleName);
+        samples.barcodes.push(sampleBarcode);
+
+    });
+
+    console.log('Samplesheet validated.')
+    return samples
 }
 
 
@@ -147,11 +194,12 @@ const processInput = () =>{
         "output": argv.output,
         "kraken": argv.kraken2Database,
         "krona": argv.kronaDatabase,
+        "samplesheet": argv.samplesheet,
         "guppy": argv.guppy,
         "barcode": argv.barcodeKit        
     }
     if(Object.keys(argv).includes("nd")){
-        console.log("No demux flag specified, ignoring --guppy and --barcode arguments.")
+        console.log("No demux flag specified, ignoring --samplesheet, --guppy and --barcode arguments.")
         parameters.nodemux = true;
         parameters.numberOfSamples = 1;
     }

@@ -84,7 +84,8 @@ const iterateOverSamples = async (parameters) =>{
     //List all samples directories
     const allItems = list(parameters.temp);
     const allSamples = allItems.filter(item =>{
-        return item.startsWith("barcode");
+        //return item.startsWith("barcode");
+        return parameters.samples.barcodes.includes(item);
     })
 
     parameters.numberOfSamples = allSamples.length;
@@ -157,13 +158,13 @@ const createKronaPlot = async (kronaInputFile,parameters) =>{
             console.log(`Krona plot was created -> ${kronaOutputFile}`);
             HTMLFiles.push(kronaOutputFile);
             if(HTMLFiles.length === parameters.numberOfSamples){
-                await createMinimalInterface(HTMLFiles,parameters.interface);
+                await createMinimalInterface(HTMLFiles,parameters);
                 HTMLFiles.length = 0;
                 if(parameters.mode === "postrun" || parameters.mode === "pr"){
                     console.log(`Analysis finished.`);
                     process.exit();
                 }else if(parameters.mode === "realtime" || parameters.mode === "rt"){
-                    console.log(`### Performing real time analysis -> Generation ${parameters.generation} ###`);
+                    console.log(`### Performing real time analysis -> Generation ${parameters.generation} executed ###`);
                     parameters.generation++;
                     await performDemuxAndLaunchAnalysis(parameters);
                 }
