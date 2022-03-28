@@ -41,8 +41,8 @@ const secondPart = `</ul>
 </div>
 </main>
 <footer>
-<img class = "phyloimg-tail" src="test.png">
-<p class="copyright">&copy; Copyright Filipe Moreira - 2022</p>
+<img class = "phyloimg-tail" src="cadde_logo.jpg">
+<p class="copyright">&copy; Copyright - 2022</p>
 </footer>
 <script src="index.js"></script>
 </body>
