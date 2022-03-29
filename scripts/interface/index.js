@@ -94,23 +94,3 @@ document.querySelector("#contact-button").addEventListener("click",event=>{
 })
 
 
-
-/**
- * The code bellow has not been tested
- * neither the iframes class. Must check it.
- * 
- // Declare function to reload iframes
-const reloadIframes = () =>{
-    // suppose class name is a thing
-    const iframes = document.querySelectorAll(".iframes");
-    iframes.forEach(iframe=>{
-        // check if the following will work
-        iframe.location.reload();
-    })
-}
-
-// Reload iframes every minute
-setTimeout(reloadIframes(),60*1000);
- */
-
-

@@ -1,4 +1,5 @@
 // Load helper module
+const fs = require('fs');
 const helpers = require('./rtmetaLib');
 
 // Read command line args
@@ -22,6 +23,16 @@ const argv = require("yargs/yargs")(process.argv.slice(2))
 .option("krona-database", {
     alias: "krona-db",
     describe: "Absolute path for selected krona database directory"
+})
+.option("remove-human-reads",{
+    alias: "rhr",
+    boolean: "rhr",
+    describe: "Remove human reads from krona reports"
+})
+.option("remove-unknown-reads",{
+    alias: "rur",
+    boolean: "rur",
+    describe: "Remove unknown reads from krona reports"
 })
 .option("nodemux",{
     alias: "nd",
@@ -111,7 +122,13 @@ const validateParameters = (parameters) =>{
         console.log(`Number of processing threads has been set -> ${parameters.threads}`)
     }
 
+    if(parameters.readsToRemove.length > 0){
+        console.log(`Removing reads with specified taxIDs...`);
+        console.log(parameters.readsToRemove);
+    }
+
     if(parameters.nodemux){
+        console.log("No demux flag specified, ignoring --samplesheet, --guppy and --barcode arguments.")
         return
     }
 
@@ -196,12 +213,18 @@ const processInput = () =>{
         "krona": argv.kronaDatabase,
         "samplesheet": argv.samplesheet,
         "guppy": argv.guppy,
-        "barcode": argv.barcodeKit        
+        "barcode": argv.barcodeKit,
+        "readsToRemove": []    
     }
     if(Object.keys(argv).includes("nd")){
-        console.log("No demux flag specified, ignoring --samplesheet, --guppy and --barcode arguments.")
         parameters.nodemux = true;
         parameters.numberOfSamples = 1;
+    }
+    if(Object.keys(argv).includes("rhr")){
+        parameters.readsToRemove.push(9606);
+    }
+    if(Object.keys(argv).includes("rur")){
+        parameters.readsToRemove.push(0);
     }
     validateParameters(parameters);
     return parameters;

@@ -134,6 +134,20 @@ const performTaxonomicAssignment = async (partialPath,concatenatedFile,parameter
         })
 }
 
+const removeReadsFromKronaInputFile = async (kronaInputFile,parameters) =>{
+    const kronaInputFileEdited = kronaInputFile + `.edited`;
+    let kronaInputFileEditionInstruction = '';
+    if(parameters.readsToRemove.length === 1){
+        kronaInputFileEditionInstruction = `grep -Ev "${parameters.readsToRemove[0]}$" ${kronaInputFile} > ${kronaInputFileEdited}`;
+    }else{
+        kronaInputFileEditionInstruction = `grep -Ev "${parameters.readsToRemove[0]}$|${parameters.readsToRemove[1]}$" ${kronaInputFile} > ${kronaInputFileEdited}`;
+    }
+    await execShellCommand(kronaInputFileEditionInstruction)
+        .then(async()=>{
+            console.log(`Krona input file edited -> ${kronaInputFileEdited}`);
+            await createKronaPlot(kronaInputFileEdited,parameters);
+        })
+}
 
 // Async function that creates krona input files and calls the
 // function that effectively creates the plots
@@ -143,7 +157,11 @@ const createKronaInputFile = async (kraken2OutputFile,parameters) =>{
     await execShellCommand(kronaInputFileInstructions)
         .then(async()=>{
             console.log(`Krona input file created -> ${kronaInputFile}`);
-            await createKronaPlot(kronaInputFile,parameters);
+            if(parameters.readsToRemove.length > 0){
+                await removeReadsFromKronaInputFile(kronaInputFile,parameters);
+            }else{
+                await createKronaPlot(kronaInputFile,parameters);
+            }
         })
 }
 
