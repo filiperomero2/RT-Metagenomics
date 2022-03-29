@@ -54,19 +54,17 @@ const createMinimalInterface = (HTMLFiles,parameters) =>{
     const interface = parameters.interface;
     let content = firstPart;
     let counter = 0;
-    // include sequence name and barcode here
     HTMLFiles.forEach(file =>{
         const pieces = file.split('/');
         const filePath = '../results/'+ pieces[pieces.length-2] + "/" + pieces[pieces.length-1];
-        //const sampleName = pieces[pieces.length-2];
-        const sampleName = `${parameters.samples.names[counter]} - ${parameters.samples.barcodes[counter]}`;
+        const sampleName = `${parameters.samples.names[counter]} - ${parameters.samples.barcodes[counter]} - ${parameters.samples.numberOfSequences[counter]} reads`;
         counter++;
         content += `<li><button class="sample-button" value="${filePath}">${sampleName}</button></li>\n`;
     })
     content += secondPart;
     const HTMLFilePath = `${interface}index.html`;
     fs.writeFileSync(HTMLFilePath, content);
-    console.log(`HTML file saved on ${HTMLFilePath}`);
+    console.log(`\n\n\n\nHTML file saved on ${HTMLFilePath}\n\n\n\n`);
 }
 
 module.exports = createMinimalInterface;

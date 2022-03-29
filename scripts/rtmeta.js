@@ -167,7 +167,8 @@ const validateParameters = (parameters) =>{
 const validateSampleSheet = (inputFile) =>{
     const samples = {
         names: [],
-        barcodes: []
+        barcodes: [],
+        numberOfSequences: []
     }
         
     const text = fs.readFileSync(inputFile,'utf-8');
@@ -202,7 +203,7 @@ const validateSampleSheet = (inputFile) =>{
 
 // Process the inputs provided on the command line.
 // Returns the parameter objective with all important paths.
-const processInput = () =>{ 
+const processInput = () => { 
     const parameters = {
         "generation": 0,
         "threads": argv.threads,

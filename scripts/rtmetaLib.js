@@ -109,7 +109,7 @@ const concatenateFilesAndCallMetagenomicsApps = async (partialPath,destination,p
     }
     await execShellCommand(`cat ${destination}* > ${concatenatedFile}`)
         .then(async()=>{
-            console.log(`Concatenated file (${concatenatedFile}) has been created.`);
+            console.log(`\n\n\nConcatenated file (${concatenatedFile}) has been created.`);
             await performTaxonomicAssignment(partialPath,concatenatedFile,parameters);
         })
 }
@@ -130,6 +130,8 @@ const performTaxonomicAssignment = async (partialPath,concatenatedFile,parameter
         .then(async (resolve)=>{
             console.log(`Taxonomic assignment has been performed for ${concatenatedFile}`);
             console.log(resolve);
+            temp = resolve.split('\n')[1];
+            parameters.samples.numberOfSequences.push(temp.split(' ')[0]);
             await createKronaInputFile(kraken2OutputFile,parameters);
         })
 }
@@ -178,6 +180,7 @@ const createKronaPlot = async (kronaInputFile,parameters) =>{
             if(HTMLFiles.length === parameters.numberOfSamples){
                 await createMinimalInterface(HTMLFiles,parameters);
                 HTMLFiles.length = 0;
+                parameters.samples.numberOfSequences.length = 0;
                 if(parameters.mode === "postrun" || parameters.mode === "pr"){
                     console.log(`Analysis finished.`);
                     process.exit();
