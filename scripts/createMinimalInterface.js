@@ -58,8 +58,12 @@ const createMinimalInterface = (HTMLFiles,parameters) =>{
         const pieces = file.split('/');
         const filePath = '../results/'+ pieces[pieces.length-2] + "/" + pieces[pieces.length-1];
         const sampleName = `${parameters.samples.names[counter]} - ${parameters.samples.barcodes[counter]} - ${parameters.samples.numberOfSequences[counter]} reads`;
-        counter++;
-        content += `<li><button class="sample-button" value="${filePath}">${sampleName}</button></li>\n`;
+        counter++; 
+        if(parameters.mode === "postrun" || parameters.mode === "pr"){
+            content += `\n<li><button class="sample-button" value="${filePath}">${sampleName}</button></li>\n`;
+        }else if(parameters.mode === "realtime" || parameters.mode === "rt"){
+            content += `\n<li><button class="sample-button reloadable" value="${filePath}">${sampleName}</button></li>\n`;
+        }
     })
     content += secondPart;
     const HTMLFilePath = `${interface}index.html`;

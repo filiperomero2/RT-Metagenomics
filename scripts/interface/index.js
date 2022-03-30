@@ -57,9 +57,10 @@ const refreshCard = (sample) =>{
 
 
 // Establishes an interval over which cards
-// will be reloaded.
+// will be reloaded. Only works with realtime mode
+const reloadableSamples = document.querySelectorAll(".reloadable");
 setInterval(()=>{
-    samples.forEach(sample=>{
+    reloadableSamples.forEach(sample=>{
         const parent = sample.parentElement;
         if(parent.querySelectorAll(".active-button").length > 0){
             refreshCard(sample)        
