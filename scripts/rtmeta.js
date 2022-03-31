@@ -142,7 +142,13 @@ const validateParameters = (parameters) =>{
     }
 
     if(parameters.nodemux){
-        console.log("No demux flag specified, ignoring --samplesheet, --guppy and --barcode arguments.")
+        console.log("No demux flag specified, ignoring --samplesheet, --guppy and --barcode arguments.");
+        const samples = {
+            names: ['Unique sample'],
+            barcodes: ['NA'],
+            numberOfSequences: []
+        }
+        parameters.samples = samples;
         return
     }
 

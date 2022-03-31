@@ -47,7 +47,7 @@ const copyAllFiles = (source, destination) =>{
         const processedFiles = [];
         createDir(destination);
         allFiles.forEach(file =>{
-            const sourceFile = source + file;
+            const sourceFile = source + "/" + file;
             const destinationFile = destination + file;
             copyFile(sourceFile,destinationFile);
             processedFiles.push(file);
@@ -107,7 +107,7 @@ const concatenateFilesAndCallMetagenomicsApps = async (partialPath,destination,p
     if(fs.existsSync(concatenatedFile)) {
         fs.rmSync(concatenatedFile, { recursive: true, force: true });
     }
-    await execShellCommand(`cat ${destination}* > ${concatenatedFile}`)
+    await execShellCommand(`cat ${destination}*fastq > ${concatenatedFile}`)
         .then(async()=>{
             console.log(`\n\n\nConcatenated file (${concatenatedFile}) has been created.`);
             await performTaxonomicAssignment(partialPath,concatenatedFile,parameters);
@@ -140,9 +140,9 @@ const removeReadsFromKronaInputFile = async (kronaInputFile,parameters) =>{
     const kronaInputFileEdited = kronaInputFile + `.edited`;
     let kronaInputFileEditionInstruction = '';
     if(parameters.readsToRemove.length === 1){
-        kronaInputFileEditionInstruction = `grep -Pv "\t${parameters.readsToRemove[0]}$" ${kronaInputFile} > ${kronaInputFileEdited}`;
+        kronaInputFileEditionInstruction = `grep -Pv "\\h${parameters.readsToRemove[0]}$" ${kronaInputFile} > ${kronaInputFileEdited}`;
     }else{
-        kronaInputFileEditionInstruction = `grep -Pv "\t${parameters.readsToRemove[0]}$|\t${parameters.readsToRemove[1]}$" ${kronaInputFile} > ${kronaInputFileEdited}`;
+        kronaInputFileEditionInstruction = `grep -Pv "\\h${parameters.readsToRemove[0]}$|\\h${parameters.readsToRemove[1]}$" ${kronaInputFile} > ${kronaInputFileEdited}`;
     }
     await execShellCommand(kronaInputFileEditionInstruction)
         .then(async()=>{
