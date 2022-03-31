@@ -68,7 +68,7 @@ const createMinimalInterface = async (HTMLFiles,parameters) =>{
     content += secondPart;
     const HTMLFilePath = `${interface}index.html`;
     fs.writeFileSync(HTMLFilePath, content);
-    console.log(`\n\n\n\nHTML file saved on ${HTMLFilePath} \n\nIf in realtime mode, access localhost:${parameters.port}\n\n`);
+    console.log(`\n\n\n\nHTML file saved on ${HTMLFilePath} \n\n\n\n`);
 }
 
 module.exports = createMinimalInterface;

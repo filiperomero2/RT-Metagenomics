@@ -72,6 +72,12 @@ const validateParameters = (parameters) =>{
         console.log('Application launched in post run mode.');
     }else if(parameters.mode === "realtime" || parameters.mode === "rt"){
         console.log('Application launched in real time mode.');
+        if(typeof(parameters.port)=== "undefined"){
+            parameters.port = 8001;
+            console.log(`Port for local server not specified, using the default ${parameters.port}`)
+        }else{
+            console.log(`Port for local server set -> ${parameters.port}`)
+        }
     }else{
         console.log(`Unknown analysis mode: ${parameters.mode}.
         Use --mode realtime or --mode postrun.`);
@@ -127,13 +133,6 @@ const validateParameters = (parameters) =>{
         console.log(`Number of processing threads has not being set, using only ${parameters.threads}`)
     }else{
         console.log(`Number of processing threads has been set -> ${parameters.threads}`)
-    }
-
-    if(typeof(parameters.port)=== "undefined"){
-        parameters.port = 8001;
-        console.log(`Port for local server not specified, using the default ${parameters.port}`)
-    }else{
-        console.log(`Port for local server set -> ${parameters.port}`)
     }
 
 
