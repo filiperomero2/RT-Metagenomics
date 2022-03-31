@@ -140,9 +140,9 @@ const removeReadsFromKronaInputFile = async (kronaInputFile,parameters) =>{
     const kronaInputFileEdited = kronaInputFile + `.edited`;
     let kronaInputFileEditionInstruction = '';
     if(parameters.readsToRemove.length === 1){
-        kronaInputFileEditionInstruction = `grep -Ev "${parameters.readsToRemove[0]}$" ${kronaInputFile} > ${kronaInputFileEdited}`;
+        kronaInputFileEditionInstruction = `grep -Pv "\t${parameters.readsToRemove[0]}$" ${kronaInputFile} > ${kronaInputFileEdited}`;
     }else{
-        kronaInputFileEditionInstruction = `grep -Ev "${parameters.readsToRemove[0]}$|${parameters.readsToRemove[1]}$" ${kronaInputFile} > ${kronaInputFileEdited}`;
+        kronaInputFileEditionInstruction = `grep -Pv "\t${parameters.readsToRemove[0]}$|\t${parameters.readsToRemove[1]}$" ${kronaInputFile} > ${kronaInputFileEdited}`;
     }
     await execShellCommand(kronaInputFileEditionInstruction)
         .then(async()=>{
