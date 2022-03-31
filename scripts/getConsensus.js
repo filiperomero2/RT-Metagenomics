@@ -1,5 +1,7 @@
 const {exec} = require('child_process');
-const helpers = require('./helpers.js')
+const {createDir,execShellCommand} = require('./helpers.js');
+
+// install dependencies on the rt-meta environment
 
 // Read command line args
 const argv = require("yargs/yargs")(process.argv.slice(2))
@@ -39,10 +41,11 @@ const processInput = () => {
     const parameters = {
         "inputFile": argv.input,
         "output": argv.output,
+        "sampleName": argv['sample-name'],
         "referenceSequence": argv.reference,
         "medakaModel": argv['medaka-model'],
         "minimumDepth": argv['minimum-depth'],
-        "threads": argv.threads,
+        "threads": argv.threads
     }
     validateParameters(parameters);
     return parameters;
@@ -51,18 +54,49 @@ const processInput = () => {
 // args evaluation - organize helpers before further editing here
 const validateParameters = parameters =>{
 
-}
+    if (fs.existsSync(parameters.inputFile)) {
+        console.log(`Input fastq file was found -> ${parameters.inputFile}`);
+    }else{
+        console.log(`File does not exist -> ${parameters.inputFile}`);
+        process.exit();
+    }
 
-// Main async control function
-const execShellCommand = (cmd) =>{
-    return new Promise((resolve,reject) =>{
-        exec(cmd,(err,stdout,stderr)=>{
-            if(err){
-                console.log(err);
-            }
-            resolve(stdout? stdout : stderr);
-        })
-    })
+    if (fs.existsSync(parameters.output)) {
+        console.log(`Output directory already exists -> ${parameters.output}.
+        Please indicate other to avoid overwriting previous analysis`);
+        process.exit();
+    }else{
+        createDir(parameters.output);
+    }
+
+    if (fs.existsSync(parameters.referenceSequence)) {
+        console.log(`Reference sequence was found -> ${parameters.referenceSequence}`);
+    }else{
+        console.log(`Reference file does not exist -> ${parameters.referenceSequence}`);
+        process.exit();
+    }
+
+    if(typeof(parameters.medakaModel)=== "undefined"){
+        parameters.medakaModel = 'r941_min_fast_g303';
+        console.log(`Medaka model not provided, using the default ${parameters.medakaModel}`)
+    }else{
+        // Do a better validation here
+        console.log(`Medaka model specified -> ${parameters.medakaModel}`)
+    }
+
+    if(typeof(parameters.minimumDepth)=== "undefined"){
+        parameters.minimumDepth = 100;
+        console.log(`Number of processing threads has not being set, using only ${parameters.minimumDepth}`)
+    }else{
+        console.log(`Number of processing threads has been set -> ${parameters.minimumDepth}`)
+    }
+
+    if(typeof(parameters.threads)=== "undefined"){
+        parameters.threads = 1;
+        console.log(`Number of processing threads has not being set, using only ${parameters.threads}`)
+    }else{
+        console.log(`Number of processing threads has been set -> ${parameters.threads}`)
+    }
 }
 
 // The main functions begin here //

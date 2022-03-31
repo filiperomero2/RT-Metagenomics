@@ -93,7 +93,7 @@ const validateParameters = (parameters) =>{
     }
 
     if (fs.existsSync(parameters.output)) {
-        console.log(`Libraries directory already exists -> ${parameters.output}.
+        console.log(`Output directory already exists -> ${parameters.output}.
         Please indicate other to avoid overwriting previous analysis`);
         process.exit();
     }else{
