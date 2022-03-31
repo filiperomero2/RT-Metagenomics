@@ -1,5 +1,5 @@
 // Load fs module
-fs = require('fs');
+const fs = require('fs');
 
 // Hardcoded html parts in strings
 const firstPart = `<!DOCTYPE html>
@@ -50,13 +50,13 @@ const secondPart = `</ul>
 
 // Function that creates the unified HTML file with all krona plots.
 // It uses the pieces array to parse paths properly.
-const createMinimalInterface = (HTMLFiles,parameters) =>{
+const createMinimalInterface = async (HTMLFiles,parameters) =>{
     const interface = parameters.interface;
     let content = firstPart;
     let counter = 0;
     HTMLFiles.forEach(file =>{
         const pieces = file.split('/');
-        const filePath = '../results/'+ pieces[pieces.length-2] + "/" + pieces[pieces.length-1];
+        const filePath = 'results/'+ pieces[pieces.length-2] + "/" + pieces[pieces.length-1];
         const sampleName = `${parameters.samples.names[counter]} - ${parameters.samples.barcodes[counter]} - ${parameters.samples.numberOfSequences[counter]} reads`;
         counter++; 
         if(parameters.mode === "postrun" || parameters.mode === "pr"){
@@ -68,7 +68,7 @@ const createMinimalInterface = (HTMLFiles,parameters) =>{
     content += secondPart;
     const HTMLFilePath = `${interface}index.html`;
     fs.writeFileSync(HTMLFilePath, content);
-    console.log(`\n\n\n\nHTML file saved on ${HTMLFilePath}\n\n\n\n`);
+    console.log(`\n\n\n\nHTML file saved on ${HTMLFilePath} \n\nIf in realtime mode, access localhost:${parameters.port}\n\n`);
 }
 
 module.exports = createMinimalInterface;

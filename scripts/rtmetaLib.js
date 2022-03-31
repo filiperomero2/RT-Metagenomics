@@ -185,7 +185,8 @@ const createKronaPlot = async (kronaInputFile,parameters) =>{
                     console.log(`Analysis finished.`);
                     process.exit();
                 }else if(parameters.mode === "realtime" || parameters.mode === "rt"){
-                    console.log(`### Performing real time analysis -> Generation ${parameters.generation} executed ###`);
+                    console.log(`Results available at localhost:${parameters.port}`)
+                    console.log(`### Performing real time analysis -> Generation ${parameters.generation} executed ###\n\n`);
                     parameters.generation++;
                     await performDemuxAndLaunchAnalysis(parameters);
                 }

@@ -1,6 +1,7 @@
 // Load helper module
 const fs = require('fs');
 const helpers = require('./rtmetaLib');
+const {exec} = require('child_process');
 
 // Read command line args
 const argv = require("yargs/yargs")(process.argv.slice(2))
@@ -51,6 +52,10 @@ const argv = require("yargs/yargs")(process.argv.slice(2))
     alias: "b",
     describe: "Barcode kit used in the sequencing run."
 })
+.option("port", {
+    alias: "p",
+    describe: "Port for local server (Optional, default = 8001)"
+})
 .option("threads", {
     alias: "t",
     describe: "Number of threads (Optional, default = 1)"
@@ -85,20 +90,22 @@ const validateParameters = (parameters) =>{
         Please indicate other to avoid overwriting previous analysis`);
         process.exit();
     }else{
+        // Create output dir
+        helpers.createDir(parameters.output);
         console.log(`Output library directory created -> ${parameters.output}`);
         // Load paths into parameters object
         parameters.temp = `${parameters.output}/temp/`;
-        parameters.results = `${parameters.output}/results/`;
         parameters.interface = `${parameters.output}/interface/`;
-        // Create output directories
-        helpers.createDir(parameters.output);
-        helpers.createDir(parameters.temp);
-        helpers.createDir(parameters.results);
+        parameters.results = `${parameters.output}/interface/results/`;
         // copy all assets
         const temp = process.argv[1].split('/');
         temp.pop();
-        const assetsPath = temp.join('/') + "/interface/"
-        helpers.copyAllFiles(assetsPath,parameters.interface)
+        const assetsPath = temp.join('/') + "/interface/";
+        helpers.copyAllFiles(assetsPath,parameters.interface);
+        parameters.server = temp.join('/') + "/server.js";
+        // Create output directories
+        helpers.createDir(parameters.temp);
+        helpers.createDir(parameters.results);
     }
 
     if (fs.existsSync(parameters.kraken)) {
@@ -121,6 +128,14 @@ const validateParameters = (parameters) =>{
     }else{
         console.log(`Number of processing threads has been set -> ${parameters.threads}`)
     }
+
+    if(typeof(parameters.port)=== "undefined"){
+        parameters.port = 8001;
+        console.log(`Port for local server not specified, using the default ${parameters.port}`)
+    }else{
+        console.log(`Port for local server set -> ${parameters.port}`)
+    }
+
 
     if(parameters.readsToRemove.length > 0){
         console.log(`Removing reads with specified taxIDs...`);
@@ -215,6 +230,7 @@ const processInput = () => {
         "samplesheet": argv.samplesheet,
         "guppy": argv.guppy,
         "barcode": argv.barcodeKit,
+        "port": argv.port,
         "readsToRemove": []    
     }
     if(Object.keys(argv).includes("nd")){
@@ -232,6 +248,15 @@ const processInput = () => {
 }
 
 const executeAnalysis = (parameters) =>{
+    if(parameters.mode === 'realtime' || parameters.mode === 'rt'){
+        const cmd = `node ${parameters.server} ${parameters.interface} ${parameters.port}`
+        exec(cmd,(err,stdout,stderr)=>{
+            if(err){
+                console.log(err);
+            }
+        })
+        console.log(`After the first complete iteration, results will be available at localhost:${parameters.port}`);
+    }
     helpers.performDemuxAndLaunchAnalysis(parameters);
 }
 

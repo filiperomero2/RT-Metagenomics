@@ -49,12 +49,13 @@ The pipeline is currently under development process. It is executed as a single 
     --kraken2-database: the absolute path for the kraken2 database directory;
     --krona-database: the absolute path for the krona taxonomic database directory;
     --nodemux: if declared no sample demultiplexing will be performed (boolean);
-    --remove-human-reads: exclude human reads from krona plots;
-    --remove-unknown-reads: exclude unknown reads from krona plots;
+    --remove-human-reads: exclude human reads from krona plots (boolean);
+    --remove-unknown-reads: exclude unknown reads from krona plots (boolean);
     --samplesheet: csv file with information of sample name and barcode number;
     --guppy: the absolute path for guppy binaries;
     --barcode-kit: barcode kit used to prepare libraries. Consult guppy_barcoder docs. 
-    --threads: the number of processing threads (Optional);
+    --threads: the number of processing threads (Optional, default 1);
+    --port: port for the local server used in realtime mode (default: 8001);
     --help: display help message;
     --version: display software version.
 
