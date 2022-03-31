@@ -1,7 +1,8 @@
 // Load helper module
 const fs = require('fs');
-const helpers = require('./rtmetaLib');
 const {exec} = require('child_process');
+const {createDir,copyAllFiles} = require('./helpers.js');
+const performDemuxAndLaunchAnalysis = require('./rtmetaLib.js')
 
 // Read command line args
 const argv = require("yargs/yargs")(process.argv.slice(2))
@@ -97,7 +98,7 @@ const validateParameters = (parameters) =>{
         process.exit();
     }else{
         // Create output dir
-        helpers.createDir(parameters.output);
+        createDir(parameters.output);
         console.log(`Output library directory created -> ${parameters.output}`);
         // Load paths into parameters object
         parameters.temp = `${parameters.output}/temp/`;
@@ -107,11 +108,11 @@ const validateParameters = (parameters) =>{
         const temp = process.argv[1].split('/');
         temp.pop();
         const assetsPath = temp.join('/') + "/interface/";
-        helpers.copyAllFiles(assetsPath,parameters.interface);
+        copyAllFiles(assetsPath,parameters.interface);
         parameters.server = temp.join('/') + "/server.js";
         // Create output directories
-        helpers.createDir(parameters.temp);
-        helpers.createDir(parameters.results);
+        createDir(parameters.temp);
+        createDir(parameters.results);
     }
 
     if (fs.existsSync(parameters.kraken)) {
@@ -262,7 +263,7 @@ const executeAnalysis = (parameters) =>{
         })
         console.log(`After the first complete iteration, results will be available at localhost:${parameters.port}`);
     }
-    helpers.performDemuxAndLaunchAnalysis(parameters);
+    performDemuxAndLaunchAnalysis(parameters);
 }
 
 // Call functions to do the job

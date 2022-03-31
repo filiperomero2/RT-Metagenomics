@@ -58,6 +58,8 @@ const createMinimalInterface = async (HTMLFiles,parameters) =>{
     HTMLFiles.forEach(file =>{
         const pieces = file.split('/');
         const filePath = 'results/'+ pieces[pieces.length-2] + "/" + pieces[pieces.length-1];
+        // there is a bug here - indexed array may not correspond to used samples
+        // think of a better strategy
         const sampleName = `${parameters.samples.names[counter]} - ${parameters.samples.barcodes[counter]} - ${parameters.samples.numberOfSequences[counter]} reads`;
         counter++; 
         if(parameters.mode === "postrun" || parameters.mode === "pr"){

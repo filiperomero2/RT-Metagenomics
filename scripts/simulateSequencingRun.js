@@ -7,26 +7,26 @@
  * 
  */
 
-helpers = require('./rtmetaLib');
+ const {createDir,list,copyFile} = require('./helpers.js');
 
 const source = process.argv[2] + "/";
 const destination = process.argv[3] + "/";
 const awaitingTime = process.argv[4];
 
-const allFiles = helpers.list(source);
+const allFiles = list(source);
 const files = allFiles.filter(file=>{
     return file.endsWith(".fastq");
 })
 let counter = 0;
 
-helpers.createDir(destination);
+createDir(destination);
 
 const simulateSequencingRun = () =>{
     counter++;
     const sample = files[Math.floor(Math.random() * files.length)];
     const sourceFile = `${source}${sample}`;
     const destinationFile = `${destination}${counter}_${sample}`;
-    helpers.copyFile(sourceFile,destinationFile);
+    copyFile(sourceFile,destinationFile);
     console.log(`${sample} -> ${counter}`)
     
 }
