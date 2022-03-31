@@ -6,6 +6,7 @@ const firstPart = `<!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="refresh" content="300">
     <title>Metagenomics App</title>
     <link rel="stylesheet" href="reset.css">
     <link rel="stylesheet" href="style.css">
