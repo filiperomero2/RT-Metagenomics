@@ -3,8 +3,10 @@ const fs = require('fs');
 const {createDir,list,copyAllFiles,execShellCommand} = require('./helpers.js');
 const createMinimalInterface = require('./createMinimalInterface.js')
 
+
 // Declare array with all krona HTML files
 const HTMLFiles = [];
+
 
 const performDemuxAndLaunchAnalysis = async (parameters) => {
     if(parameters.nodemux){
@@ -25,6 +27,7 @@ const performDemuxAndLaunchAnalysis = async (parameters) => {
     }
     
 }
+
 
 // Declare main function
 const iterateOverSamples = async (parameters) =>{
@@ -47,6 +50,7 @@ const iterateOverSamples = async (parameters) =>{
     }
 }
 
+
 // Async function that starts the analysis flow.
 // First, it concatenates files and when the promise is fulfilled,
 // it calls the function reponsible for taxonomic assignment with kraken2
@@ -61,6 +65,7 @@ const concatenateFilesAndCallMetagenomicsApps = async (partialPath,destination,p
             await performTaxonomicAssignment(partialPath,concatenatedFile,parameters);
         })
 }
+
 
 // Async function that sets paths, executes kraken 2 and launches
 // the creation of the krona input file. 
@@ -84,6 +89,7 @@ const performTaxonomicAssignment = async (partialPath,concatenatedFile,parameter
         })
 }
 
+
 const removeReadsFromKronaInputFile = async (kronaInputFile,parameters) =>{
     const kronaInputFileEdited = kronaInputFile + `.edited`;
     let kronaInputFileEditionInstruction = '';
@@ -98,6 +104,7 @@ const removeReadsFromKronaInputFile = async (kronaInputFile,parameters) =>{
             await createKronaPlot(kronaInputFileEdited,parameters);
         })
 }
+
 
 // Async function that creates krona input files and calls the
 // function that effectively creates the plots
@@ -114,6 +121,7 @@ const createKronaInputFile = async (kraken2OutputFile,parameters) =>{
             }
         })
 }
+
 
 // Create krona plots and, when all samples have been analyzed,
 // it creates a single html page with all analysis results.
@@ -141,7 +149,6 @@ const createKronaPlot = async (kronaInputFile,parameters) =>{
             }
         })
 }
-
 
 
 // Export node modules

@@ -4,6 +4,7 @@ const {exec} = require('child_process');
 const {createDir,copyAllFiles} = require('./helpers.js');
 const performDemuxAndLaunchAnalysis = require('./rtmetaLib.js')
 
+
 // Read command line args
 const argv = require("yargs/yargs")(process.argv.slice(2))
 .option("mode", {
@@ -184,7 +185,6 @@ const validateParameters = (parameters) =>{
 }
 
 
-
 const validateSampleSheet = (inputFile) =>{
     const samples = {
         names: [],
@@ -221,7 +221,6 @@ const validateSampleSheet = (inputFile) =>{
 }
 
 
-
 // Process the inputs provided on the command line.
 // Returns the parameter objective with all important paths.
 const processInput = () => { 
@@ -253,6 +252,7 @@ const processInput = () => {
     return parameters;
 }
 
+
 const executeAnalysis = (parameters) =>{
     if(parameters.mode === 'realtime' || parameters.mode === 'rt'){
         const cmd = `node ${parameters.server} ${parameters.interface} ${parameters.port}`
@@ -265,6 +265,7 @@ const executeAnalysis = (parameters) =>{
     }
     performDemuxAndLaunchAnalysis(parameters);
 }
+
 
 // Call functions to do the job
 const parameters = processInput();

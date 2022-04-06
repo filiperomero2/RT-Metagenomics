@@ -1,4 +1,3 @@
-const {exec} = require('child_process');
 const {createDir,execShellCommand} = require('./helpers.js');
 
 // install dependencies on the rt-meta environment
