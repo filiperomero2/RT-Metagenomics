@@ -63,8 +63,21 @@ const calculateAssemblyStats = async parameters =>{
             stats.sitesOverMinimumDepth = Number.parseInt(resolve,10)/stats.referenceLength;
             console.log(`Proportion of sites sequenced at least ${parameters.minimumDepth}x (threshold specified) -> ${stats.sitesOverMinimumDepth}`)
         })
+
+    // Write sequencing stats to text file
     const content = `#reads,average_depth,cov10x,cov100x,cov1000x,cov${parameters.minimumDepth}x_specified\n${stats.numberOfReads},${stats.averageDepth},${stats.sitesOver10x},${stats.sitesOver100x},${stats.sitesOver1000x},${stats.sitesOverMinimumDepth}`
     fs.writeFileSync(stats.statsReportFile, content);
+
+    // Plot sequencing depth
+    const temp = process.argv[1].split('/');
+    temp.pop();
+    rscriptPath = temp.join('/') + '/plot_sequencing_depth.R';
+    call = `Rscript ${rscriptPath} ${parameters.sampleName} ${parameters.minimumDepth}`;
+    await execShellCommand(call)
+        .then(resolve=>{
+            //console.log(resolve);
+            console.log('Sequencing depth plot created\n\n\nFinished.');
+        })
 }
 
 

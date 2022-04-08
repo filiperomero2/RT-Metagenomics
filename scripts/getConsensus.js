@@ -211,6 +211,18 @@ const callBEDtools = parameters =>{
         .then(resolve=>{
             console.log(resolve);
             console.log(`Depth table created...\n\n`);
+            callBEDtools2(parameters);
+        })
+}
+
+const callBEDtools2 = parameters =>{
+    bedtoolsCall2 = `bedtools genomecov -d -ibam  ${parameters.sampleName}.sorted.bam > ${parameters.sampleName}.table_cov.sitewise.txt`;
+    console.log('## Sitewise depth table creation ##');
+    console.log(bedtoolsCall2);
+    execShellCommand(bedtoolsCall2)
+        .then(resolve=>{
+            console.log(resolve);
+            console.log(`Sitewise depth table created...\n\n`);
             filterDepthTable(parameters);
         })
 }
