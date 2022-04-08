@@ -1,3 +1,4 @@
+const fs = require('fs');
 const {createDir,execShellCommand} = require('./helpers.js');
 
 // install dependencies on the rt-meta environment
@@ -68,6 +69,14 @@ const validateParameters = parameters =>{
         createDir(parameters.output);
     }
 
+    if(typeof(parameters.sampleName)=== "undefined"){
+        console.log(`Sample name not provided, using 'sample' as prefix to all output files.`);
+        parameters.sampleName = parameters.output + '/sample';
+    }else{
+        console.log(`Sample name identified -> ${parameters.sampleName}`)
+        parameters.sampleName = parameters.output + '/' + parameters.sampleName;
+    }
+
     if (fs.existsSync(parameters.referenceSequence)) {
         console.log(`Reference sequence was found -> ${parameters.referenceSequence}`);
     }else{
@@ -92,9 +101,9 @@ const validateParameters = parameters =>{
 
     if(typeof(parameters.threads)=== "undefined"){
         parameters.threads = 1;
-        console.log(`Number of processing threads has not being set, using only ${parameters.threads}`)
+        console.log(`Number of processing threads has not being set, using only ${parameters.threads}\n\n`)
     }else{
-        console.log(`Number of processing threads has been set -> ${parameters.threads}`)
+        console.log(`Number of processing threads has been set -> ${parameters.threads}\n\n`)
     }
 }
 
@@ -102,7 +111,7 @@ const validateParameters = parameters =>{
 
 // Prototyping, nothing to see here...
 const launchAnalysis = parameters =>{
-    minimapCall = `minimap2 -a -x map-ont -t ${parameters.threads} ${parameters.referenceSequence} ${parameters.inputFile} | samtools view -bS -F 4 - | samtools sort -o ${parameters.inputFile}.sorted.bam -`;
+    minimapCall = `minimap2 -a -x map-ont -t ${parameters.threads} ${parameters.referenceSequence} ${parameters.inputFile} | samtools view -bS -F 4 - | samtools sort -o ${parameters.sampleName}.sorted.bam -`;
     console.log(minimapCall);
     execShellCommand(minimapCall)
         .then(resolve=>{
@@ -113,7 +122,7 @@ const launchAnalysis = parameters =>{
 }
 
 const index = parameters =>{
-    samtoolsIndexCall = `samtools index ${parameters.inputFile}.sorted.bam`;
+    samtoolsIndexCall = `samtools index ${parameters.sampleName}.sorted.bam`;
     console.log(samtoolsIndexCall);
     execShellCommand(samtoolsIndexCall)
         .then(resolve=>{
@@ -124,7 +133,7 @@ const index = parameters =>{
 }
 
 const medakaConsensus = parameters =>{
-    medakaConsensusCall = `medaka consensus --model ${parameters.medakaModel} --threads 1 ${parameters.inputFile}.sorted.bam ${parameters.inputFile}.hdf`;
+    medakaConsensusCall = `medaka consensus --model ${parameters.medakaModel} --threads 1 ${parameters.sampleName}.sorted.bam ${parameters.sampleName}.hdf`;
     console.log(medakaConsensusCall);
     execShellCommand(medakaConsensusCall)
         .then(resolve=>{
@@ -135,7 +144,7 @@ const medakaConsensus = parameters =>{
 }
 
 const callVariants = parameters =>{
-    medakaVariantCall = `medaka variant ${parameters.referenceSequence} ${parameters.inputFile}.hdf ${parameters.inputFile}.vcf`;
+    medakaVariantCall = `medaka variant ${parameters.referenceSequence} ${parameters.sampleName}.hdf ${parameters.sampleName}.vcf`;
     console.log(medakaVariantCall);
     execShellCommand(medakaVariantCall)
         .then(resolve=>{
@@ -147,7 +156,7 @@ const callVariants = parameters =>{
 
 
 const annotate = parameters =>{
-    medakaAnnotateCall = `medaka tools annotate  ${parameters.inputFile}.vcf ${parameters.referenceSequence} ${parameters.inputFile}.sorted.bam ${parameters.inputFile}.medaka-annotated.vcf`;
+    medakaAnnotateCall = `medaka tools annotate  ${parameters.sampleName}.vcf ${parameters.referenceSequence} ${parameters.sampleName}.sorted.bam ${parameters.sampleName}.medaka-annotated.vcf`;
     console.log(medakaAnnotateCall);
     execShellCommand(medakaAnnotateCall)
         .then(resolve=>{
@@ -159,7 +168,7 @@ const annotate = parameters =>{
 
 
 formatVCF = parameters =>{
-    formatVCFCall = `bgzip -f ${parameters.inputFile}.vcf`;
+    formatVCFCall = `bgzip -f ${parameters.sampleName}.vcf`;
     console.log(formatVCFCall);
     execShellCommand(formatVCFCall)
         .then(resolve=>{
@@ -170,7 +179,7 @@ formatVCF = parameters =>{
 }
 
 indexVCF = parameters =>{
-    indexVCFCall = `tabix -p vcf ${parameters.inputFile}.vcf.gz`;
+    indexVCFCall = `tabix -p vcf ${parameters.sampleName}.vcf.gz`;
     console.log(indexVCFCall);
     execShellCommand(indexVCFCall)
         .then(resolve=>{
@@ -181,18 +190,18 @@ indexVCF = parameters =>{
 }
 
 callBCFtools = parameters =>{
-    bcftoolsCall = `bcftools consensus -f ${parameters.referenceSequence} ${parameters.inputFile}.vcf.gz  -o ${parameters.inputFile}.preconsensus.fasta`
+    bcftoolsCall = `bcftools consensus -f ${parameters.referenceSequence} ${parameters.sampleName}.vcf.gz  -o ${parameters.sampleName}.preconsensus.fasta`
     console.log(bcftoolsCall);
     execShellCommand(bcftoolsCall)
         .then(resolve=>{
             console.log(resolve);
-            console.log(`VCF indexed...\n\n`);
+            console.log(`Preconsensus generated...\n\n`);
             callBEDtools(parameters);
         })
 }
 
 callBEDtools = parameters =>{
-    bedtoolsCall = `bedtools genomecov -bga -ibam  ${parameters.inputFile}.sorted.bam > ${parameters.inputFile}.table_cov.txt`;
+    bedtoolsCall = `bedtools genomecov -bga -ibam  ${parameters.sampleName}.sorted.bam > ${parameters.sampleName}.table_cov.txt`;
     console.log(bedtoolsCall);
     execShellCommand(bedtoolsCall)
         .then(resolve=>{
@@ -204,7 +213,7 @@ callBEDtools = parameters =>{
 
 
 filterDepthTable = parameters =>{
-    filterCall = `awk  '$4 < '${parameters.minimumDepth}'' ${parameters.inputFile}.table_cov.txt > ${parameters.inputFile}.table_cov.filtered-${parameters.minimumDepth}x.txt`;
+    filterCall = `awk  '$4 < '${parameters.minimumDepth}'' ${parameters.sampleName}.table_cov.txt > ${parameters.sampleName}.table_cov.filtered-${parameters.minimumDepth}x.txt`;
     console.log(filterCall);
     execShellCommand(filterCall)
         .then(resolve=>{
@@ -215,12 +224,12 @@ filterDepthTable = parameters =>{
 }
 
 maskConsensus = parameters =>{
-    maskCall = `bedtools maskfasta -fi  ${parameters.inputFile}.preconsensus.fasta -fo ${parameters.inputFile}.consensus.fa -bed ${parameters.inputFile}.table_cov.filtered-${parameters.minimumDepth}x.txt`;
+    maskCall = `bedtools maskfasta -fi  ${parameters.sampleName}.preconsensus.fasta -fo ${parameters.sampleName}.consensus.fa -bed ${parameters.sampleName}.table_cov.filtered-${parameters.minimumDepth}x.txt`;
     console.log(maskCall);
     execShellCommand(maskCall)
         .then(resolve=>{
             console.log(resolve);
-            console.log(`Consensus sequence was properly masked...\n\n`);
+            console.log(`Consensus sequence was properly masked.\n\n`);
         })
 }
 
