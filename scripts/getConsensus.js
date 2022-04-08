@@ -1,5 +1,6 @@
 const fs = require('fs');
 const {createDir,execShellCommand} = require('./helpers.js');
+const calculateAssemblyStats = require('./calculateAssemblyStats.js');
 
 // Read command line args
 const argv = require("yargs/yargs")(process.argv.slice(2))
@@ -82,7 +83,7 @@ const validateParameters = parameters =>{
 
     if(typeof(parameters.medakaModel)=== "undefined"){
         parameters.medakaModel = 'r941_min_fast_g303';
-        console.log(`Medaka model not provided, using the default ${parameters.medakaModel}`)
+        console.log(`Medaka model not provided, using the default -> ${parameters.medakaModel}`)
     }else{
         // Do a better validation here
         console.log(`Medaka model specified -> ${parameters.medakaModel}`)
@@ -161,7 +162,7 @@ const annotate = parameters =>{
 }
 
 
-formatVCF = parameters =>{
+const formatVCF = parameters =>{
     formatVCFCall = `bgzip -f ${parameters.sampleName}.vcf`;
     console.log(formatVCFCall);
     execShellCommand(formatVCFCall)
@@ -172,7 +173,7 @@ formatVCF = parameters =>{
         })
 }
 
-indexVCF = parameters =>{
+const indexVCF = parameters =>{
     indexVCFCall = `tabix -p vcf ${parameters.sampleName}.vcf.gz`;
     console.log(indexVCFCall);
     execShellCommand(indexVCFCall)
@@ -183,7 +184,7 @@ indexVCF = parameters =>{
         })
 }
 
-callBCFtools = parameters =>{
+const callBCFtools = parameters =>{
     bcftoolsCall = `bcftools consensus -f ${parameters.referenceSequence} ${parameters.sampleName}.vcf.gz  -o ${parameters.sampleName}.preconsensus.fasta`
     console.log(bcftoolsCall);
     execShellCommand(bcftoolsCall)
@@ -194,7 +195,7 @@ callBCFtools = parameters =>{
         })
 }
 
-callBEDtools = parameters =>{
+const callBEDtools = parameters =>{
     bedtoolsCall = `bedtools genomecov -bga -ibam  ${parameters.sampleName}.sorted.bam > ${parameters.sampleName}.table_cov.txt`;
     console.log(bedtoolsCall);
     execShellCommand(bedtoolsCall)
@@ -206,7 +207,7 @@ callBEDtools = parameters =>{
 }
 
 
-filterDepthTable = parameters =>{
+const filterDepthTable = parameters =>{
     filterCall = `awk  '$4 < '${parameters.minimumDepth}'' ${parameters.sampleName}.table_cov.txt > ${parameters.sampleName}.table_cov.filtered-${parameters.minimumDepth}x.txt`;
     console.log(filterCall);
     execShellCommand(filterCall)
@@ -217,15 +218,17 @@ filterDepthTable = parameters =>{
         })
 }
 
-maskConsensus = parameters =>{
+const maskConsensus = parameters =>{
     maskCall = `bedtools maskfasta -fi  ${parameters.sampleName}.preconsensus.fasta -fo ${parameters.sampleName}.consensus.fa -bed ${parameters.sampleName}.table_cov.filtered-${parameters.minimumDepth}x.txt`;
     console.log(maskCall);
     execShellCommand(maskCall)
         .then(resolve=>{
             console.log(resolve);
             console.log(`Consensus sequence was properly masked.\n\n`);
+            calculateAssemblyStats(parameters);
         })
 }
+
 
 
 // Call important functions.
