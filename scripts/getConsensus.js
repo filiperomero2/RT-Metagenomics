@@ -107,6 +107,7 @@ const validateParameters = parameters =>{
 // The main functions begin here //
 const launchAnalysis = parameters =>{
     minimapCall = `minimap2 -a -x map-ont -t ${parameters.threads} ${parameters.referenceSequence} ${parameters.inputFile} | samtools view -bS -F 4 - | samtools sort -o ${parameters.sampleName}.sorted.bam -`;
+    console.log('## Mapping ##');
     console.log(minimapCall);
     execShellCommand(minimapCall)
         .then(resolve=>{
@@ -118,6 +119,7 @@ const launchAnalysis = parameters =>{
 
 const index = parameters =>{
     samtoolsIndexCall = `samtools index ${parameters.sampleName}.sorted.bam`;
+    console.log('## Indexing ##');
     console.log(samtoolsIndexCall);
     execShellCommand(samtoolsIndexCall)
         .then(resolve=>{
@@ -129,6 +131,7 @@ const index = parameters =>{
 
 const medakaConsensus = parameters =>{
     medakaConsensusCall = `medaka consensus --model ${parameters.medakaModel} --threads 1 ${parameters.sampleName}.sorted.bam ${parameters.sampleName}.hdf`;
+    console.log('## Consensus ##');
     console.log(medakaConsensusCall);
     execShellCommand(medakaConsensusCall)
         .then(resolve=>{
@@ -139,6 +142,7 @@ const medakaConsensus = parameters =>{
 }
 
 const callVariants = parameters =>{
+    console.log('## Variant calling ##');
     medakaVariantCall = `medaka variant ${parameters.referenceSequence} ${parameters.sampleName}.hdf ${parameters.sampleName}.vcf`;
     console.log(medakaVariantCall);
     execShellCommand(medakaVariantCall)
@@ -152,6 +156,7 @@ const callVariants = parameters =>{
 
 const annotate = parameters =>{
     medakaAnnotateCall = `medaka tools annotate  ${parameters.sampleName}.vcf ${parameters.referenceSequence} ${parameters.sampleName}.sorted.bam ${parameters.sampleName}.medaka-annotated.vcf`;
+    console.log('## Annotation ##');
     console.log(medakaAnnotateCall);
     execShellCommand(medakaAnnotateCall)
         .then(resolve=>{
@@ -164,6 +169,7 @@ const annotate = parameters =>{
 
 const formatVCF = parameters =>{
     formatVCFCall = `bgzip -f ${parameters.sampleName}.vcf`;
+    console.log('## Format VCF ##');
     console.log(formatVCFCall);
     execShellCommand(formatVCFCall)
         .then(resolve=>{
@@ -175,6 +181,7 @@ const formatVCF = parameters =>{
 
 const indexVCF = parameters =>{
     indexVCFCall = `tabix -p vcf ${parameters.sampleName}.vcf.gz`;
+    console.log('## Index VCF ##');
     console.log(indexVCFCall);
     execShellCommand(indexVCFCall)
         .then(resolve=>{
@@ -186,6 +193,7 @@ const indexVCF = parameters =>{
 
 const callBCFtools = parameters =>{
     bcftoolsCall = `bcftools consensus -f ${parameters.referenceSequence} ${parameters.sampleName}.vcf.gz  -o ${parameters.sampleName}.preconsensus.fasta`
+    console.log('## Preconsensus generation ##');
     console.log(bcftoolsCall);
     execShellCommand(bcftoolsCall)
         .then(resolve=>{
@@ -197,6 +205,7 @@ const callBCFtools = parameters =>{
 
 const callBEDtools = parameters =>{
     bedtoolsCall = `bedtools genomecov -bga -ibam  ${parameters.sampleName}.sorted.bam > ${parameters.sampleName}.table_cov.txt`;
+    console.log('## Depth table creation ##');
     console.log(bedtoolsCall);
     execShellCommand(bedtoolsCall)
         .then(resolve=>{
@@ -209,6 +218,7 @@ const callBEDtools = parameters =>{
 
 const filterDepthTable = parameters =>{
     filterCall = `awk  '$4 < '${parameters.minimumDepth}'' ${parameters.sampleName}.table_cov.txt > ${parameters.sampleName}.table_cov.filtered-${parameters.minimumDepth}x.txt`;
+    console.log('## Depth table filtering ##');
     console.log(filterCall);
     execShellCommand(filterCall)
         .then(resolve=>{
@@ -220,6 +230,7 @@ const filterDepthTable = parameters =>{
 
 const maskConsensus = parameters =>{
     maskCall = `bedtools maskfasta -fi  ${parameters.sampleName}.preconsensus.fasta -fo ${parameters.sampleName}.consensus.fa -bed ${parameters.sampleName}.table_cov.filtered-${parameters.minimumDepth}x.txt`;
+    console.log('## Consensus masking ##');
     console.log(maskCall);
     execShellCommand(maskCall)
         .then(resolve=>{

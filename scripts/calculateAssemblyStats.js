@@ -6,14 +6,14 @@ const calculateAssemblyStats = async parameters =>{
     stats = {
         "statsReportFile": parameters.sampleName + '.stats.txt'
     };
-    
+    console.log('## Stats report ##');
     // Get number of reads
     let call = `grep -cE "^\\+$" ${parameters.inputFile}`;
     await execShellCommand(call)
         .then(resolve=>{
             //console.log(resolve);
             stats.numberOfReads = Number.parseInt(resolve,10);
-            console.log(`Absolute number of analyzed reads -> ${stats.numberOfReads}\n`)
+            console.log(`Absolute number of analyzed reads -> ${stats.numberOfReads}`)
         })
     
     // Get average sequencing depth
@@ -30,7 +30,7 @@ const calculateAssemblyStats = async parameters =>{
             stats.referenceLength = Number.parseInt(resolve,10);
         })
     stats.averageDepth = stats.sum/stats.referenceLength;
-    console.log(`Average sequencing depth -> ${stats.averageDepth}\n`)
+    console.log(`Average sequencing depth -> ${stats.averageDepth}`)
     
     // Get depth 10x,100x,1000x
     call = `awk  '$3 > 10' ${parameters.sampleName}.table_cov.txt | wc -l`
