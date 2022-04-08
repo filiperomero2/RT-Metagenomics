@@ -1,8 +1,6 @@
 const fs = require('fs');
 const {createDir,execShellCommand} = require('./helpers.js');
 
-// install dependencies on the rt-meta environment
-
 // Read command line args
 const argv = require("yargs/yargs")(process.argv.slice(2))
 .option("input", {
@@ -51,7 +49,6 @@ const processInput = () => {
     return parameters;
 }
 
-// args evaluation - organize helpers before further editing here
 const validateParameters = parameters =>{
 
     if (fs.existsSync(parameters.inputFile)) {
@@ -62,8 +59,7 @@ const validateParameters = parameters =>{
     }
 
     if (fs.existsSync(parameters.output)) {
-        console.log(`Output directory already exists -> ${parameters.output}.
-        Please indicate other to avoid overwriting previous analysis`);
+        console.log(`Output directory already exists -> ${parameters.output}.\nPlease indicate other to avoid overwriting previous analysis`);
         process.exit();
     }else{
         createDir(parameters.output);
@@ -108,8 +104,6 @@ const validateParameters = parameters =>{
 }
 
 // The main functions begin here //
-
-// Prototyping, nothing to see here...
 const launchAnalysis = parameters =>{
     minimapCall = `minimap2 -a -x map-ont -t ${parameters.threads} ${parameters.referenceSequence} ${parameters.inputFile} | samtools view -bS -F 4 - | samtools sort -o ${parameters.sampleName}.sorted.bam -`;
     console.log(minimapCall);
@@ -237,8 +231,3 @@ maskConsensus = parameters =>{
 // Call important functions.
 const parameters = processInput();
 launchAnalysis(parameters);
-
-
-
-// add command line args engine and workflow
-// Filter variants?
