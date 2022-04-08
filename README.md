@@ -13,7 +13,7 @@ RT-Meta recquires a handful of dependencies which are conveniently available in 
 To create the conda environment with all dependencies:
 
     cd RT-Metagenomics    
-    conda env create -f rt-meta.ymlc
+    conda env create -f rt-meta.yml
     conda activate rt-meta
     npm i
     conda deactivate
