@@ -17,7 +17,7 @@ const calculateAssemblyStats = async parameters =>{
         })
     
     // Get average sequencing depth
-    call = `cat  ${parameters.sampleName}.table_cov.txt | awk '{sum+=$3; print sum}' | tail -n 1`;
+    call = `cat  ${parameters.sampleName}.table_cov.sitewise.txt | awk '{sum+=$3; print sum}' | tail -n 1`;
     await execShellCommand(call)
         .then(resolve=>{
             //console.log(resolve);
@@ -33,21 +33,21 @@ const calculateAssemblyStats = async parameters =>{
     console.log(`Average sequencing depth -> ${stats.averageDepth}`)
     
     // Get depth 10x,100x,1000x
-    call = `awk  '$3 > 10' ${parameters.sampleName}.table_cov.txt | wc -l`
+    call = `awk  '$3 > 10' ${parameters.sampleName}.table_cov.sitewise.txt | wc -l`
     await execShellCommand(call)
         .then(resolve=>{
             //console.log(resolve);
             stats.sitesOver10x = Number.parseInt(resolve,10)/stats.referenceLength;
             console.log(`Proportion of sites sequenced at least 10x -> ${stats.sitesOver10x}`)
         })
-    call = `awk  '$3 > 100' ${parameters.sampleName}.table_cov.txt | wc -l`
+    call = `awk  '$3 > 100' ${parameters.sampleName}.table_cov.sitewise.txt | wc -l`
     await execShellCommand(call)
         .then(resolve=>{
             //console.log(resolve);
             stats.sitesOver100x = Number.parseInt(resolve,10)/stats.referenceLength;
             console.log(`Proportion of sites sequenced at least 100x -> ${stats.sitesOver100x}`)
         })
-    call = `awk  '$3 > 1000' ${parameters.sampleName}.table_cov.txt | wc -l`
+    call = `awk  '$3 > 1000' ${parameters.sampleName}.table_cov.sitewise.txt | wc -l`
     await execShellCommand(call)
         .then(resolve=>{
             //console.log(resolve);
@@ -56,7 +56,7 @@ const calculateAssemblyStats = async parameters =>{
         })
     
     // Get depth at selected threshold
-    call = `awk  '$3 > ${parameters.minimumDepth}' ${parameters.sampleName}.table_cov.txt | wc -l`
+    call = `awk  '$3 > ${parameters.minimumDepth}' ${parameters.sampleName}.table_cov.sitewise.txt | wc -l`
     await execShellCommand(call)
         .then(resolve=>{
             //console.log(resolve);
