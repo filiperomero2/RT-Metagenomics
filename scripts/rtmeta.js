@@ -48,7 +48,7 @@ const argv = require("yargs/yargs")(process.argv.slice(2))
 })
 .option("guppy", {
     alias: "g",
-    describe: "Absolute path for guppy binaries directory"
+    describe: "Absolute path for guppy_barcoder binary"
 })
 .option("barcode-kit", {
     alias: "b",
@@ -164,9 +164,9 @@ const validateParameters = (parameters) =>{
     }
 
     if (fs.existsSync(parameters.guppy)) {
-        console.log(`Guppy binaries directory -> ${parameters.guppy}`)
+        console.log(`guppy_barcoder identified -> ${parameters.guppy}`)
     }else{
-        console.log(`Guppy binaries directory does not exist -> ${parameters.guppy}`)
+        console.log(`guppy_barcoder not found -> ${parameters.guppy}`)
         process.exit()
     }
 
