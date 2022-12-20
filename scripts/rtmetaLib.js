@@ -16,7 +16,7 @@ const performDemuxAndLaunchAnalysis = async (parameters) => {
         copyAllFiles(parameters.library,uniqueSamplePath);
         concatenateFilesAndCallMetagenomicsApps(partialPath,uniqueSamplePath,parameters)
     }else{
-        guppyBarcoderPath = parameters.guppy + '/guppy_barcoder';
+        guppyBarcoderPath = parameters.guppy;
         demuxCall = `${guppyBarcoderPath} --require_barcodes_both_ends -i ${parameters.library} -s ${parameters.temp} --barcode_kits "${parameters.barcode}"  -t ${parameters.threads} -r`;
         await execShellCommand(demuxCall)
             .then((resolve)=>{
