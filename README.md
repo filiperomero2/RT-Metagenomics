@@ -52,7 +52,7 @@ The pipeline is currently under development process. It is executed as a single 
     --remove-human-reads: exclude human reads from krona plots (boolean);
     --remove-unknown-reads: exclude unknown reads from krona plots (boolean);
     --samplesheet: csv file with information of sample name and barcode number;
-    --guppy: the absolute path for guppy binaries;
+    --guppy: the absolute path for guppy_barcoder binary;
     --barcode-kit: barcode kit used to prepare libraries. Consult guppy_barcoder docs. 
     --threads: the number of processing threads (Optional, default 1);
     --port: port for the local server used in realtime mode (default: 8001);
@@ -66,11 +66,11 @@ Users are encouraged to always provide absolute paths. The directory in --input 
 
 Basic usage after sequencing run:
 
-     node scripts/rtmeta.js --mode postrun --input /mnt/c/Users/filip/OneDrive/Desktop/RT-Metagenomics/test_data/ --output /mnt/c/Users/filip/OneDrive/Desktop/RT-Metagenomics/output/ --kraken2-db ~/kraken-db/minikraken2_v2_8GB_201904_UPDATE/ --krona-db ~/krona/taxonomy/ --samplesheet /mnt/c/Users/filip/OneDrive/Desktop/RT-Metagenomics/scripts/test.csv  --guppy ~/ont-guppy-cpu/bin/ --barcode-kit "EXP-NBD104 EXP-NBD114" --threads 8 
+     node scripts/rtmeta.js --mode postrun --input /mnt/c/Users/filip/OneDrive/Desktop/RT-Metagenomics/test_data/ --output /mnt/c/Users/filip/OneDrive/Desktop/RT-Metagenomics/output/ --kraken2-db ~/kraken-db/minikraken2_v2_8GB_201904_UPDATE/ --krona-db ~/krona/taxonomy/ --samplesheet /mnt/c/Users/filip/OneDrive/Desktop/RT-Metagenomics/scripts/test.csv  --guppy ~/ont-guppy-cpu/bin/guppy_barcoder --barcode-kit "EXP-NBD104 EXP-NBD114" --threads 8 
 
 Basic usage for real time analysis:
 
-     node scripts/rtmeta.js --mode realtime --input /mnt/c/Users/filip/OneDrive/Desktop/RT-Metagenomics/test_data/ --output /mnt/c/Users/filip/OneDrive/Desktop/RT-Metagenomics/output/ --kraken2-db ~/kraken-db/minikraken2_v2_8GB_201904_UPDATE/ --krona-db ~/krona/taxonomy/ --samplesheet /mnt/c/Users/filip/OneDrive/Desktop/RT-Metagenomics/scripts/test.csv  --guppy ~/ont-guppy-cpu/bin/ --barcode-kit "EXP-NBD104 EXP-NBD114" --threads 8 
+     node scripts/rtmeta.js --mode realtime --input /mnt/c/Users/filip/OneDrive/Desktop/RT-Metagenomics/test_data/ --output /mnt/c/Users/filip/OneDrive/Desktop/RT-Metagenomics/output/ --kraken2-db ~/kraken-db/minikraken2_v2_8GB_201904_UPDATE/ --krona-db ~/krona/taxonomy/ --samplesheet /mnt/c/Users/filip/OneDrive/Desktop/RT-Metagenomics/scripts/test.csv  --guppy ~/ont-guppy-cpu/bin/guppy_barcoder --barcode-kit "EXP-NBD104 EXP-NBD114" --threads 8 
 
 If no multiplexing scheme was used, use the --nodemux flag (--guppy and --barcode-kit arguments are not required):
 
@@ -78,7 +78,7 @@ If no multiplexing scheme was used, use the --nodemux flag (--guppy and --barcod
 
 If you want the krona plots to include only microorganism reads:
 
-    node scripts/rtmeta.js --mode realtime --input /mnt/c/Users/filip/OneDrive/Desktop/RT-Metagenomics/test_data/ --output /mnt/c/Users/filip/OneDrive/Desktop/RT-Metagenomics/output/ --kraken2-db ~/kraken-db/minikraken2_v2_8GB_201904_UPDATE/ --krona-db ~/krona/taxonomy/ --samplesheet /mnt/c/Users/filip/OneDrive/Desktop/RT-Metagenomics/scripts/test.csv  --guppy ~/ont-guppy-cpu/bin/ --barcode-kit "EXP-NBD104 EXP-NBD114" --threads 8 --remove-human-reads --remove-unknown-reads;
+    node scripts/rtmeta.js --mode realtime --input /mnt/c/Users/filip/OneDrive/Desktop/RT-Metagenomics/test_data/ --output /mnt/c/Users/filip/OneDrive/Desktop/RT-Metagenomics/output/ --kraken2-db ~/kraken-db/minikraken2_v2_8GB_201904_UPDATE/ --krona-db ~/krona/taxonomy/ --samplesheet /mnt/c/Users/filip/OneDrive/Desktop/RT-Metagenomics/scripts/test.csv  --guppy ~/ont-guppy-cpu/bin/guppy_barcoder --barcode-kit "EXP-NBD104 EXP-NBD114" --threads 8 --remove-human-reads --remove-unknown-reads;
 
 ## Notes
 
