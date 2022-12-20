@@ -1,6 +1,6 @@
 
 App working in both modes. 
 Must:
- - test rt mode at a more accurate rate;
- - Optimize performance (tweaks on IO issues);
- - Advance frontend development.
+ - Add ports validation;
+ - automatically detected guppy_barcoder;
+ - add docs for the consensus inference.
