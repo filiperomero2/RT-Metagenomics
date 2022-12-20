@@ -78,7 +78,7 @@ const performTaxonomicAssignment = async (partialPath,concatenatedFile,parameter
     } 
     const kraken2ReportFile = `${sampleResultsPath}report.txt`
     const kraken2OutputFile = `${sampleResultsPath}results.kraken2.txt`
-    const kraken2Call = `kraken2 --db ${kraken2DB} --threads ${numberOfThreads} --report ${kraken2ReportFile} --output ${kraken2OutputFile} ${concatenatedFile}`;
+    const kraken2Call = `kraken2 --db ${kraken2DB} --threads ${numberOfThreads} --report-minimizer-data --minimum-hit-group 3 --report ${kraken2ReportFile} --output ${kraken2OutputFile} ${concatenatedFile}`;
     await execShellCommand(kraken2Call)
         .then(async (resolve)=>{
             console.log(`Taxonomic assignment has been performed for ${concatenatedFile}`);
