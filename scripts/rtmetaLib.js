@@ -9,13 +9,13 @@ const HTMLFiles = [];
 
 
 const performDemuxAndLaunchAnalysis = async (parameters) => {
-    if(parameters.nodemux){
+    if(parameters.demux === 'false'){
         // copy files and call concatenateFilesAndCallMetagenomicsApps()
         const partialPath = "sample/"
         const uniqueSamplePath = parameters.temp + partialPath;
         copyAllFiles(parameters.library,uniqueSamplePath);
-        concatenateFilesAndCallMetagenomicsApps(partialPath,uniqueSamplePath,parameters)
-    }else{
+        concatenateFilesAndCallMetagenomicsApps(partialPath,uniqueSamplePath,parameters);
+    }else if(parameters.demux === 'true'){
         guppyBarcoderPath = parameters.guppy;
         demuxCall = `${guppyBarcoderPath} --require_barcodes_both_ends -i ${parameters.library} -s ${parameters.temp} --barcode_kits "${parameters.barcode}"  -t ${parameters.threads} -r`;
         await execShellCommand(demuxCall)
@@ -24,8 +24,19 @@ const performDemuxAndLaunchAnalysis = async (parameters) => {
                 console.log('Demux finished.');
                 iterateOverSamples(parameters);
             })
+    }else if(parameters.demux === 'pre'){
+        const preDemuxedSamplesPath = parameters.temp;
+        const allItems = list(parameters.library);
+        const allSamples = allItems.filter(item =>{
+            return parameters.samples.barcodes.includes(item);
+        })
+        allSamples.forEach(sample=>{
+            const sourcePath = parameters.library + sample;
+            const destinationPath = preDemuxedSamplesPath + sample + "/";
+            copyAllFiles(sourcePath,destinationPath);
+        })
+        iterateOverSamples(parameters);
     }
-    
 }
 
 
@@ -35,7 +46,6 @@ const iterateOverSamples = async (parameters) =>{
     //List all samples directories
     const allItems = list(parameters.temp);
     const allSamples = allItems.filter(item =>{
-        //return item.startsWith("barcode");
         return parameters.samples.barcodes.includes(item);
     })
 
@@ -89,7 +99,7 @@ const performTaxonomicAssignment = async (partialPath,concatenatedFile,parameter
         })
 }
 
-
+// Function to filter human/unidentified reads from the krona input file
 const removeReadsFromKronaInputFile = async (kronaInputFile,parameters) =>{
     const kronaInputFileEdited = kronaInputFile + `.edited`;
     let kronaInputFileEditionInstruction = '';

@@ -2,5 +2,4 @@
 App working in both modes. 
 Must:
  - Add ports validation;
- - automatically detected guppy_barcoder;
- - add docs for the consensus inference.
+ - Update docs (including for the consensus inference).

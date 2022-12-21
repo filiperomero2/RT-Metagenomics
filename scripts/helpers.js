@@ -27,8 +27,8 @@ const list = (dataDir) =>{
 // Sync function to copy file
 const copyFile = (source, destination) => {
     try{
-        fs.copyFileSync(source, destination);
         //console.log(`${source} was copied to ${destination}`);
+        fs.copyFileSync(source, destination);
     }catch(err){
         console.log(err);
     }   

@@ -37,10 +37,9 @@ const argv = require("yargs/yargs")(process.argv.slice(2))
     boolean: "rur",
     describe: "Remove unknown reads from krona reports"
 })
-.option("nodemux",{
-    alias: "nd",
-    boolean: "nd",
-    describe: "No demux option, assumes the whole sequencing runs characterizes a single sample."
+.option("demux",{
+    alias: "d",
+    describe: "Demux options: true, false, pre"
 })
 .option("samplesheet",{
     alias: "s",
@@ -143,25 +142,32 @@ const validateParameters = (parameters) =>{
         console.log(parameters.readsToRemove);
     }
 
-    if(parameters.nodemux){
-        console.log("No demux flag specified, ignoring --samplesheet, --guppy and --barcode arguments.");
+    if(parameters.demux === 'true' || parameters.demux === 'pre'){
+        console.log(`Demux option valid -> ${parameters.demux} . Validating samplesheet...`)
+        if (fs.existsSync(parameters.samplesheet)) {
+            console.log(`Samplesheet file found -> ${parameters.samplesheet}`);
+            const samples = validateSampleSheet(parameters.samplesheet);
+            parameters.samples = samples;
+        }else{
+            console.log(`Samplesheet file not found -> ${parameters.samplesheet}`);
+            process.exit();
+        }
+    }else if(parameters.demux === 'false'){
+        console.log(`Demux option valid -> ${parameters.demux}. Ignoring --samplesheet, --guppy and --barcode arguments.`);
         const samples = {
             names: ['Unique sample'],
             barcodes: ['NA'],
             numberOfSequences: []
         }
         parameters.samples = samples;
+        parameters.numberOfSamples = 1;
         return
+    }else{
+        console.log(`Demux option unvalid -> ${parameters.demux}. Please specify a valid option: true, false or pre`);
+        process.exit()
     }
 
-    if (fs.existsSync(parameters.samplesheet)) {
-        console.log(`Samplesheet file found -> ${parameters.samplesheet}`);
-        const samples = validateSampleSheet(parameters.samplesheet);
-        parameters.samples = samples;
-    }else{
-        console.log(`Samplesheet file not found -> ${parameters.samplesheet}`);
-        process.exit();
-    }
+    
 
     if (fs.existsSync(parameters.guppy)) {
         console.log(`guppy_barcoder identified -> ${parameters.guppy}`)
@@ -199,7 +205,7 @@ const validateSampleSheet = (inputFile) =>{
         const sampleBarcode = values[1].replace(/\s+/g,'');
         if(!sampleBarcode.startsWith("barcode")){
             console.log(`Inconsistent pattern in csv file, barcode name not formatted: ${sampleBarcode}`);
-            console.log(`Please use barcode01,barcode02...`);
+            console.log(`Please use barcode01, barcode02...`);
             process.exit();
         }
         if(samples.names.includes(sampleName)){
@@ -232,15 +238,12 @@ const processInput = () => {
         "output": argv.output,
         "kraken": argv.kraken2Database,
         "krona": argv.kronaDatabase,
+        "demux": argv.demux,
         "samplesheet": argv.samplesheet,
         "guppy": argv.guppy,
         "barcode": argv.barcodeKit,
         "port": argv.port,
         "readsToRemove": []    
-    }
-    if(Object.keys(argv).includes("nd")){
-        parameters.nodemux = true;
-        parameters.numberOfSamples = 1;
     }
     if(Object.keys(argv).includes("rhr")){
         parameters.readsToRemove.push(9606);
