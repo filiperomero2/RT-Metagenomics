@@ -90,7 +90,7 @@ const validateParameters = parameters =>{
     }
 
     if(typeof(parameters.minimumDepth)=== "undefined"){
-        parameters.minimumDepth = 100;
+        parameters.minimumDepth = 20;
         console.log(`Number of processing threads has not being set, using only ${parameters.minimumDepth}`)
     }else{
         console.log(`Number of processing threads has been set -> ${parameters.minimumDepth}`)
