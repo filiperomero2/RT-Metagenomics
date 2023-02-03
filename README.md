@@ -104,12 +104,12 @@ To run this reference assembly pipeline, arguments are required:
     --sample-name: sample name string, used as prefix in output files;
     --reference: absolute path for reference fasta file;
     --medaka-model: model file for medaka pipeline (default: r941_min_fast_g303). If unsure, check medaka docs.
-    --minimum-depth: minimum sequencing depth threshold used to mask consensus sequences (default: 100)
+    --minimum-depth: minimum sequencing depth threshold used to mask consensus sequences (default: 20)
     --threads: number of processing threads;
     
 ### Example usage:
 
-    node ~/RT-Metagenomics/scripts/getConsensus.js --input ~/sequencing_run_1/BC01/BC01.fastq --output ~/sequencing_run_1_BC01_consensus/ --sample-name BC01 --reference ~/reference_genomes/target.fasta --minimum-depth 20 --threads 4
+    node ~/RT-Metagenomics/scripts/getConsensus.js --input ~/sequencing_run_1/BC01/BC01.fastq --output ~/sequencing_run_1_BC01_consensus/ --sample-name BC01 --reference ~/reference_genomes/target.fasta --minimum-depth 50 --threads 4
 
 
 ## Citation
