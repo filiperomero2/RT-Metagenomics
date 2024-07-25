@@ -1,15 +1,15 @@
 # RT-MetA: Real Time Metagenomic Analysis
 
 ## Introduction
-The development of Oxford Nanopore Technologies offers unprecedented opportunities for conducting fast identification of pathogens accross several epidemiological settings by metagenomic sequencing. As bases may be called at time of sequencing, it is possible to perform taxonomic assignment of sequencing reads in real time. Nevertheless, popular tools used for metagenomic analysis are not designed to take full advantage of this amazing feature. In this sense, we developed RT-META, a pipeline that performs metagenomic analysis in real time and display results in a interactive manner. 
+The development of Oxford Nanopore Technologies offers unprecedented opportunities for conducting fast identification of pathogens accross several epidemiological settings by metagenomic sequencing. As bases may be called at time of sequencing, it is possible to perform taxonomic assignment of sequencing reads in real time. Nevertheless, popular tools used for metagenomic analysis are not designed to take full advantage of this amazing feature. In this sense, we developed RT-MetA, a pipeline that performs metagenomic analysis in real time and display results in a interactive manner. 
 
-RT-META is entirely written as a collection of Node scripts that processes data, organizing downstream analysis using standard metagenomic analysis tools. Briefly, the script iteratively scans the basecalled directory, performing demultiplexation of sequencing reads. Taxonomic assignment with kraken2 is then performed for each sample and Krona is used to generate iteractive taxonomic profile plots. These visualizations are integrated in a single page, allowing extremely fast pathogen identification. 
+RT-MetA is entirely written as a collection of Node scripts that processes data, organizing downstream analysis using standard metagenomic analysis tools. Briefly, the script iteratively scans the basecalled directory, performing demultiplexation of sequencing reads. Taxonomic assignment with kraken2 is then performed for each sample and Krona is used to generate iteractive taxonomic profile plots. These visualizations are integrated in a single page, allowing extremely fast pathogen identification. 
 
 ### Warning
 This app is a prototype still under development. 
 
 ## Installation
-RT-Meta recquires a handful of dependencies which are conveniently available in conda repositories. To install the entire environment, simply download the rt-meta repository:
+RT-MetA recquires a handful of dependencies which are conveniently available in conda repositories. To install the entire environment, simply download the repository:
 
     git clone https://github.com/filiperomero2/RT-Metagenomics
     
@@ -33,7 +33,7 @@ This pipeline has been developed and validated using the following dependencies 
 
 ## Database configuration
 
-As RT-META uses kraken2 to perform taxonomic assignments and krona to create interactive visualizations, it is necessary to download and configure their respective databases. Users are encouraged to install these databases in different directories. 
+As RT-MetA uses kraken2 to perform taxonomic assignments and krona to create interactive visualizations, it is necessary to download and configure their respective databases. Users are encouraged to install these databases in different directories. 
 
 Kraken2 databases are available <a href="https://benlangmead.github.io/aws-indexes/k2">here</a>. For instance, to install the viral database one can execute:
 
@@ -94,7 +94,7 @@ If you want the krona plots to include only microorganism reads:
 
 ## Consensus engine
 
-RT-META also includes a script for consensus sequence inference. The dependencies of this module are included in a separate conda environment. To install them, use the following line within the repository: 
+RT-MetA also includes a script for consensus sequence inference. The dependencies of this module are included in a separate conda environment. To install them, use the following line within the repository: 
    
     conda env create -f rt-meta-consensus.yml
 
