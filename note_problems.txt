@@ -1,5 +1,0 @@
-
-App working in both modes. 
-Must:
- - Add ports validation;
- - Update docs (including for the consensus inference).
