@@ -1,9 +1,12 @@
-# RT-META: Real Time Metagenomic Analysis
+# RT-MetA: Real Time Metagenomic Analysis
 
 ## Introduction
 The development of Oxford Nanopore Technologies offers unprecedented opportunities for conducting fast identification of pathogens accross several epidemiological settings by metagenomic sequencing. As bases may be called at time of sequencing, it is possible to perform taxonomic assignment of sequencing reads in real time. Nevertheless, popular tools used for metagenomic analysis are not designed to take full advantage of this amazing feature. In this sense, we developed RT-META, a pipeline that performs metagenomic analysis in real time and display results in a interactive manner. 
 
 RT-META is entirely written as a collection of Node scripts that processes data, organizing downstream analysis using standard metagenomic analysis tools. Briefly, the script iteratively scans the basecalled directory, performing demultiplexation of sequencing reads. Taxonomic assignment with kraken2 is then performed for each sample and Krona is used to generate iteractive taxonomic profile plots. These visualizations are integrated in a single page, allowing extremely fast pathogen identification. 
+
+### Warning
+This app is a prototype still under development. 
 
 ## Installation
 RT-Meta recquires a handful of dependencies which are conveniently available in conda repositories. To install the entire environment, simply download the rt-meta repository:
