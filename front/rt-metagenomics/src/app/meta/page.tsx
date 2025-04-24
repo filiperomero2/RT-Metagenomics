@@ -7,11 +7,11 @@ export default function Meta() {
   const [formData, setFormData] = useState({
     dataType: '',
     sampleSheet: '',
-    configFile: '',
+    // configFile: '',
     output: '',
     runName: '',
     trim: 0,
-    createConfigOnly: false,
+    // createConfigOnly: false,
     threads: 1,
     threadsTotal: 1,
     kraken2Database: '',
@@ -51,15 +51,15 @@ export default function Meta() {
           </label>
           <label className={styles.label}>
             Sample Sheet:
-            <input type="text" name="sampleSheet" value={formData.sampleSheet} onChange={handleChange} className={styles.input} />
+            <input type="file" name="sampleSheet" value={formData.sampleSheet} onChange={handleChange} className={styles.input} />
           </label>
-          <label className={styles.label}>
+          {/* <label className={styles.label}>
             Config File:
             <input type="text" name="configFile" value={formData.configFile} onChange={handleChange} className={styles.input} />
-          </label>
+          </label> */}
           <label className={styles.label}>
             Output Directory:
-            <input type="text" name="output" value={formData.output} onChange={handleChange} className={styles.input} />
+            <input type="file" name="output" value={formData.output} onChange={handleChange} className={styles.input} />
           </label>
           <label className={styles.label}>
             Run Name:
@@ -69,41 +69,41 @@ export default function Meta() {
             Trim:
             <input type="number" name="trim" value={formData.trim} onChange={handleChange} className={styles.input} />
           </label>
-          <label className={styles.label}>
+          {/* <label className={styles.label}>
             Create Config Only:
             <input type="checkbox" name="createConfigOnly" checked={formData.createConfigOnly} onChange={handleChange} className={styles.checkbox} />
-          </label>
+          </label> */}
           <label className={styles.label}>
             Threads:
             <input type="number" name="threads" value={formData.threads} onChange={handleChange} className={styles.input} />
           </label><label className={styles.label}>
-          Threads Total:
-          <input type="number" name="threadsTotal" value={formData.threadsTotal} onChange={handleChange} className={styles.input} />
-        </label>
-        <label className={styles.label}>
-          Kraken2 Database:
-          <input type="text" name="kraken2Database" value={formData.kraken2Database} onChange={handleChange} className={styles.input} />
-        </label>
-        <label className={styles.label}>
-          Krona Database:
-          <input type="text" name="kronaDatabase" value={formData.kronaDatabase} onChange={handleChange} className={styles.input} />
-        </label>
-        <label className={styles.label}>
-          Remove Human Reads:
-          <input type="checkbox" name="removeHumanReads" checked={formData.removeHumanReads} onChange={handleChange} className={styles.checkbox} />
-        </label>
-        <label className={styles.label}>
-          Remove Unclassified Reads:
-          <input type="checkbox" name="removeUnclassifiedReads" checked={formData.removeUnclassifiedReads} onChange={handleChange} className={styles.checkbox} />
-        </label>
-        <label className={styles.label}>
-          Adapters:
-          <input type="text" name="adapters" value={formData.adapters} onChange={handleChange} className={styles.input} />
-        </label>
-        <label className={styles.label}>
-          Minimum Read Length:
-          <input type="number" name="minimumReadLength" value={formData.minimumReadLength} onChange={handleChange} className={styles.input} />
-        </label>
+            Threads Total:
+            <input type="number" name="threadsTotal" value={formData.threadsTotal} onChange={handleChange} className={styles.input} />
+          </label>
+          <label className={styles.label}>
+            Kraken2 Database:
+            <input type="file" name="kraken2Database" value={formData.kraken2Database} onChange={handleChange} className={styles.input} />
+          </label>
+          <label className={styles.label}>
+            Krona Database:
+            <input type="file" name="kronaDatabase" value={formData.kronaDatabase} onChange={handleChange} className={styles.input} />
+          </label>
+          <label className={styles.inlineLabel}>
+            Remove Human Reads:
+            <input type="checkbox" name="removeHumanReads" checked={formData.removeHumanReads} onChange={handleChange} className={styles.checkbox} />
+          </label>
+          <label className={styles.inlineLabel}>
+            Remove Unclassified Reads:
+            <input type="checkbox" name="removeUnclassifiedReads" checked={formData.removeUnclassifiedReads} onChange={handleChange} className={styles.checkbox} />
+          </label>
+          <label className={styles.label}>
+            Adapters:
+            <input type="file" name="adapters" value={formData.adapters} onChange={handleChange} className={styles.input} />
+          </label>
+          <label className={styles.label}>
+            Minimum Read Length:
+            <input type="number" name="minimumReadLength" value={formData.minimumReadLength} onChange={handleChange} className={styles.input} />
+          </label>
           <button type="submit" className={styles.button}>Submit</button>
         </form>
       </div>

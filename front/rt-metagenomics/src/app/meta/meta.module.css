@@ -39,11 +39,23 @@
   color: gray;
 }
 
-.input, .checkbox {
+.inlineLabel {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  font-size: 1rem;
+  color: gray;
+}
+
+.input {
   padding: 0.5rem;
   font-size: 1rem;
   border: 2px solid lightgray;
   border-radius: 4px;
+}
+
+.checkbox {
+    margin-left: 1rem;
 }
 
 .button {
