@@ -1,17 +1,28 @@
 .page {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
+  height: 100vh;
   background-color: white;
   color: black;
-  height: 100vh;
+}
+
+.columnLeft {
+  flex: 0 0 20%;
+  padding: 2rem;
+  border-right: 1px solid lightgray;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.columnRight {
+  flex: 1; /* Remaining space */
+  width: 80vh;
+  padding: 2rem;
 }
 
 .title {
-  font-size: 2rem;
-  margin-bottom: 2rem;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .form {
@@ -19,7 +30,6 @@
   flex-direction: column;
   gap: 1rem;
   width: 100%;
-  max-width: 400px;
 }
 
 .label {

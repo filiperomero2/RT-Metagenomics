@@ -38,45 +38,45 @@ export default function Meta() {
 
   return (
     <div className={styles.page}>
-      <h1 className={styles.title}>Meta Page</h1>
-      <form className={styles.form} onSubmit={handleSubmit}>
-        <label className={styles.label}>
-          Data Type:
-          <select name="dataType" value={formData.dataType} onChange={handleChange} className={styles.input}>
-            <option value="">Select</option>
-            <option value="illumina">Illumina</option>
-            <option value="nanopore">Nanopore</option>
-          </select>
-        </label>
-        <label className={styles.label}>
-          Sample Sheet:
-          <input type="text" name="sampleSheet" value={formData.sampleSheet} onChange={handleChange} className={styles.input} />
-        </label>
-        <label className={styles.label}>
-          Config File:
-          <input type="text" name="configFile" value={formData.configFile} onChange={handleChange} className={styles.input} />
-        </label>
-        <label className={styles.label}>
-          Output Directory:
-          <input type="text" name="output" value={formData.output} onChange={handleChange} className={styles.input} />
-        </label>
-        <label className={styles.label}>
-          Run Name:
-          <input type="text" name="runName" value={formData.runName} onChange={handleChange} className={styles.input} />
-        </label>
-        <label className={styles.label}>
-          Trim:
-          <input type="number" name="trim" value={formData.trim} onChange={handleChange} className={styles.input} />
-        </label>
-        <label className={styles.label}>
-          Create Config Only:
-          <input type="checkbox" name="createConfigOnly" checked={formData.createConfigOnly} onChange={handleChange} className={styles.checkbox} />
-        </label>
-        <label className={styles.label}>
-          Threads:
-          <input type="number" name="threads" value={formData.threads} onChange={handleChange} className={styles.input} />
-        </label>
-        <label className={styles.label}>
+      <div className={styles.columnLeft}>
+        <h1 className={styles.title}>Metagenomics</h1>
+        <form className={styles.form} onSubmit={handleSubmit}>
+          <label className={styles.label}>
+            Data Type:
+            <select name="dataType" value={formData.dataType} onChange={handleChange} className={styles.input}>
+              <option value="">Select</option>
+              <option value="illumina">Illumina</option>
+              <option value="nanopore">Nanopore</option>
+            </select>
+          </label>
+          <label className={styles.label}>
+            Sample Sheet:
+            <input type="text" name="sampleSheet" value={formData.sampleSheet} onChange={handleChange} className={styles.input} />
+          </label>
+          <label className={styles.label}>
+            Config File:
+            <input type="text" name="configFile" value={formData.configFile} onChange={handleChange} className={styles.input} />
+          </label>
+          <label className={styles.label}>
+            Output Directory:
+            <input type="text" name="output" value={formData.output} onChange={handleChange} className={styles.input} />
+          </label>
+          <label className={styles.label}>
+            Run Name:
+            <input type="text" name="runName" value={formData.runName} onChange={handleChange} className={styles.input} />
+          </label>
+          <label className={styles.label}>
+            Trim:
+            <input type="number" name="trim" value={formData.trim} onChange={handleChange} className={styles.input} />
+          </label>
+          <label className={styles.label}>
+            Create Config Only:
+            <input type="checkbox" name="createConfigOnly" checked={formData.createConfigOnly} onChange={handleChange} className={styles.checkbox} />
+          </label>
+          <label className={styles.label}>
+            Threads:
+            <input type="number" name="threads" value={formData.threads} onChange={handleChange} className={styles.input} />
+          </label><label className={styles.label}>
           Threads Total:
           <input type="number" name="threadsTotal" value={formData.threadsTotal} onChange={handleChange} className={styles.input} />
         </label>
@@ -104,8 +104,12 @@ export default function Meta() {
           Minimum Read Length:
           <input type="number" name="minimumReadLength" value={formData.minimumReadLength} onChange={handleChange} className={styles.input} />
         </label>
-        <button type="submit" className={styles.button}>Submit</button>
-      </form>
+          <button type="submit" className={styles.button}>Submit</button>
+        </form>
+      </div>
+      <div className={styles.columnRight}>
+        {/* Empty column for now */}
+      </div>
     </div>
   );
 }
