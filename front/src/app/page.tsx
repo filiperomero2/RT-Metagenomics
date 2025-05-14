@@ -18,9 +18,9 @@ export default function Home() {
         <div className={styles.tile} onClick={handleMetaClick}>
           Meta
         </div>
-        <div className={styles.tile}>
+        {/* <div className={styles.tile}>
           Consensus
-        </div>
+        </div> */}
       </div>
     </div>
   );

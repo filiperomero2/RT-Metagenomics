@@ -1,0 +1,8 @@
+name: viralunity
+channels:
+  - local
+  - bioconda
+  - conda-forge
+dependencies:
+  - fastapi=0.115.12=pyh29332c3_0
+  - viralunity=1.0.3=py311_0

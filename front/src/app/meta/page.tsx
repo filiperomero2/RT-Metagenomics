@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import styles from './meta.module.css';
+import axios from 'axios';
 
 export default function Meta() {
   const [formData, setFormData] = useState({
@@ -32,6 +33,31 @@ export default function Meta() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    // const data = {
+    //   dataType
+    //   sampleSheetFilePath
+    //   outputDir
+    //   runName
+    //   trim
+    //   threads
+    //   threadsTotal
+    //   kraken2DatabasePath
+    //   kronaDatabasePath
+    //   removeHumanReads
+    //   removeUnclassifiedReads
+    //   adaptersPath
+    //   minimumReadLength:
+    // }
+
+    axios.post('/v1/metagenomics', data)
+      .then(response => {
+        console.log('Response:', response.data);
+        // Handle success
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        // Handle error
+      });
     console.log('Form Data:', formData);
     // Handle form submission logic here
   };
