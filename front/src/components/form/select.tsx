@@ -13,6 +13,7 @@ export function Select({
 
   return (
     <SelectUI
+      variant="faded"
       {...rest}
       {...field}
       className={cn(!fieldState.invalid && "pb-6", className)}

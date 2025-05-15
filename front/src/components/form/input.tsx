@@ -13,6 +13,7 @@ export function Input({
 
   return (
     <InputUI
+      variant="faded"
       {...rest}
       {...field}
       className={cn(!fieldState.invalid && "pb-6", className)}
