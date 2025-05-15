@@ -1,55 +1,18 @@
 "use client";
 
-import { useState } from "react";
-import styles from "./meta.module.css";
+import { CheckBox } from "@/components/form/checkbox";
+import { Input } from "@/components/form/input";
+import { NumberInput } from "@/components/form/number-input";
+import { Select } from "@/components/form/select";
+import { Button, SelectItem } from "@heroui/react";
 import axios from "axios";
+import { FormProvider, useForm } from "react-hook-form";
 
 export default function Meta() {
-  const [formData, setFormData] = useState({
-    dataType: "",
-    sampleSheet: "",
-    // configFile: '',
-    output: "",
-    runName: "",
-    trim: 0,
-    // createConfigOnly: false,
-    threads: 1,
-    threadsTotal: 1,
-    kraken2Database: "",
-    kronaDatabase: "",
-    removeHumanReads: false,
-    removeUnclassifiedReads: false,
-    adapters: "",
-    minimumReadLength: 50,
-  });
+  const form = useForm();
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value, type, checked } = e.target;
-    setFormData({
-      ...formData,
-      [name]: type === "checkbox" ? checked : value,
-    });
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // const data = {
-    //   dataType
-    //   sampleSheetFilePath
-    //   outputDir
-    //   runName
-    //   trim
-    //   threads
-    //   threadsTotal
-    //   kraken2DatabasePath
-    //   kronaDatabasePath
-    //   removeHumanReads
-    //   removeUnclassifiedReads
-    //   adaptersPath
-    //   minimumReadLength:
-    // }
+  const handleSubmit = (data: any) => {
+    console.log("data", data);
 
     axios
       .post("/v1/metagenomics", data)
@@ -61,162 +24,62 @@ export default function Meta() {
         console.error("Error:", error);
         // Handle error
       });
-    console.log("Form Data:", formData);
     // Handle form submission logic here
   };
 
   return (
-    <div className={styles.page}>
-      <div className={styles.columnLeft}>
-        <h1 className={styles.title}>Metagenomics</h1>
-        <form className={styles.form} onSubmit={handleSubmit}>
-          <label className={styles.label}>
-            Data Type:
-            <select
-              name="dataType"
-              value={formData.dataType}
-              onChange={handleChange}
-              className={styles.input}
-            >
-              <option value="">Select</option>
-              <option value="illumina">Illumina</option>
-              <option value="nanopore">Nanopore</option>
-            </select>
-          </label>
-          <label className={styles.label}>
-            Sample Sheet:
-            <input
-              type="file"
-              name="sampleSheet"
-              value={formData.sampleSheet}
-              onChange={handleChange}
-              className={styles.input}
-            />
-          </label>
-          {/* <label className={styles.label}>
-            Config File:
-            <input type="text" name="configFile" value={formData.configFile} onChange={handleChange} className={styles.input} />
-          </label> */}
-          <label className={styles.label}>
-            Output Directory:
-            <input
-              type="file"
-              name="output"
-              value={formData.output}
-              onChange={handleChange}
-              className={styles.input}
-            />
-          </label>
-          <label className={styles.label}>
-            Run Name:
-            <input
-              type="text"
+    <FormProvider {...form}>
+      <div className="grid grid-cols-[1fr_1.5fr] gap-2 p-4 items-center h-screen">
+        <div className="flex flex-col gap-4 items-center">
+          <h1 className="text-3xl font-bold">Metagenomics</h1>
+          <form
+            onSubmit={form.handleSubmit(handleSubmit)}
+            className="grid grid-cols-2 gap-x-3 gap-y-1"
+          >
+            <Input
               name="runName"
-              value={formData.runName}
-              onChange={handleChange}
-              className={styles.input}
+              type="text"
+              label="Run Name:"
+              className="col-span-2"
             />
-          </label>
-          <label className={styles.label}>
-            Trim:
-            <input
-              type="number"
-              name="trim"
-              value={formData.trim}
-              onChange={handleChange}
-              className={styles.input}
-            />
-          </label>
-          {/* <label className={styles.label}>
-            Create Config Only:
-            <input type="checkbox" name="createConfigOnly" checked={formData.createConfigOnly} onChange={handleChange} className={styles.checkbox} />
-          </label> */}
-          <label className={styles.label}>
-            Threads:
-            <input
-              type="number"
-              name="threads"
-              value={formData.threads}
-              onChange={handleChange}
-              className={styles.input}
-            />
-          </label>
-          <label className={styles.label}>
-            Threads Total:
-            <input
-              type="number"
-              name="threadsTotal"
-              value={formData.threadsTotal}
-              onChange={handleChange}
-              className={styles.input}
-            />
-          </label>
-          <label className={styles.label}>
-            Kraken2 Database:
-            <input
-              type="file"
-              name="kraken2Database"
-              value={formData.kraken2Database}
-              onChange={handleChange}
-              className={styles.input}
-            />
-          </label>
-          <label className={styles.label}>
-            Krona Database:
-            <input
-              type="file"
-              name="kronaDatabase"
-              value={formData.kronaDatabase}
-              onChange={handleChange}
-              className={styles.input}
-            />
-          </label>
-          <label className={styles.inlineLabel}>
-            Remove Human Reads:
-            <input
-              type="checkbox"
-              name="removeHumanReads"
-              checked={formData.removeHumanReads}
-              onChange={handleChange}
-              className={styles.checkbox}
-            />
-          </label>
-          <label className={styles.inlineLabel}>
-            Remove Unclassified Reads:
-            <input
-              type="checkbox"
-              name="removeUnclassifiedReads"
-              checked={formData.removeUnclassifiedReads}
-              onChange={handleChange}
-              className={styles.checkbox}
-            />
-          </label>
-          <label className={styles.label}>
-            Adapters:
-            <input
-              type="file"
-              name="adapters"
-              value={formData.adapters}
-              onChange={handleChange}
-              className={styles.input}
-            />
-          </label>
-          <label className={styles.label}>
-            Minimum Read Length:
-            <input
-              type="number"
+            <Select name="dataType" label="Data Type:" className="col-span-2">
+              <SelectItem key="">Select</SelectItem>
+              <SelectItem key="illumina">Illumina</SelectItem>
+              <SelectItem key="nanopore">Nanopore</SelectItem>
+            </Select>
+            <Input name="sampleSheet" type="file" label="Sample Sheet:" />
+            <Input name="output" type="file" label="Output Directory:" />
+            <NumberInput name="threads" label="Threads:" />
+            <NumberInput name="threadsTotal" label="Threads Total:" />
+            <NumberInput name="trim" label="Trim:" />
+            <NumberInput
               name="minimumReadLength"
-              value={formData.minimumReadLength}
-              onChange={handleChange}
-              className={styles.input}
+              label="Minimum Read Length:"
             />
-          </label>
-          <button type="submit" className={styles.button}>
-            Submit
-          </button>
-        </form>
+            <Input
+              name="kraken2Database"
+              type="file"
+              label="Kraken2 Database:"
+            />
+            <Input name="kronaDatabase" type="file" label="Krona Database:" />
+            <CheckBox name="removeHumanReads" label="Remove Human Reads:" />
+            <CheckBox
+              name="removeUnclassifiedReads"
+              label="Remove Unclassified Reads:"
+            />
+            <Input name="adapters" type="file" label="Adapters:" />
+            <Button
+              className="col-span-2"
+              variant="solid"
+              color="primary"
+              type="submit"
+            >
+              Submit
+            </Button>
+          </form>
+        </div>
+        <div>{/* Empty column for now */}</div>
       </div>
-      <div className={styles.columnRight}>{/* Empty column for now */}</div>
-    </div>
+    </FormProvider>
   );
 }

@@ -9,12 +9,19 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@heroui/react": "2.8.0-beta.4",
+    "@heroui/system": "2.4.16-beta.1",
+    "@heroui/theme": "2.4.16-beta.1",
     "@tailwindcss/postcss": "^4.1.6",
     "axios": "^1.9.0",
+    "clsx": "^2.1.1",
+    "framer-motion": "^12.11.3",
     "next": "15.3.1",
     "postcss": "^8.5.3",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-hook-form": "^7.56.3",
+    "tailwind-merge": "^3.3.0",
     "tailwindcss": "^4.1.6"
   },
   "devDependencies": {

@@ -14,7 +14,7 @@ export default function Home() {
   return (
     <div className={styles.page}>
       <h1 className={styles.title}>Welcome to RT-Metagenomics</h1>
-      <div className={styles.tilesContainer}>
+      <div className="">
         <div className={styles.tile} onClick={handleMetaClick}>
           Meta
         </div>
