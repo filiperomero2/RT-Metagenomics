@@ -1,4 +1,4 @@
-from models import DataType
+from entities.enum import DataType
 from pydantic import BaseModel
 
 class MetagenomicsParametersSchema(BaseModel):

@@ -1,19 +1,32 @@
-from fastapi import APIRouter, Depends
-from services import ViralUnityService
+from fastapi import APIRouter
+from usecases.list_metagenomic_usecase import ListMetagenomicsUseCaseDependency
+from entities.metagenomics_parameters import MetagenomicsParameters
+from usecases.start_metagenomic_usecase import StartMetagenomicsUseCaseDependency
 from schemas import MetagenomicsParametersSchema
-from usecases import StartMetagenomicsUseCase
 
 router = APIRouter(prefix='/v1')
-
-def get_viralunity_service():
-    return ViralUnityService()
-
-def get_start_metagenomics_usecase(viralunity_service=Depends(get_viralunity_service)):
-    return StartMetagenomicsUseCase(viralunity_service)
 
 @router.post("/metagenomics")
 async def start_metagenomics(
     metagenomics_parameters: MetagenomicsParametersSchema,
-    usecase: StartMetagenomicsUseCase = Depends(get_start_metagenomics_usecase)
+    usecase: StartMetagenomicsUseCaseDependency
 ):
-    return usecase.execute(metagenomics_parameters)
+    return usecase.execute(MetagenomicsParameters(
+        dataType=metagenomics_parameters.dataType,
+        sampleSheetFilePath=metagenomics_parameters.sampleSheetFilePath,
+        runName=metagenomics_parameters.runName,
+        kraken2DatabasePath=metagenomics_parameters.kraken2DatabasePath,
+        kronaDatabasePath=metagenomics_parameters.kronaDatabasePath,
+        adaptersPath=metagenomics_parameters.adaptersPath,
+        threads=metagenomics_parameters.threads,
+        threadsTotal=metagenomics_parameters.threadsTotal,
+        removeHumanReads=metagenomics_parameters.removeHumanReads,
+        removeUnclassifiedReads=metagenomics_parameters.removeUnclassifiedReads,
+        trim=metagenomics_parameters.trim,
+        minimumReadLength=metagenomics_parameters.minimumReadLength,
+        outputDir=metagenomics_parameters.outputDir
+    ))
+    
+@router.get("/metagenomics")
+async def get_metagenomics(usecase: ListMetagenomicsUseCaseDependency):
+    return usecase.execute()

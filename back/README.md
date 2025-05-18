@@ -52,6 +52,11 @@ To run the FastAPI application, execute the following command:
 ```
 fastapi dev app/main.py
 ```
+or
+```
+cd app
+uvicorn main:app --host 0.0.0.0 --port 8000 --reload --log-level debug
+```
 
 Visit `http://127.0.0.1:8000/docs` to access the interactive API documentation.
 

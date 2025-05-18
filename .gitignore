@@ -1,6 +1,6 @@
 **/*/rt-meta-venv
 **/*/__pycache__
-back/app/services/viralunity_service.py
-back/input
-back/output
-back/.snakemake
+**/input
+**/output
+**/.snakemake
+**/*.db

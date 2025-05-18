@@ -1,6 +1,11 @@
-from models import DataType
+from sqlmodel import Field, SQLModel
 
-class MetagenomicsParameters:
+from entities.enum import DataType
+
+class MetagenomicsParameters(SQLModel, table=True):
+    
+    id: int = Field(default=None, primary_key=True)
+    
     dataType: DataType
     sampleSheetFilePath: str
     outputDir: str
