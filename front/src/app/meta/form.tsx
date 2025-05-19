@@ -47,12 +47,12 @@ export function MetaForm() {
           <SelectItem key="illumina">Illumina</SelectItem>
           <SelectItem key="nanopore">Nanopore</SelectItem>
         </Select>
-        <Input name="sampleSheet" type="file" label="Sample Sheet" />
-        <Input name="output" type="file" label="Output Directory" />
         <NumberInput name="threads" label="Threads" />
         <NumberInput name="threadsTotal" label="Threads Total" />
         <NumberInput name="trim" label="Trim" />
         <NumberInput name="minimumReadLength" label="Minimum Read Length" />
+        <Input name="sampleSheet" type="file" label="Sample Sheet" />
+        <Input name="output" type="file" label="Output Directory" />
         <Input name="kraken2Database" type="file" label="Kraken2 Database" />
         <Input name="kronaDatabase" type="file" label="Krona Database" />
         <Input
@@ -66,6 +66,7 @@ export function MetaForm() {
           name="removeUnclassifiedReads"
           label="Remove Unclassified Reads"
         />
+
         <Button
           className="col-span-2 mt-5"
           variant="solid"

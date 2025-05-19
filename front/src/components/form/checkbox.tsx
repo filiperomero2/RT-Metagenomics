@@ -5,7 +5,6 @@ import { useController } from "react-hook-form";
 
 export function CheckBox({
   name,
-  className,
   label,
   ...rest
 }: CheckboxProps & { name: string; label?: string }) {
