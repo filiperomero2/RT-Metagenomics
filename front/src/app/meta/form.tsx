@@ -4,10 +4,26 @@ import { Input } from "@/components/form/input";
 import { NumberInput } from "@/components/form/number-input";
 import { Select } from "@/components/form/select";
 import { Button, SelectItem } from "@heroui/react";
+import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import { FormProvider, useForm } from "react-hook-form";
 
 export function MetaForm() {
+  const { mutateAsync, isPending } = useMutation({
+    mutationFn: async (data: any) => {
+      await axios
+        .post("/v1/metagenomics", data)
+        .then((response) => {
+          console.log("Response", response.data);
+          // Handle success
+        })
+        .catch((error) => {
+          console.error("Error", error);
+          // Handle error
+        });
+    },
+  });
+  
   const form = useForm({
     defaultValues: {
       dataType: "",
@@ -16,17 +32,7 @@ export function MetaForm() {
 
   const handleSubmit = (data: any) => {
     console.log("data", data);
-
-    axios
-      .post("/v1/metagenomics", data)
-      .then((response) => {
-        console.log("Response", response.data);
-        // Handle success
-      })
-      .catch((error) => {
-        console.error("Error", error);
-        // Handle error
-      });
+    mutateAsync(data);
     // Handle form submission logic here
   };
 
@@ -72,6 +78,7 @@ export function MetaForm() {
           variant="solid"
           color="primary"
           type="submit"
+          isLoading={isPending}
         >
           Submit
         </Button>

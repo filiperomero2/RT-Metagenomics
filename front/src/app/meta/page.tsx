@@ -23,22 +23,23 @@ export default function Meta() {
               maxSize={50}
               id="form"
               order={1}
-              className="flex flex-col gap-4  bg-content1 h-full  p-6 relative"
             >
-              <h1 className="text-2xl font-bold my-6 text-center">
-                New Metagenomics
-              </h1>
-              <MetaForm />
-              <Button
-                onPress={() => setHideForm(!hideForm)}
-                isIconOnly
-                color="danger"
-                variant="faded"
-                size="sm"
-                className="absolute top-2 right-2  cursor-pointer z-10"
-              >
-                <X />
-              </Button>
+              <div className="flex flex-col gap-4 bg-content1 h-full p-6 relative overflow-y-auto">
+                <h1 className="text-2xl font-bold my-2 text-center">
+                  New Metagenomics
+                </h1>
+                <MetaForm />
+                <Button
+                  onPress={() => setHideForm(!hideForm)}
+                  isIconOnly
+                  color="danger"
+                  variant="faded"
+                  size="sm"
+                  className="absolute top-2 right-2  cursor-pointer z-10"
+                >
+                  <X />
+                </Button>
+              </div>
             </Panel>
             <PanelResizeHandle className="w-px bg-default-200 relative" />
           </>
@@ -75,7 +76,7 @@ export default function Meta() {
               maxSize={30}
               className="flex flex-col gap-4 bg-content1 h-full p-6 relative"
             >
-              <h1 className="text-2xl font-bold my-6 text-center">
+              <h1 className="text-2xl font-bold my-2 text-center">
                 Running Metagenomics
               </h1>
               <MetaList />

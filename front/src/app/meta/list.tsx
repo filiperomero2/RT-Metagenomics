@@ -1,3 +1,5 @@
+"use client";
+
 import { cn } from "@/utils/cn";
 import {
   Accordion,
@@ -6,6 +8,7 @@ import {
   Divider,
   Spinner,
 } from "@heroui/react";
+import { useQuery } from "@tanstack/react-query";
 import { CheckSquare2 } from "lucide-react";
 import { ReactNode } from "react";
 
@@ -29,36 +32,49 @@ function Item({
 }
 
 export function MetaList() {
-  const currentMetas = [
-    {
-      id: 1,
-      runName: "Runn 1",
-      dataType: "illumina",
-      minimumReadLength: "3",
-      removeHumanReads: true,
-      removeUnclassifiedReads: true,
-      threads: "2",
-      threadsTotal: "6",
-      trim: "1",
+  const { data, isPending } = useQuery({
+    queryKey: ["metas"],
+    queryFn: async () => {
+      return [
+        {
+          id: 1,
+          runName: "Runn 1",
+          dataType: "illumina",
+          minimumReadLength: "3",
+          removeHumanReads: true,
+          removeUnclassifiedReads: true,
+          threads: "2",
+          threadsTotal: "6",
+          trim: "1",
+        },
+        {
+          id: 2,
+          runName: "Runn 2",
+          dataType: "nanopore",
+          minimumReadLength: "5",
+          removeHumanReads: false,
+          removeUnclassifiedReads: true,
+          threads: "4",
+          threadsTotal: "8",
+          trim: "2",
+          done: true,
+        },
+      ];
     },
-    {
-      id: 2,
-      runName: "Runn 2",
-      dataType: "nanopore",
-      minimumReadLength: "5",
-      removeHumanReads: false,
-      removeUnclassifiedReads: true,
-      threads: "4",
-      threadsTotal: "8",
-      trim: "2",
-      done: true,
-    },
-  ];
+  });
+
+  if (isPending) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <Spinner size="lg" variant="simple" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col items-center justify-center gap-1 @container">
       <Accordion variant="splitted">
-        {currentMetas.map((meta) => (
+        {data?.map((meta) => (
           <AccordionItem
             key={meta.id}
             aria-label={meta.runName}
@@ -110,7 +126,7 @@ export function MetaList() {
               />
             </div>
           </AccordionItem>
-        ))}
+        )) || []}
       </Accordion>
     </div>
   );
