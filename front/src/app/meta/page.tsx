@@ -9,8 +9,8 @@ import { MetaList } from "./list";
 import { MetaVisualization } from "./visualization";
 
 export default function Meta() {
-  const [hideForm, setHideForm] = useState(true);
-  const [hideRunning, setHideRunning] = useState(true);
+  const [hideForm, setHideForm] = useState(false);
+  const [hideRunning, setHideRunning] = useState(false);
 
   return (
     <div className="h-[calc(100vh-65px)] bg-content1 relative overflow-clip">
@@ -35,7 +35,7 @@ export default function Meta() {
                   color="danger"
                   variant="faded"
                   size="sm"
-                  className="absolute top-2 right-2  cursor-pointer z-10"
+                  className="absolute top-2 right-2 cursor-pointer z-10"
                 >
                   <X />
                 </Button>

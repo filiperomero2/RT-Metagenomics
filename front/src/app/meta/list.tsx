@@ -1,5 +1,7 @@
 "use client";
 
+import { setFocusedMeta } from "@/hooks/use-focused-meta";
+import { MetaGenomic } from "@/types/metagenomic";
 import { cn } from "@/utils/cn";
 import {
   Accordion,
@@ -32,10 +34,10 @@ function Item({
 }
 
 export function MetaList() {
-  const { data, isPending } = useQuery({
+  const { data, isPending } = useQuery<MetaGenomic[]>({
     queryKey: ["metas"],
     queryFn: async () => {
-      return [
+      const metas = [
         {
           id: 1,
           runName: "Runn 1",
@@ -60,6 +62,8 @@ export function MetaList() {
           done: true,
         },
       ];
+      setFocusedMeta(metas[0]);
+      return metas;
     },
   });
 
@@ -70,14 +74,16 @@ export function MetaList() {
       </div>
     );
   }
+  if (!data) return null
 
   return (
     <div className="flex flex-col items-center justify-center gap-1 @container">
-      <Accordion variant="splitted">
+      <Accordion variant="splitted" defaultExpandedKeys={[data[0].id]}>
         {data?.map((meta) => (
           <AccordionItem
             key={meta.id}
             aria-label={meta.runName}
+            onPress={() => setFocusedMeta(meta)}
             startContent={
               <div className="flex items-center justify-center">
                 {meta.done ? (
@@ -89,6 +95,7 @@ export function MetaList() {
             }
             title={<p>{meta.runName}</p>}
             subtitle={<p>Interaction 1</p>}
+            classNames={{ content: "overflow-x-hidden" }}
           >
             <Divider />
             <div className="grid grid-cols-1 @md:grid-cols-2 gap-3 py-4 w-full p-2">

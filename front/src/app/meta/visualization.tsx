@@ -1,3 +1,7 @@
+import { useFocusedMeta } from "@/hooks/use-focused-meta";
+
 export function MetaVisualization() {
-  return <div className="p-72 bg-primary rounded-full"></div>;
+  const { runName } = useFocusedMeta();
+
+  return <div className="p-72 bg-primary rounded-full">{runName}</div>;
 }
