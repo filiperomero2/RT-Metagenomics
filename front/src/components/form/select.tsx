@@ -13,10 +13,12 @@ export function Select({
 
   return (
     <SelectUI
+      size="sm"
       variant="faded"
       {...rest}
       {...field}
-      className={cn(!fieldState.invalid && "pb-6", className)}
+      selectedKeys={[field.value]}
+      className={cn(!fieldState.invalid && "pb-4", className)}
       isInvalid={fieldState.invalid}
       errorMessage={fieldState.error?.message}
     />

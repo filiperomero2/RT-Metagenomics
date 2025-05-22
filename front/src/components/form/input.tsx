@@ -13,10 +13,11 @@ export function Input({
 
   return (
     <InputUI
+      size="sm"
       variant="faded"
       {...rest}
       {...field}
-      className={cn(!fieldState.invalid && "pb-6", className)}
+      className={cn(!fieldState.invalid && "pb-4", className)}
       isInvalid={fieldState.invalid}
       errorMessage={fieldState.error?.message}
     />

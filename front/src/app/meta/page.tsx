@@ -19,7 +19,7 @@ export default function Meta() {
           <>
             <Panel
               minSize={23}
-              defaultSize={23}
+              defaultSize={30}
               maxSize={50}
               id="form"
               order={1}
@@ -59,7 +59,7 @@ export default function Meta() {
         <Panel
           id="visualization"
           order={hideForm ? 1 : 2}
-          defaultSize={hideRunning ? 80 : 60}
+          defaultSize={hideRunning ? 80 : 50}
           className="flex justify-center items-center bg-background "
         >
           <MetaVisualization />
@@ -72,12 +72,12 @@ export default function Meta() {
               id="in-progress"
               order={hideForm ? 2 : 3}
               minSize={17}
-              defaultSize={17}
+              defaultSize={20}
               maxSize={30}
-              className="flex flex-col gap-4 bg-content1 h-full p-6 relative"
+              className="flex flex-col gap-4 bg-content1 h-full p-6 relative overflow-y-auto"
             >
               <h1 className="text-2xl font-bold my-2 text-center">
-                Running Metagenomics
+                Metagenomics
               </h1>
               <MetaList />
               <Button

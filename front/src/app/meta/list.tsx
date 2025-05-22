@@ -1,28 +1,37 @@
 "use client";
 
+import { ErrorFull } from "@/components/state-components/error-full";
+import { LoadingFull } from "@/components/state-components/loading-full";
 import { setFocusedMeta } from "@/hooks/use-focused-meta";
-import { MetaGenomic } from "@/types/metagenomic";
+import { api } from "@/lib/axios";
+import { MetaGenomicState } from "@/types/meta-genomic-state";
 import { cn } from "@/utils/cn";
 import {
   Accordion,
   AccordionItem,
   Checkbox,
   Divider,
+  ScrollShadow,
   Spinner,
 } from "@heroui/react";
 import { useQuery } from "@tanstack/react-query";
-import { CheckSquare2 } from "lucide-react";
+import {
+  Ban,
+  CheckSquare2,
+  CircleCheck,
+  CircleEllipsis,
+  CirclePlay,
+  CircleX,
+} from "lucide-react";
 import { ReactNode } from "react";
 
-function Item({
-  value,
-  label,
-  span,
-}: {
+type ItemProps = {
   label: ReactNode;
   value: ReactNode;
   span?: boolean;
-}) {
+};
+
+function Item({ value, label, span }: ItemProps) {
   return (
     <div className={cn("flex justify-between px-2", span && "@md:col-span-2")}>
       <span className="font-bold text-sm text-primary-600 line-clamp-1">
@@ -33,68 +42,53 @@ function Item({
   );
 }
 
-export function MetaList() {
-  const { data, isPending } = useQuery<MetaGenomic[]>({
-    queryKey: ["metas"],
-    queryFn: async () => {
-      const metas = [
-        {
-          id: 1,
-          runName: "Runn 1",
-          dataType: "illumina",
-          minimumReadLength: "3",
-          removeHumanReads: true,
-          removeUnclassifiedReads: true,
-          threads: "2",
-          threadsTotal: "6",
-          trim: "1",
-        },
-        {
-          id: 2,
-          runName: "Runn 2",
-          dataType: "nanopore",
-          minimumReadLength: "5",
-          removeHumanReads: false,
-          removeUnclassifiedReads: true,
-          threads: "4",
-          threadsTotal: "8",
-          trim: "2",
-          done: true,
-        },
-      ];
-      setFocusedMeta(metas[0]);
-      return metas;
-    },
-  });
+const stateToIcon: Record<MetaGenomicState["state"], ReactNode> = {
+  canceled: <Ban className="text-danger" />,
+  completed: <CircleCheck className="text-success" />,
+  failed: <CircleX className="text-danger" />,
+  pending: <CircleEllipsis className="text-warning" />,
+  running: <CirclePlay />,
+};
 
-  if (isPending) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <Spinner size="lg" variant="simple" />
-      </div>
-    );
-  }
-  if (!data) return null
+export function MetaList() {
+  const { data, isPending, isError, isFetching } = useQuery<MetaGenomicState[]>(
+    {
+      queryKey: ["list-meta-genomics"],
+      refetchInterval: 2000,
+      queryFn: async () => {
+        const { data } = await api.get<MetaGenomicState[]>("/v1/metagenomics");
+        setFocusedMeta(data[0].parameters);
+        return data;
+      },
+    }
+  );
+
+  if (isPending) return <LoadingFull />;
+  if (isError) return <ErrorFull />;
 
   return (
-    <div className="flex flex-col items-center justify-center gap-1 @container">
-      <Accordion variant="splitted" defaultExpandedKeys={[data[0].id]}>
-        {data?.map((meta) => (
+    <ScrollShadow
+      hideScrollBar
+      className="flex flex-col items-center justify-center gap-1 @container"
+    >
+      <Accordion variant="splitted" defaultExpandedKeys={[data[0].id]} aria-label="Teste">
+        {data?.map(({ parameters: meta, id, iteration, state }) => (
           <AccordionItem
-            key={meta.id}
+            key={id}
+            textValue={meta.runName}
             aria-label={meta.runName}
             onPress={() => setFocusedMeta(meta)}
             startContent={
               <div className="flex items-center justify-center">
-                {meta.done ? (
-                  <CheckSquare2 className="text-success text-medium" />
+                {isFetching && ["pending", "running"].includes(state) ? (
+                  <Spinner size="sm" />
                 ) : (
-                  <Spinner size="sm" variant="simple" />
+                  stateToIcon[state]
                 )}
               </div>
             }
             title={<p>{meta.runName}</p>}
-            subtitle={<p>Interaction 1</p>}
+            subtitle={<p>Interaction {iteration}</p>}
             classNames={{ content: "overflow-x-hidden" }}
           >
             <Divider />
@@ -135,6 +129,6 @@ export function MetaList() {
           </AccordionItem>
         )) || []}
       </Accordion>
-    </div>
+    </ScrollShadow>
   );
 }

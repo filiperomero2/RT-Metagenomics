@@ -1,4 +1,4 @@
-import { MetaGenomic } from "@/types/metagenomic";
+import { MetaGenomic } from "@/types/meta-genomic";
 import { Store, useStore } from "@tanstack/react-store";
 
 const store = new Store({} as MetaGenomic);
