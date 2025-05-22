@@ -11,6 +11,7 @@ class MetagenomicRun(SQLModel, table=True):
     parametersId: int | None = Field(default=None, foreign_key="metagenomicsparameters.id")
     state: RunState = Field(default=RunState.PENDING)
     
+    errorMessage: str | None = None
     filesHash: str | None = None
     iteration: int  = 1
     

@@ -14,7 +14,6 @@ class StartMetagenomicsUseCase:
         self.database_session = database_session
 
     def execute(self, metagenomics_parameters: MetagenomicsParameters):
-        metagenomics_parameters.outputDir = f"output/{metagenomics_parameters.runName}"
         logger.debug(f"Starting metagenomics with parameters: {metagenomics_parameters}")
         
         try:

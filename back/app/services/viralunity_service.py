@@ -41,7 +41,7 @@ class ViralUnityService(metaclass=Singleton):
                         params = {
                             "data_type": metagenomics_parameters.dataType.value,
                             "sample_sheet": metagenomics_parameters.sampleSheetFilePath,
-                            "config_file": "output/config.yml",
+                            "config_file": metagenomics_parameters.outputDir + "/config.yaml",
                             "run_name": metagenomics_parameters.runName,
                             "kraken2_database": metagenomics_parameters.kraken2DatabasePath,
                             "krona_database": metagenomics_parameters.kronaDatabasePath,
@@ -55,10 +55,14 @@ class ViralUnityService(metaclass=Singleton):
                             "minimum_read_length": 50,
                             "trim": metagenomics_parameters.trim,
                         }
+                        next_task.state = RunState.RUNNING
+                        db_session.add(next_task)
+                        db_session.commit()
                         result = metagenomics(params)
                         logger.debug(f"Metagenomics run completed with result: {result}")
                     except Exception as e:
                         next_task.state = RunState.FAILED
+                        next_task.errorMessage = str(e)
                         db_session.add(next_task)
                         db_session.commit()
                         logger.error(f"Error during metagenomics run: {e}")

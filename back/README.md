@@ -39,7 +39,7 @@ back
 
 4. **Install dependencies**:
    ```
-   conda  env update -n rt-meta --file environment.yaml
+   conda env update -n rt-meta --file environment.yaml
    ```
 
 5. **Set up environment variables**:
