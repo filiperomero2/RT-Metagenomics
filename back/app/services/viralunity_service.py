@@ -60,6 +60,9 @@ class ViralUnityService(metaclass=Singleton):
                         db_session.commit()
                         result = metagenomics(params)
                         logger.debug(f"Metagenomics run completed with result: {result}")
+                        next_task.state = RunState.COMPLETED
+                        db_session.add(next_task)
+                        db_session.commit()
                     except Exception as e:
                         next_task.state = RunState.FAILED
                         next_task.errorMessage = str(e)
