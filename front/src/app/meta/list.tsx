@@ -25,6 +25,22 @@ import {
 } from "lucide-react";
 import { ReactNode } from "react";
 
+type IconWrapperProps = {
+  children: ReactNode;
+  className?: string;
+};
+
+export const IconWrapper = ({ children, className }: IconWrapperProps) => (
+  <div
+    className={cn(
+      className,
+      "flex items-center rounded-small justify-center w-8 h-8"
+    )}
+  >
+    {children}
+  </div>
+);
+
 type ItemProps = {
   label: ReactNode;
   value: ReactNode;
@@ -42,54 +58,58 @@ function Item({ value, label, span }: ItemProps) {
   );
 }
 
+const iconColors: Record<MetaGenomicState["state"], string> = {
+  canceled: "text-danger bg-danger/15",
+  completed: "text-success bg-success/15",
+  failed: "text-danger bg-danger/15",
+  pending: "text-warning bg-warning/15",
+  running: "text-primary  bg-primary/15",
+};
+
 const stateToIcon: Record<MetaGenomicState["state"], ReactNode> = {
-  canceled: <Ban className="text-danger" />,
-  completed: <CircleCheck className="text-success" />,
-  failed: <CircleX className="text-danger" />,
-  pending: <CircleEllipsis className="text-warning" />,
+  canceled: <Ban />,
+  completed: <CircleCheck />,
+  failed: <CircleX />,
+  pending: <CircleEllipsis />,
   running: <CirclePlay />,
 };
 
 export function MetaList() {
-  const { data, isPending, isError, isFetching } = useQuery<MetaGenomicState[]>(
-    {
-      queryKey: ["list-meta-genomics"],
-      refetchInterval: 2000,
-      queryFn: async () => {
-        const { data } = await api.get<MetaGenomicState[]>("/v1/metagenomics");
-        setFocusedMeta(data[0].parameters);
-        return data;
-      },
-    }
-  );
+  const { data, isLoading, isError } = useQuery<MetaGenomicState[]>({
+    queryKey: ["list-meta-genomics"],
+    refetchInterval: 2000,
+    queryFn: async () => {
+      const { data } = await api.get<MetaGenomicState[]>("/v1/metagenomics");
+      return data;
+    },
+  });
 
-  if (isPending) return <LoadingFull />;
+  if (isLoading) return <LoadingFull />;
   if (isError) return <ErrorFull />;
+  if (!data) return "No data";
 
   return (
     <ScrollShadow
       hideScrollBar
-      className="flex flex-col items-center justify-center gap-1 @container"
+      className="flex flex-col items-center justify-center @container overflow-y-auto h-full"
     >
-      <Accordion variant="splitted" defaultExpandedKeys={[data[0].id]} aria-label="Teste">
+      <Accordion
+        variant="splitted"
+        defaultExpandedKeys={[data[0].id]}
+        className="w-full h-full"
+      >
         {data?.map(({ parameters: meta, id, iteration, state }) => (
           <AccordionItem
             key={id}
             textValue={meta.runName}
-            aria-label={meta.runName}
             onPress={() => setFocusedMeta(meta)}
             startContent={
-              <div className="flex items-center justify-center">
-                {isFetching && ["pending", "running"].includes(state) ? (
-                  <Spinner size="sm" />
-                ) : (
-                  stateToIcon[state]
-                )}
-              </div>
+              <IconWrapper className={iconColors[state]}>
+                {stateToIcon[state]}
+              </IconWrapper>
             }
             title={<p>{meta.runName}</p>}
             subtitle={<p>Interaction {iteration}</p>}
-            classNames={{ content: "overflow-x-hidden" }}
           >
             <Divider />
             <div className="grid grid-cols-1 @md:grid-cols-2 gap-3 py-4 w-full p-2">

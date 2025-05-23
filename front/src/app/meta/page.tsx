@@ -86,7 +86,7 @@ export default function Meta() {
                 color="danger"
                 variant="faded"
                 size="sm"
-                className="absolute top-2 right-2  cursor-pointer z-10"
+                className="absolute top-2 right-2 cursor-pointer z-10"
               >
                 <X />
               </Button>
