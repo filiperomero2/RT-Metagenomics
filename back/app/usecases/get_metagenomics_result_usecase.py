@@ -20,9 +20,8 @@ class GetMetagenomicsResultUseCase:
         if (data is not None):
             run, parameters = data 
             with open(f"{parameters.outputDir}/job_2025-05-22_{parameters.runName}/metagenomics/taxonomic_assignments/reports/sample-4117.output.krona.html", "r") as krona_plot:
-                return krona_plot.read()
-            
-    
+                yield from krona_plot
+
     
 def get_get_metagenomics_result_usecase(database_session: DbSession):
     return GetMetagenomicsResultUseCase(database_session)

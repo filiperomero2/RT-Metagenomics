@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from fastapi.responses import HTMLResponse
+from fastapi.responses import StreamingResponse
 from usecases.get_metagenomics_result_usecase import GetMetagenomicsResultUseCaseDependency
 from usecases.list_metagenomic_usecase import ListMetagenomicsUseCaseDependency
 from entities.metagenomics_parameters import MetagenomicsParameters
@@ -35,4 +35,4 @@ async def get_metagenomics(usecase: ListMetagenomicsUseCaseDependency):
 
 @router.get("/metagenomics/{run_id}/result")
 async def get_metagenomics_result(run_id: int, usecase: GetMetagenomicsResultUseCaseDependency):
-    return HTMLResponse(usecase.execute(run_id))
+    return StreamingResponse(usecase.execute(run_id), media_type="text/html")
