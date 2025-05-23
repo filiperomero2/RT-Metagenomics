@@ -1,5 +1,7 @@
 "use client";
 
+import { IconWrapper } from "@/components/icon/icon-wrapper";
+import { EmptyFull } from "@/components/state-components/empty-full";
 import { ErrorFull } from "@/components/state-components/error-full";
 import { LoadingFull } from "@/components/state-components/loading-full";
 import { setFocusedMeta } from "@/hooks/use-focused-meta";
@@ -12,51 +14,16 @@ import {
   Checkbox,
   Divider,
   ScrollShadow,
-  Spinner,
 } from "@heroui/react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Ban,
-  CheckSquare2,
   CircleCheck,
   CircleEllipsis,
   CirclePlay,
   CircleX,
 } from "lucide-react";
 import { ReactNode } from "react";
-
-type IconWrapperProps = {
-  children: ReactNode;
-  className?: string;
-};
-
-export const IconWrapper = ({ children, className }: IconWrapperProps) => (
-  <div
-    className={cn(
-      className,
-      "flex items-center rounded-small justify-center w-8 h-8"
-    )}
-  >
-    {children}
-  </div>
-);
-
-type ItemProps = {
-  label: ReactNode;
-  value: ReactNode;
-  span?: boolean;
-};
-
-function Item({ value, label, span }: ItemProps) {
-  return (
-    <div className={cn("flex justify-between px-2", span && "@md:col-span-2")}>
-      <span className="font-bold text-sm text-primary-600 line-clamp-1">
-        {label}:
-      </span>
-      <span>{value}</span>
-    </div>
-  );
-}
 
 const iconColors: Record<MetaGenomicState["state"], string> = {
   canceled: "text-danger bg-danger/15",
@@ -75,7 +42,7 @@ const stateToIcon: Record<MetaGenomicState["state"], ReactNode> = {
 };
 
 export function MetaList() {
-  const { data, isLoading, isError } = useQuery<MetaGenomicState[]>({
+  const { data, isPending, isError } = useQuery<MetaGenomicState[]>({
     queryKey: ["list-meta-genomics"],
     refetchInterval: 2000,
     queryFn: async () => {
@@ -84,9 +51,9 @@ export function MetaList() {
     },
   });
 
-  if (isLoading) return <LoadingFull />;
+  if (isPending) return <LoadingFull />;
   if (isError) return <ErrorFull />;
-  if (!data) return "No data";
+  if (!data || data.length === 0) return <EmptyFull />;
 
   return (
     <ScrollShadow
@@ -95,13 +62,13 @@ export function MetaList() {
     >
       <Accordion
         variant="splitted"
-        defaultExpandedKeys={[data[0].id]}
+        defaultExpandedKeys={[data[0]?.id]}
         className="w-full h-full"
       >
         {data?.map(({ parameters: meta, id, iteration, state }) => (
           <AccordionItem
             key={id}
-            textValue={meta.runName}
+            textValue={meta.runName ?? "Meta Genomic"}
             onPress={() => setFocusedMeta(meta)}
             startContent={
               <IconWrapper className={iconColors[state]}>
@@ -110,6 +77,7 @@ export function MetaList() {
             }
             title={<p>{meta.runName}</p>}
             subtitle={<p>Interaction {iteration}</p>}
+            classNames={{ content: "overflow-x-clip" }}
           >
             <Divider />
             <div className="grid grid-cols-1 @md:grid-cols-2 gap-3 py-4 w-full p-2">
@@ -147,8 +115,25 @@ export function MetaList() {
               />
             </div>
           </AccordionItem>
-        )) || []}
+        ))}
       </Accordion>
     </ScrollShadow>
+  );
+}
+
+type ItemProps = {
+  label: ReactNode;
+  value: ReactNode;
+  span?: boolean;
+};
+
+function Item({ value, label, span }: ItemProps) {
+  return (
+    <div className={cn("flex justify-between px-2", span && "@md:col-span-2")}>
+      <span className="font-bold text-sm text-primary-600 line-clamp-1">
+        {label}:
+      </span>
+      <span>{value}</span>
+    </div>
   );
 }

@@ -11,7 +11,12 @@ export function CheckBox({
   const { field } = useController({ name });
 
   return (
-    <CheckBoxUI {...rest} {...field}>
+    <CheckBoxUI
+      {...rest}
+      {...field}
+      isSelected={field.value}
+      onValueChange={field.onChange}
+    >
       {label}
     </CheckBoxUI>
   );
