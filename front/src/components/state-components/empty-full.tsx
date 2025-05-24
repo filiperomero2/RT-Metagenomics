@@ -1,9 +1,15 @@
 import { Ghost, LucideProps } from "lucide-react";
 
-export function EmptyFull(props: LucideProps) {
+export function EmptyFull({
+  label,
+  ...props
+}: LucideProps & { label?: string }) {
   return (
     <div className="flex items-center justify-center h-full">
-      <Ghost className="text-default-300" size={50} {...props} />
+      <div className="flex flex-col items-center justify-center gap-2 text-default-300">
+        <Ghost size={50} {...props} />
+        {label && <h1>{label}</h1>}
+      </div>
     </div>
   );
 }

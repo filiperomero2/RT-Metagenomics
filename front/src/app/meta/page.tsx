@@ -50,7 +50,7 @@ export default function Meta() {
             color="primary"
             variant="solid"
             size="lg"
-            className="absolute top-2 -translate-x-1/4 dark:bg-primary-100 bg-primary-400 cursor-pointer z-10 p-2"
+            className="absolute top-30 -translate-x-1/4 dark:bg-primary-100 bg-primary-400 cursor-pointer z-10 p-2"
           >
             <PlusCircle className="ml-2 " />
           </Button>
@@ -99,7 +99,7 @@ export default function Meta() {
             color="primary"
             variant="solid"
             size="lg"
-            className="absolute top-2 right-0 translate-x-1/4 dark:bg-primary-100 bg-primary-400 cursor-pointer z-10 p-2"
+            className="absolute top-30 right-0 translate-x-1/4 dark:bg-primary-100 bg-primary-400 cursor-pointer z-10 p-2"
           >
             <List className="mr-2 " />
           </Button>

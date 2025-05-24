@@ -69,7 +69,9 @@ export function MetaList() {
           <AccordionItem
             key={id}
             textValue={meta.runName ?? "Meta Genomic"}
-            onPress={() => setFocusedMeta(meta)}
+            onPress={() =>
+              setFocusedMeta({ id, state, iteration, parameters: meta })
+            }
             startContent={
               <IconWrapper className={iconColors[state]}>
                 {stateToIcon[state]}

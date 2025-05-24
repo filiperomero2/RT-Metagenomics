@@ -11,7 +11,7 @@ import { FormProvider, useForm } from "react-hook-form";
 import { useLocalStorage } from "usehooks-ts";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod/v4";
+import { z } from "zod";
 
 const schema = z.object({
   runName: z.string().min(5, { message: "Run Name is required" }),
@@ -48,7 +48,7 @@ export function MetaForm() {
 
   const queryClient = useQueryClient();
   const { mutateAsync, isPending } = useMutation({
-    mutationFn: async (data: any) => {
+    mutationFn: async (data: MetaGenomic) => {
       await api.post("/v1/metagenomics", data);
       queryClient.invalidateQueries({ queryKey: ["list-meta-genomics"] });
     },
@@ -64,7 +64,6 @@ export function MetaForm() {
       removeHumanReads: false,
       removeUnclassifiedReads: false,
       minimumReadLength: 50,
-
       outputDir: storedForm?.outputDir ?? "",
       sampleSheetFilePath: storedForm?.sampleSheetFilePath ?? "",
       kraken2DatabasePath: storedForm?.kraken2DatabasePath ?? "",

@@ -5,5 +5,5 @@ channels:
   - conda-forge
 dependencies:
   - fastapi=0.115.12
-  - viralunity=1.0.5
+  - viralunity=1.0.4
   - sqlmodel=0.0.24
