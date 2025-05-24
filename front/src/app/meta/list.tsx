@@ -4,7 +4,7 @@ import { IconWrapper } from "@/components/icon/icon-wrapper";
 import { EmptyFull } from "@/components/state-components/empty-full";
 import { ErrorFull } from "@/components/state-components/error-full";
 import { LoadingFull } from "@/components/state-components/loading-full";
-import { setFocusedMeta } from "@/hooks/use-focused-meta";
+import { setFocusedMeta, useFocusedMeta } from "@/hooks/use-focused-meta";
 import { api } from "@/lib/axios";
 import { MetaGenomicState } from "@/types/meta-genomic-state";
 import { cn } from "@/utils/cn";
@@ -42,6 +42,7 @@ const stateToIcon: Record<MetaGenomicState["state"], ReactNode> = {
 };
 
 export function MetaList() {
+  const focused = useFocusedMeta();
   const { data, isPending, isError } = useQuery<MetaGenomicState[]>({
     queryKey: ["list-meta-genomics"],
     refetchInterval: 2000,
@@ -62,62 +63,74 @@ export function MetaList() {
     >
       <Accordion
         variant="splitted"
-        defaultExpandedKeys={[data[0]?.id]}
+        selectedKeys={[String(focused.id)]}
+        onSelectionChange={(key) => {
+          const selected = data.find(
+            (item) =>
+              item.id === Number((key as Set<string>).values().next().value)
+          );
+
+          if (selected) {
+            setFocusedMeta(selected);
+          }
+        }}
         className="w-full h-full"
       >
-        {data?.map(({ parameters: meta, id, iteration, state }) => (
-          <AccordionItem
-            key={id}
-            textValue={meta.runName ?? "Meta Genomic"}
-            onPress={() =>
-              setFocusedMeta({ id, state, iteration, parameters: meta })
-            }
-            startContent={
-              <IconWrapper className={iconColors[state]}>
-                {stateToIcon[state]}
-              </IconWrapper>
-            }
-            title={<p>{meta.runName}</p>}
-            subtitle={<p>Interaction {iteration}</p>}
-            classNames={{ content: "overflow-x-clip" }}
-          >
-            <Divider />
-            <div className="grid grid-cols-1 @md:grid-cols-2 gap-3 py-4 w-full p-2">
-              <Item label="Data Type" value={meta.dataType} span />
-              <Item label="Threads" value={meta.threads} />
-              <Item label="Threads Total" value={meta.threadsTotal} />
-              <Item
-                label="Minimum Read Length"
-                value={meta.minimumReadLength}
-              />
-              <Item label="Trim" value={meta.trim} />
+        {data
+          ?.toReversed()
+          .map(({ parameters: meta, id, iteration, state }) => (
+            <AccordionItem
+              key={id}
+              textValue={meta.runName ?? "Meta Genomic"}
+              onPress={() =>
+                setFocusedMeta({ id, state, iteration, parameters: meta })
+              }
+              startContent={
+                <IconWrapper className={iconColors[state]}>
+                  {stateToIcon[state]}
+                </IconWrapper>
+              }
+              title={<p>{meta.runName}</p>}
+              subtitle={<p>Interaction {iteration}</p>}
+              classNames={{ content: "overflow-x-clip" }}
+            >
+              <Divider />
+              <div className="grid grid-cols-1 @md:grid-cols-2 gap-3 py-4 w-full p-2">
+                <Item label="Data Type" value={meta.dataType} span />
+                <Item label="Threads" value={meta.threads} />
+                <Item label="Threads Total" value={meta.threadsTotal} />
+                <Item
+                  label="Minimum Read Length"
+                  value={meta.minimumReadLength}
+                />
+                <Item label="Trim" value={meta.trim} />
 
-              <Item
-                label="Remove Human Reads"
-                value={
-                  <Checkbox
-                    className="-mr-5"
-                    isReadOnly
-                    color="default"
-                    defaultSelected={meta.removeHumanReads}
-                  />
-                }
-              />
+                <Item
+                  label="Remove Human Reads"
+                  value={
+                    <Checkbox
+                      className="-mr-5"
+                      isReadOnly
+                      color="default"
+                      defaultSelected={meta.removeHumanReads}
+                    />
+                  }
+                />
 
-              <Item
-                label="Remove Unclassified Reads"
-                value={
-                  <Checkbox
-                    className="-mr-5"
-                    isReadOnly
-                    color="default"
-                    defaultSelected={meta.removeUnclassifiedReads}
-                  />
-                }
-              />
-            </div>
-          </AccordionItem>
-        ))}
+                <Item
+                  label="Remove Unclassified Reads"
+                  value={
+                    <Checkbox
+                      className="-mr-5"
+                      isReadOnly
+                      color="default"
+                      defaultSelected={meta.removeUnclassifiedReads}
+                    />
+                  }
+                />
+              </div>
+            </AccordionItem>
+          ))}
       </Accordion>
     </ScrollShadow>
   );

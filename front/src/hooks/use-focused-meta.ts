@@ -5,7 +5,7 @@ import { Store, useStore } from "@tanstack/react-store";
 const store = new Store({} as MetaGenomicState);
 
 export const useFocusedMeta = () => {
-  return useStore(store);
+  return useStore(store, (state) => state);
 };
 
 export const setFocusedMeta = (meta: MetaGenomicState) => {
