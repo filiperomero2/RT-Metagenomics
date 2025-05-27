@@ -28,7 +28,7 @@ export function MetaVisualization() {
         </div>
       )}
       <iframe
-        src={`${baseUrl}/v1/metagenomics/${id}/result`}
+        src={`${baseUrl}v1/metagenomics/${id}/result`}
         className="w-full h-full"
         onLoad={handleLoad}
       />

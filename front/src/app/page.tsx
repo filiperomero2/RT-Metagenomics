@@ -1,12 +1,15 @@
 "use client";
 
-import { ChartPie } from "lucide-react";
+import { BookText, ChartPie } from "lucide-react";
 
 import { motion } from "framer-motion";
 import Link from "next/link";
 
 export default function Home() {
-  const links = [{ href: "/meta", label: "Meta", icon: ChartPie }];
+  const links = [
+    { href: "/meta", label: "Meta", icon: ChartPie },
+    // { href: "/about", label: "About", icon: BookText },
+  ];
 
   return (
     <div className="h-[calc(100vh-65px)] flex  items-center justify-center gap-8">
