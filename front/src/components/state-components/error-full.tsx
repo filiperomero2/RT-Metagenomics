@@ -1,9 +1,15 @@
 import { CircleX, LucideProps } from "lucide-react";
 
-export function ErrorFull(props: LucideProps) {
+export function ErrorFull({
+  label,
+  ...props
+}: LucideProps & { label?: string }) {
   return (
     <div className="flex items-center justify-center h-full">
-      <CircleX className="text-danger-300" size={50} {...props} />
+      <div className="flex flex-col items-center justify-center gap-2 text-danger-300">
+        <CircleX size={50} {...props} />
+        {label && <h1>{label}</h1>}
+      </div>
     </div>
   );
 }

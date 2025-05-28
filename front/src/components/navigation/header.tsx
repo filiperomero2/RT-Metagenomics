@@ -1,14 +1,23 @@
 "use client";
 
 import {
+  Button,
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownTrigger,
   Link,
   Navbar,
   NavbarBrand,
   NavbarContent,
   NavbarItem,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
 } from "@heroui/react";
 import { usePathname } from "next/navigation";
 import { ThemeSwitcher } from "../state-components/theme-switcher";
+import { Settings } from "lucide-react";
 
 export function Header() {
   const path = usePathname();
@@ -24,9 +33,6 @@ export function Header() {
           </NavbarItem>
         </NavbarBrand>
 
-        <NavbarItem>
-          <ThemeSwitcher />
-        </NavbarItem>
         <NavbarItem isActive={path === "/meta"}>
           <Link color="foreground" href="/meta">
             Meta
@@ -37,6 +43,25 @@ export function Header() {
             About
           </Link>
         </NavbarItem>
+
+        <Popover placement="bottom-end" showArrow>
+          <NavbarItem>
+            <PopoverTrigger>
+              <Button
+                disableRipple
+                className="p-0 bg-transparent data-[hover=true]:bg-transparent"
+                radius="sm"
+                variant="light"
+                isIconOnly
+              >
+                <Settings />
+              </Button>
+            </PopoverTrigger>
+          </NavbarItem>
+          <PopoverContent aria-label="Settings" className="py-3 px-4">
+            <ThemeSwitcher />
+          </PopoverContent>
+        </Popover>
       </NavbarContent>
     </Navbar>
   );

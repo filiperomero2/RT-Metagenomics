@@ -1,37 +1,32 @@
 import { EmptyFull } from "@/components/state-components/empty-full";
+import { ErrorFull } from "@/components/state-components/error-full";
 import { LoadingFull } from "@/components/state-components/loading-full";
 import { useFocusedMeta } from "@/hooks/use-focused-meta";
 import { api } from "@/lib/axios";
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 
 const baseUrl = api.defaults.baseURL;
 
 export function MetaVisualization() {
-  const [loading, setLoading] = useState(true);
   const { id } = useFocusedMeta();
-
-  useEffect(() => {
-    if (id) setLoading(true);
-  }, [id]);
-
-  const handleLoad = () => {
-    setLoading(false);
-  };
-
+  const { data, isPending, isError, isFetching } = useQuery({
+    enabled: id !== undefined,
+    queryKey: ["meta-visualization", id],
+    queryFn: async () => {
+      const response = await api.get(`v1/metagenomics/${id}/result`);
+      return response.data;
+    },
+  });
+  
   if (!id) return <EmptyFull label="No metagenomic selected" />;
+  if (isPending) return <LoadingFull />;
+  if (isError) return <ErrorFull label="Visualization not ready"/>;
+  if (!data || data.length === 0) return <EmptyFull />;
+
 
   return (
     <div className="w-full h-full relative p-2">
-      {loading && (
-        <div className="absolute inset-0">
-          <LoadingFull />
-        </div>
-      )}
-      <iframe
-        src={`${baseUrl}v1/metagenomics/${id}/result`}
-        className="w-full h-full rounded-xl"
-        onLoad={handleLoad}
-      />
+      <iframe srcDoc={data} className="w-full h-full rounded-xl" />
     </div>
   );
 }
