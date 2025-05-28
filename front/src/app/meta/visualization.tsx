@@ -24,7 +24,7 @@ export function MetaVisualization() {
   return (
     <div className="w-full h-full relative p-2 space-y-2 overflow-y-auto snap-y ">
       <div className="w-full h-full overflow-hidden rounded-xl relative snap-center">
-        <iframe srcDoc={data} className="w-full h-full rounded-xl" />
+        <iframe srcDoc={data} className="w-full h-full rounded-xl bg-white" />
         <div className="absolute right-2 bottom-2">
           <Chip variant="faded">Sample 4117</Chip>
         </div>
