@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  Avatar,
   Link,
   Navbar,
   NavbarBrand,
@@ -9,6 +8,7 @@ import {
   NavbarItem,
 } from "@heroui/react";
 import { usePathname } from "next/navigation";
+import { ThemeSwitcher } from "../state-components/theme-switcher";
 
 export function Header() {
   const path = usePathname();
@@ -24,6 +24,9 @@ export function Header() {
           </NavbarItem>
         </NavbarBrand>
 
+        <NavbarItem>
+          <ThemeSwitcher />
+        </NavbarItem>
         <NavbarItem isActive={path === "/meta"}>
           <Link color="foreground" href="/meta">
             Meta

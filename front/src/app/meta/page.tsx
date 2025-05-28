@@ -24,7 +24,7 @@ export default function Meta() {
               id="form"
               order={1}
             >
-              <div className="flex flex-col gap-4 bg-content1 h-full p-6 relative overflow-y-auto">
+              <div className="flex flex-col gap-5 bg-content1 h-full p-6 relative overflow-y-auto">
                 <h1 className="text-2xl font-bold my-2 text-center">
                   New Metagenomics
                 </h1>
@@ -50,7 +50,7 @@ export default function Meta() {
             color="primary"
             variant="solid"
             size="lg"
-            className="absolute top-30 -translate-x-1/4 dark:bg-primary-100 bg-primary-400 cursor-pointer z-10 p-2"
+            className="absolute  top-1/2 -translate-y-1/2 -translate-x-1/4 dark:bg-primary-100 bg-primary-400 cursor-pointer z-10 p-2"
           >
             <PlusCircle className="ml-2 " />
           </Button>
@@ -74,9 +74,9 @@ export default function Meta() {
               minSize={17}
               defaultSize={20}
               maxSize={30}
-              className="flex flex-col gap-4 bg-content1 h-full p-6 relative overflow-y-auto"
+              className="flex flex-col bg-content1 h-full relative overflow-y-auto"
             >
-              <h1 className="text-2xl font-bold my-2 text-center">
+              <h1 className="text-2xl font-bold my-2 text-center pt-6 px-6">
                 Metagenomics
               </h1>
               <MetaList />
@@ -99,7 +99,7 @@ export default function Meta() {
             color="primary"
             variant="solid"
             size="lg"
-            className="absolute top-30 right-0 translate-x-1/4 dark:bg-primary-100 bg-primary-400 cursor-pointer z-10 p-2"
+            className="absolute top-1/2 -translate-y-1/2 right-0 translate-x-1/4 dark:bg-primary-100 bg-primary-400 cursor-pointer z-10 p-2"
           >
             <List className="mr-2 " />
           </Button>

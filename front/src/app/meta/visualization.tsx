@@ -21,7 +21,7 @@ export function MetaVisualization() {
   if (!id) return <EmptyFull label="No metagenomic selected" />;
 
   return (
-    <div className="w-full h-full relative">
+    <div className="w-full h-full relative p-2">
       {loading && (
         <div className="absolute inset-0">
           <LoadingFull />
@@ -29,7 +29,7 @@ export function MetaVisualization() {
       )}
       <iframe
         src={`${baseUrl}v1/metagenomics/${id}/result`}
-        className="w-full h-full"
+        className="w-full h-full rounded-xl"
         onLoad={handleLoad}
       />
     </div>

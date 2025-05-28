@@ -59,7 +59,7 @@ export function MetaList() {
   return (
     <ScrollShadow
       hideScrollBar
-      className="flex flex-col items-center justify-center @container overflow-y-auto h-full"
+      className="flex flex-col @container overflow-y-auto h-full py-5 px-1"
     >
       <Accordion
         variant="splitted"
@@ -74,7 +74,6 @@ export function MetaList() {
             setFocusedMeta(selected);
           }
         }}
-        className="w-full h-full"
       >
         {data
           ?.toReversed()
