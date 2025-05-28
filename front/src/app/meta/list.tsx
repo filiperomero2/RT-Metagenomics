@@ -13,7 +13,10 @@ import {
   AccordionItem,
   Checkbox,
   Divider,
+  Progress,
   ScrollShadow,
+  Skeleton,
+  Spinner,
 } from "@heroui/react";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -23,7 +26,9 @@ import {
   CirclePlay,
   CircleX,
 } from "lucide-react";
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
+
+const loadingStates = ["running", "pending"];
 
 const iconColors: Record<MetaGenomicState["state"], string> = {
   canceled: "text-danger bg-danger/15",
@@ -38,16 +43,19 @@ const stateToIcon: Record<MetaGenomicState["state"], ReactNode> = {
   completed: <CircleCheck />,
   failed: <CircleX />,
   pending: <CircleEllipsis />,
-  running: <CirclePlay />,
+  running: <Spinner variant="gradient" size="sm" />,
 };
 
 export function MetaList() {
   const focused = useFocusedMeta();
+  const [shouldRefetch, setShouldRefetch] = useState(true);
+
   const { data, isPending, isError } = useQuery<MetaGenomicState[]>({
     queryKey: ["list-meta-genomics"],
-    refetchInterval: 2000,
+    refetchInterval: shouldRefetch ? 2000 : 0,
     queryFn: async () => {
       const { data } = await api.get<MetaGenomicState[]>("/v1/metagenomics");
+      setShouldRefetch(data.some((item) => loadingStates.includes(item.state)));
       return data;
     },
   });

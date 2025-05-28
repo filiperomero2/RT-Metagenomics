@@ -5,11 +5,9 @@ import { useFocusedMeta } from "@/hooks/use-focused-meta";
 import { api } from "@/lib/axios";
 import { useQuery } from "@tanstack/react-query";
 
-const baseUrl = api.defaults.baseURL;
-
 export function MetaVisualization() {
   const { id } = useFocusedMeta();
-  const { data, isPending, isError, isFetching } = useQuery({
+  const { data, isPending, isError } = useQuery({
     enabled: id !== undefined,
     queryKey: ["meta-visualization", id],
     queryFn: async () => {
@@ -21,8 +19,6 @@ export function MetaVisualization() {
   if (!id) return <EmptyFull label="No metagenomic selected" />;
   if (isPending) return <LoadingFull />;
   if (isError) return <ErrorFull label="Visualization not ready"/>;
-  if (!data || data.length === 0) return <EmptyFull />;
-
 
   return (
     <div className="w-full h-full relative p-2">
