@@ -3,6 +3,7 @@ import { ErrorFull } from "@/components/state-components/error-full";
 import { LoadingFull } from "@/components/state-components/loading-full";
 import { useFocusedMeta } from "@/hooks/use-focused-meta";
 import { api } from "@/lib/axios";
+import { Card, CardBody, CardHeader, Chip, ScrollShadow } from "@heroui/react";
 import { useQuery } from "@tanstack/react-query";
 
 export function MetaVisualization() {
@@ -15,14 +16,19 @@ export function MetaVisualization() {
       return response.data;
     },
   });
-  
+
   if (!id) return <EmptyFull label="No metagenomic selected" />;
   if (isPending) return <LoadingFull />;
-  if (isError) return <ErrorFull label="Visualization not ready"/>;
+  if (isError) return <ErrorFull label="Visualization not ready" />;
 
   return (
-    <div className="w-full h-full relative p-2">
-      <iframe srcDoc={data} className="w-full h-full rounded-xl" />
+    <div className="w-full h-full relative p-2 space-y-2 overflow-y-auto snap-y ">
+      <div className="w-full h-full overflow-hidden rounded-xl relative snap-center">
+        <iframe srcDoc={data} className="w-full h-full rounded-xl" />
+        <div className="absolute right-2 bottom-2">
+          <Chip variant="faded">Sample 4117</Chip>
+        </div>
+      </div>
     </div>
   );
 }

@@ -44,9 +44,9 @@ export function Header() {
           </Link>
         </NavbarItem>
 
-        <Popover placement="bottom-end" showArrow>
+        <Dropdown placement="bottom-end" showArrow>
           <NavbarItem>
-            <PopoverTrigger>
+            <DropdownTrigger>
               <Button
                 disableRipple
                 className="p-0 bg-transparent data-[hover=true]:bg-transparent"
@@ -56,12 +56,14 @@ export function Header() {
               >
                 <Settings />
               </Button>
-            </PopoverTrigger>
+            </DropdownTrigger>
           </NavbarItem>
-          <PopoverContent aria-label="Settings" className="py-3 px-4">
-            <ThemeSwitcher />
-          </PopoverContent>
-        </Popover>
+          <DropdownMenu aria-label="Settings" className="py-3 px-4">
+            <DropdownItem key={"theme-switcher"} isReadOnly>
+              <ThemeSwitcher />
+            </DropdownItem>
+          </DropdownMenu>
+        </Dropdown>
       </NavbarContent>
     </Navbar>
   );
