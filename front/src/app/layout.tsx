@@ -16,7 +16,6 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "RT-Meta",
-
 };
 
 export default function RootLayout({
@@ -26,6 +25,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <link rel="icon" type="image/x-icon" href="/favicon.ico?v=2"></link>
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} text-foreground bg-background min-h-screen`}
       >
