@@ -1,4 +1,6 @@
-data/
-output/
-node_modules/
-
+**/*/rt-meta-venv
+**/*/__pycache__
+**/input
+**/output
+**/.snakemake
+**/*.db
