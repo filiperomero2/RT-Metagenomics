@@ -8,23 +8,21 @@ import { setFocusedMeta, useFocusedMeta } from "@/hooks/use-focused-meta";
 import { api } from "@/lib/axios";
 import { MetaGenomicState } from "@/types/meta-genomic-state";
 import { cn } from "@/utils/cn";
+import { queryKeys } from "@/utils/query-keys-factory";
 import {
   Accordion,
   AccordionItem,
   Checkbox,
   Divider,
-  Progress,
   ScrollShadow,
-  Skeleton,
-  Spinner,
+  Spinner
 } from "@heroui/react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Ban,
   CircleCheck,
   CircleEllipsis,
-  CirclePlay,
-  CircleX,
+  CircleX
 } from "lucide-react";
 import { ReactNode, useState } from "react";
 
@@ -51,7 +49,7 @@ export function MetaList() {
   const [shouldRefetch, setShouldRefetch] = useState(true);
 
   const { data, isPending, isError } = useQuery<MetaGenomicState[]>({
-    queryKey: ["list-meta-genomics"],
+    queryKey: queryKeys.getAllMetaGenomics(),
     refetchInterval: shouldRefetch ? 2000 : 0,
     queryFn: async () => {
       const { data } = await api.get<MetaGenomicState[]>("/v1/metagenomics");

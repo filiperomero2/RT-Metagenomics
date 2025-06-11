@@ -3,14 +3,15 @@ import { ErrorFull } from "@/components/state-components/error-full";
 import { LoadingFull } from "@/components/state-components/loading-full";
 import { useFocusedMeta } from "@/hooks/use-focused-meta";
 import { api } from "@/lib/axios";
-import { Card, CardBody, CardHeader, Chip, ScrollShadow } from "@heroui/react";
+import { queryKeys } from "@/utils/query-keys-factory";
+import { Chip } from "@heroui/react";
 import { useQuery } from "@tanstack/react-query";
 
 export function MetaVisualization() {
   const { id } = useFocusedMeta();
   const { data, isPending, isError } = useQuery({
     enabled: id !== undefined,
-    queryKey: ["meta-visualization", id],
+    queryKey: queryKeys.getMetaGenomic(id),
     queryFn: async () => {
       const response = await api.get(`v1/metagenomics/${id}/result`);
       return response.data;

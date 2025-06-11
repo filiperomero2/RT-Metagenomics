@@ -6,10 +6,11 @@ import { Select } from "@/components/form/select";
 import { api } from "@/lib/axios";
 import { MetaGenomic } from "@/types/meta-genomic";
 import { Button, Divider, SelectItem } from "@heroui/react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { FormProvider, useForm } from "react-hook-form";
 import { useLocalStorage } from "usehooks-ts";
 
+import { queryKeys } from "@/utils/query-keys-factory";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
@@ -46,11 +47,18 @@ export function MetaForm() {
     { initializeWithValue: false }
   );
 
-  const queryClient = useQueryClient();
   const { mutateAsync, isPending } = useMutation({
-    mutationFn: async (data: MetaGenomic) => {
-      await api.post("/v1/metagenomics", data);
-      queryClient.invalidateQueries({ queryKey: ["list-meta-genomics"] });
+    mutationFn: (data: MetaGenomic) => api.post("/v1/metagenomics", data),
+    meta: {
+      invalidatesQuery: queryKeys.getAllMetaGenomics(),
+      successMessage: {
+        title: "MetaGenomic Run Submission",
+        description: "Successfully submitted MetaGenomic run",
+      },
+      errorMessage: {
+        title: "MetaGenomic Run Submission",
+        description: "Failed to submit MetaGenomic run",
+      },
     },
   });
 
