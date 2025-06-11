@@ -8,7 +8,7 @@ from entities.metagenomic_run import MetagenomicRun
 from infra.database.db import engine
 from infra.singleton import Singleton
 from entities.metagenomics_parameters import MetagenomicsParameters
-from viralunity.viralunity_meta import main as metagenomics
+from viralunity.viralunity.viralunity_meta import main as metagenomics
 
 import time
 
