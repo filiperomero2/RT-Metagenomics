@@ -19,7 +19,7 @@ class GetMetagenomicsResultUseCase:
         data = results.first()
         if (data is not None):
             run, parameters = data 
-            with open(f"{parameters.outputDir}/job_2025-05-22_{parameters.runName}/metagenomics/taxonomic_assignments/reports/sample-4117.output.krona.html", "r") as krona_plot:
+            with open(f"{parameters.outputDir}/{parameters.id}_{parameters.runName}/metagenomics/taxonomic_assignments/reports/sample-4117.output.krona.html", "r") as krona_plot:
                 yield from krona_plot
 
     

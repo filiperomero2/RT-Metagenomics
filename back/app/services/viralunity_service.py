@@ -42,7 +42,7 @@ class ViralUnityService(metaclass=Singleton):
                             "data_type": metagenomics_parameters.dataType.value,
                             "sample_sheet": metagenomics_parameters.sampleSheetFilePath,
                             "config_file": metagenomics_parameters.outputDir + "/config.yaml",
-                            "run_name": metagenomics_parameters.runName,
+                            "run_name": f"{metagenomics_parameters.id}_{metagenomics_parameters.runName}",
                             "kraken2_database": metagenomics_parameters.kraken2DatabasePath,
                             "krona_database": metagenomics_parameters.kronaDatabasePath,
                             "adapters": metagenomics_parameters.adaptersPath,
