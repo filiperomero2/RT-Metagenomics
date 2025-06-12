@@ -8,17 +8,18 @@ import { Chip } from "@heroui/react";
 import { useQuery } from "@tanstack/react-query";
 
 export function MetaVisualization() {
-  const { id } = useFocusedMeta();
+  const focused = useFocusedMeta();
   const { data, isPending, isError } = useQuery({
-    enabled: id !== undefined,
-    queryKey: queryKeys.getMetaGenomic(id),
+    enabled: !!focused?.id,
+    queryKey: queryKeys.getMetaGenomic(Number(focused?.id)),
     queryFn: async () => {
-      const response = await api.get(`v1/metagenomics/${id}/result`);
+      const response = await api.get(`v1/metagenomics/${focused!.id}/result`);
       return response.data;
     },
   });
 
-  if (!id) return <EmptyFull label="No metagenomic selected" />;
+
+  if (!focused?.id) return <EmptyFull label="No metagenomic selected" />;
   if (isPending) return <LoadingFull />;
   if (isError) return <ErrorFull label="Visualization not ready" />;
 

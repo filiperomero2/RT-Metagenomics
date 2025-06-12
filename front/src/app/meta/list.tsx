@@ -69,7 +69,7 @@ export function MetaList() {
     >
       <Accordion
         variant="splitted"
-        selectedKeys={[String(focused.id)]}
+        selectedKeys={[String(focused?.id)]}
         onSelectionChange={(key) => {
           const selected = data.find(
             (item) =>
