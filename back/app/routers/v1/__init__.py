@@ -3,7 +3,7 @@ from fastapi.responses import StreamingResponse
 from usecases.get_metagenomics_result_usecase import GetMetagenomicsResultUseCaseDependency
 from usecases.list_metagenomic_usecase import ListMetagenomicsUseCaseDependency
 from entities.metagenomics_parameters import MetagenomicsParameters
-from usecases.start_metagenomic_usecase import StartMetagenomicsUseCaseDependency
+from usecases.create_metagenomic_usecase import CreateMetagenomicsUseCaseDependency
 from schemas import MetagenomicsParametersSchema
 
 router = APIRouter(prefix='/v1')
@@ -11,7 +11,7 @@ router = APIRouter(prefix='/v1')
 @router.post("/metagenomics")
 async def start_metagenomics(
     metagenomics_parameters: MetagenomicsParametersSchema,
-    usecase: StartMetagenomicsUseCaseDependency
+    usecase: CreateMetagenomicsUseCaseDependency
 ):
     return usecase.execute(MetagenomicsParameters(
         dataType=metagenomics_parameters.dataType,

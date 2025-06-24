@@ -1,5 +1,8 @@
 import logging
+import os
 from typing import Annotated
+import hashlib
+import csv
 
 from fastapi import Depends
 from sqlmodel import Session, select
@@ -32,6 +35,14 @@ class ViralUnityService(metaclass=Singleton):
                     try:
                         stmt = select(MetagenomicsParameters).where(MetagenomicsParameters.id == next_task.parametersId).limit(1)
                         metagenomics_parameters = db_session.exec(stmt).first()
+                        task_hash = self.get_hash_of_task(metagenomics_parameters)
+                        if task_hash == next_task.executionHash:
+                            logger.debug(f"Task {next_task.id} already processed, marking as COMPLETED.")
+                            next_task.state = RunState.COMPLETED
+                            db_session.add(next_task)
+                            db_session.commit()
+                            continue
+                        
                         if metagenomics_parameters is None:
                             logger.error(f"Parameters for run {next_task.id} not found.")
                             next_task.state = RunState.FAILED
@@ -56,11 +67,13 @@ class ViralUnityService(metaclass=Singleton):
                             "trim": metagenomics_parameters.trim,
                         }
                         next_task.state = RunState.RUNNING
+                        next_task.iteration += 1
+                        next_task.executionHash = task_hash
                         db_session.add(next_task)
                         db_session.commit()
                         result = metagenomics(params)
                         logger.debug(f"Metagenomics run completed with result: {result}")
-                        next_task.state = RunState.COMPLETED
+                        next_task.state = RunState.PENDING
                         db_session.add(next_task)
                         db_session.commit()
                     except Exception as e:
@@ -75,12 +88,31 @@ class ViralUnityService(metaclass=Singleton):
     def __init__(self):
         pass
 
-    def start_metagenomics(self, metagenomics_parameters: MetagenomicsParameters):        
+
+    def get_hash_of_task(self, task: MetagenomicsParameters) -> str:
+        sample_hash = ""
+        with open(task.sampleSheetFilePath, 'r') as file:
+            reader = csv.reader(file)
+            for row in reader:
+                sample_file_1 = row[1] if len(row) > 1 else None
+                sample_file_2 = row[2] if len(row) > 2 else None
+                if sample_file_1 is not None and os.path.exists(sample_file_1):
+                    with open(sample_file_1, 'rb') as f:
+                        sample_hash += hashlib.sha256(f.read()).hexdigest()
+                if sample_file_2 is not None and sample_file_2 and os.path.exists(sample_file_2):
+                    with open(sample_file_2, 'rb') as f:
+                        sample_hash += hashlib.sha256(f.read()).hexdigest()
+        task_hash = hashlib.sha256(sample_hash.encode()).hexdigest()
+        return task_hash
+                    
+    
+    
+    def enqueue_metagenomics(self, metagenomics_parameters: MetagenomicsParameters):        
         with Session(engine) as db_session:
             try:
                 db_session.add(metagenomics_parameters)
                 db_session.commit()
-                run = MetagenomicRun(state=RunState.PENDING, iteration=1, parametersId=metagenomics_parameters.id)
+                run = MetagenomicRun(state=RunState.PENDING, iteration=0, parametersId=metagenomics_parameters.id)
                 db_session.add(run)
                 db_session.commit()
                 return run

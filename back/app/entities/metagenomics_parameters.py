@@ -1,5 +1,5 @@
 from sqlmodel import Field, SQLModel
-
+import csv
 from entities.enum import DataType
 
 class MetagenomicsParameters(SQLModel, table=True):

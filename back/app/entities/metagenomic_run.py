@@ -12,7 +12,7 @@ class MetagenomicRun(SQLModel, table=True):
     state: RunState = Field(default=RunState.PENDING)
     
     errorMessage: str | None = None
-    filesHash: str | None = None
+    executionHash: str | None = None
     iteration: int  = 1
     
     # run_parameters: MetagenomicsParameters
