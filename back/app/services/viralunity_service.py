@@ -1,26 +1,25 @@
 import logging
 import os
-from typing import Annotated
 import hashlib
 import csv
+import time
 
-from fastapi import Depends
 from sqlmodel import Session, select
 from entities.enum import RunState
 from entities.metagenomic_run import MetagenomicRun
 from infra.database.db import engine
-from infra.singleton import Singleton
 from entities.metagenomics_parameters import MetagenomicsParameters
 from viralunity.viralunity.viralunity_meta import main as metagenomics
-
-import time
-
-def get_viralunity_service():
-    return ViralUnityService()
+from services.viralunity_domain_logic import ViralUnityDomainLogic
+from config import config
 
 logger = logging.getLogger('uvicorn.error')
 
-class ViralUnityService(metaclass=Singleton):
+
+class ViralUnityService:
+    def __init__(self, domain_logic: ViralUnityDomainLogic):
+        self.domain_logic = domain_logic
+
     def main(self):
         logger.info("Starting ViralUnityService main thread...")
         while True:
@@ -30,42 +29,25 @@ class ViralUnityService(metaclass=Singleton):
                     next_task = db_session.exec(stmt).first()
                     if next_task is None:
                         logger.debug("No task to process, waiting for new tasks...")
-                        time.sleep(1)
+                        time.sleep(config.service.polling_interval)
                         continue
                     try:
                         stmt = select(MetagenomicsParameters).where(MetagenomicsParameters.id == next_task.parametersId).limit(1)
                         metagenomics_parameters = db_session.exec(stmt).first()
-                        task_hash = self.get_hash_of_task(metagenomics_parameters)
+                        task_hash = self.domain_logic.get_hash_of_task(metagenomics_parameters)
                         if task_hash == next_task.executionHash:
                             logger.debug(f"Task {next_task.id} already processed, marking as COMPLETED.")
                             next_task.state = RunState.COMPLETED
                             db_session.add(next_task)
                             db_session.commit()
                             continue
-                        
                         if metagenomics_parameters is None:
                             logger.error(f"Parameters for run {next_task.id} not found.")
                             next_task.state = RunState.FAILED
                             db_session.add(next_task)
                             db_session.commit()
                             continue
-                        params = {
-                            "data_type": metagenomics_parameters.dataType.value,
-                            "sample_sheet": metagenomics_parameters.sampleSheetFilePath,
-                            "config_file": metagenomics_parameters.outputDir + "/config.yaml",
-                            "run_name": f"{metagenomics_parameters.id}_{metagenomics_parameters.runName}",
-                            "kraken2_database": metagenomics_parameters.kraken2DatabasePath,
-                            "krona_database": metagenomics_parameters.kronaDatabasePath,
-                            "adapters": metagenomics_parameters.adaptersPath,
-                            "threads": metagenomics_parameters.threads,
-                            "threads_total": metagenomics_parameters.threadsTotal,
-                            "output": metagenomics_parameters.outputDir,
-                            "remove_human_reads": metagenomics_parameters.removeHumanReads,
-                            "remove_unclassified_reads": metagenomics_parameters.removeUnclassifiedReads,
-                            "create_config_only": False,
-                            "minimum_read_length": 50,
-                            "trim": metagenomics_parameters.trim,
-                        }
+                        params = self.domain_logic.prepare_metagenomics_params(metagenomics_parameters)
                         next_task.state = RunState.RUNNING
                         next_task.iteration += 1
                         next_task.executionHash = task_hash
@@ -85,28 +67,6 @@ class ViralUnityService(metaclass=Singleton):
             except Exception as e:
                 logger.error(f"Error in ViralUnityService main thread: {e}")
     
-    def __init__(self):
-        pass
-
-
-    def get_hash_of_task(self, task: MetagenomicsParameters) -> str:
-        sample_hash = ""
-        with open(task.sampleSheetFilePath, 'r') as file:
-            reader = csv.reader(file)
-            for row in reader:
-                sample_file_1 = row[1] if len(row) > 1 else None
-                sample_file_2 = row[2] if len(row) > 2 else None
-                if sample_file_1 is not None and os.path.exists(sample_file_1):
-                    with open(sample_file_1, 'rb') as f:
-                        sample_hash += hashlib.sha256(f.read()).hexdigest()
-                if sample_file_2 is not None and sample_file_2 and os.path.exists(sample_file_2):
-                    with open(sample_file_2, 'rb') as f:
-                        sample_hash += hashlib.sha256(f.read()).hexdigest()
-        task_hash = hashlib.sha256(sample_hash.encode()).hexdigest()
-        return task_hash
-                    
-    
-    
     def enqueue_metagenomics(self, metagenomics_parameters: MetagenomicsParameters):        
         with Session(engine) as db_session:
             try:
@@ -120,5 +80,3 @@ class ViralUnityService(metaclass=Singleton):
                 logger.error(f"Error starting metagenomics: {e}")
                 db_session.rollback()
                 raise e
-
-ViralUnityServiceDependency = Annotated[ViralUnityService, Depends(get_viralunity_service)]

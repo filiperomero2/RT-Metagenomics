@@ -1,16 +1,12 @@
 import logging
-from typing import Annotated
-
-
-from fastapi import Depends
 from sqlmodel import select
 from entities.metagenomics_parameters import MetagenomicsParameters
 from entities.metagenomic_run import MetagenomicRun
-from infra.database.db import DbSession
 
-logger  = logging.getLogger('uvicorn.error')
+logger = logging.getLogger('uvicorn.error')
+
 class ListMetagenomicsUseCase:
-    def __init__(self, database_session: DbSession):
+    def __init__(self, database_session):
         self.database_session = database_session
 
     def execute(self):
@@ -37,9 +33,3 @@ class ListMetagenomicsUseCase:
                     "outputDir": parameters.outputDir
                 }
             }
-    
-    
-def get_list_metagenomics_usecase( database_session: DbSession):
-    return ListMetagenomicsUseCase(database_session)
-
-ListMetagenomicsUseCaseDependency = Annotated[ListMetagenomicsUseCase, Depends(get_list_metagenomics_usecase)]
