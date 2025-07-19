@@ -1,11 +1,11 @@
 
-from sqlmodel import Field, SQLModel, Relationship
-
 from entities.enum import RunState
-from entities.run_parameters import RunParameters
-from typing import List
-from .sample import Sample
+from sqlmodel import Field, SQLModel, Relationship
+from typing import List, TYPE_CHECKING
 
+if TYPE_CHECKING:
+    from entities.run_parameters import RunParameters
+    from entities.sample import Sample
 
 class Run(SQLModel, table=True):    
     id: int | None = Field(default=None, primary_key=True)
@@ -17,4 +17,4 @@ class Run(SQLModel, table=True):
     
     # Relationships
     samples: List["Sample"] = Relationship(back_populates="run")
-    parameters: RunParameters = Relationship(back_populates="run")
+    parameters: "RunParameters" = Relationship(back_populates="run")

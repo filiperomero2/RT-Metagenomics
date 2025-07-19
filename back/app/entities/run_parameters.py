@@ -1,8 +1,10 @@
-from back.app.entities.run import Run
 from sqlmodel import Field, SQLModel, Relationship
 import csv
 from entities.enum import DataType
-from typing import List
+from typing import List, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from entities.run import Run
 
 class RunParameters(SQLModel, table=True):
     
