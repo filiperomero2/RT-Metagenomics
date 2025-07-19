@@ -1,18 +1,15 @@
 import logging
-from sqlmodel import select
-from entities.metagenomics_parameters import MetagenomicsParameters
-from entities.metagenomic_run import MetagenomicRun
+from repositories.metagenomics_repository import MetagenomicsRepository
 
 logger = logging.getLogger('uvicorn.error')
+
 class GetMetagenomicsResultUseCase:
-    def __init__(self, database_session):
-        self.database_session = database_session
+    def __init__(self, repository: MetagenomicsRepository):
+        self.repository = repository
 
     def execute(self, run_id: int):
-        stmt = select(MetagenomicRun, MetagenomicsParameters).join(MetagenomicsParameters).where(MetagenomicRun.id == run_id)
-        results = self.database_session.exec(stmt)
-        data = results.first()
-        if (data is not None):
-            run, parameters = data 
+        result = self.repository.get_run_with_parameters(run_id)
+        if result is not None:
+            run, parameters = result 
             with open(f"{parameters.outputDir}/{parameters.id}_{parameters.runName}/metagenomics/taxonomic_assignments/reports/sample-4117.output.krona.html", "r") as krona_plot:
                 yield from krona_plot

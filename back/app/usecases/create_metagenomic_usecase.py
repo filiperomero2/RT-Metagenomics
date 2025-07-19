@@ -1,15 +1,17 @@
 import logging
-from entities.metagenomics_parameters import MetagenomicsParameters
+from entities.run_parameters import RunParameters
+from repositories.metagenomics_repository import MetagenomicsRepository
+from services.viralunity_service import ViralUnityService
 from exceptions import TaskExecutionError
 
 logger = logging.getLogger('uvicorn.error')
 
 class CreateMetagenomicsUseCase:
-    def __init__(self, viralunity_service, database_session):
+    def __init__(self, viralunity_service: ViralUnityService, repository: MetagenomicsRepository):
         self.viralunity_service = viralunity_service
-        self.database_session = database_session
+        self.repository = repository
 
-    def execute(self, metagenomics_parameters: MetagenomicsParameters):
+    def execute(self, metagenomics_parameters: RunParameters):
         logger.debug(f"Starting metagenomics with parameters: {metagenomics_parameters}")
         
         try:

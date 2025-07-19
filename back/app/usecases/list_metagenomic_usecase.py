@@ -1,17 +1,14 @@
 import logging
-from sqlmodel import select
-from entities.metagenomics_parameters import MetagenomicsParameters
-from entities.metagenomic_run import MetagenomicRun
+from repositories.metagenomics_repository import MetagenomicsRepository
 
 logger = logging.getLogger('uvicorn.error')
 
 class ListMetagenomicsUseCase:
-    def __init__(self, database_session):
-        self.database_session = database_session
+    def __init__(self, repository: MetagenomicsRepository):
+        self.repository = repository
 
     def execute(self):
-        stmt = select(MetagenomicRun, MetagenomicsParameters).where(MetagenomicRun.parametersId == MetagenomicsParameters.id)
-        results = self.database_session.exec(stmt)
+        results = self.repository.get_all_runs_with_parameters()
         for run, parameters in results:
             yield {
                 "id": run.id,

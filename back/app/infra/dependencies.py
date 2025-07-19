@@ -33,33 +33,34 @@ def get_viralunity_domain_logic() -> ViralUnityDomainLogic:
 
 # Service dependency
 def get_viralunity_service(
-    domain_logic: Annotated[ViralUnityDomainLogic, Depends(get_viralunity_domain_logic)]
+    domain_logic: Annotated[ViralUnityDomainLogic, Depends(get_viralunity_domain_logic)],
+    repository: Annotated[MetagenomicsRepository, Depends(get_metagenomics_repository)]
 ) -> ViralUnityService:
     """Get ViralUnity service instance."""
-    return ViralUnityService(domain_logic)
+    return ViralUnityService(domain_logic, repository)
 
 
 # Use case dependencies
 def get_create_metagenomics_usecase(
-    db_session: Annotated[Session, Depends(get_db_session)],
-    viralunity_service: Annotated[ViralUnityService, Depends(get_viralunity_service)]
+    viralunity_service: Annotated[ViralUnityService, Depends(get_viralunity_service)],
+    repository: Annotated[MetagenomicsRepository, Depends(get_metagenomics_repository)]
 ) -> CreateMetagenomicsUseCase:
     """Get CreateMetagenomicsUseCase instance."""
-    return CreateMetagenomicsUseCase(viralunity_service, db_session)
+    return CreateMetagenomicsUseCase(viralunity_service, repository)
 
 
 def get_list_metagenomics_usecase(
-    db_session: Annotated[Session, Depends(get_db_session)]
+    repository: Annotated[MetagenomicsRepository, Depends(get_metagenomics_repository)]
 ) -> ListMetagenomicsUseCase:
     """Get ListMetagenomicsUseCase instance."""
-    return ListMetagenomicsUseCase(db_session)
+    return ListMetagenomicsUseCase(repository)
 
 
 def get_get_metagenomics_result_usecase(
-    db_session: Annotated[Session, Depends(get_db_session)]
+    repository: Annotated[MetagenomicsRepository, Depends(get_metagenomics_repository)]
 ) -> GetMetagenomicsResultUseCase:
     """Get GetMetagenomicsResultUseCase instance."""
-    return GetMetagenomicsResultUseCase(db_session)
+    return GetMetagenomicsResultUseCase(repository)
 
 
 # Type aliases for cleaner imports
