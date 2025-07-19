@@ -1,11 +1,11 @@
 import os
 import hashlib
 import csv
-from entities.metagenomics_parameters import MetagenomicsParameters
+from entities.run_parameters import RunParameters
 from config import config
 
 class ViralUnityDomainLogic:
-    def get_hash_of_task(self, task: MetagenomicsParameters) -> str:
+    def get_hash_of_task(self, task: RunParameters) -> str:
         sample_hash = ""
         with open(task.sampleSheetFilePath, 'r') as file:
             reader = csv.reader(file)
@@ -21,7 +21,7 @@ class ViralUnityDomainLogic:
         task_hash = hashlib.sha256(sample_hash.encode()).hexdigest()
         return task_hash
 
-    def prepare_metagenomics_params(self, metagenomics_parameters: MetagenomicsParameters) -> dict:
+    def prepare_metagenomics_params(self, metagenomics_parameters: RunParameters) -> dict:
         return {
             "data_type": metagenomics_parameters.dataType.value,
             "sample_sheet": metagenomics_parameters.sampleSheetFilePath,

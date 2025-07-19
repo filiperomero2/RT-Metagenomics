@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
-from entities.metagenomics_parameters import MetagenomicsParameters
+from entities.run_parameters import RunParameters
 from schemas import MetagenomicsParametersSchema
 from schemas.response_models import (
     CreateMetagenomicsResponse,
@@ -29,7 +29,7 @@ async def start_metagenomics(
     Returns:
         CreateMetagenomicsResponse: The created metagenomics run with success status
     """
-    run = usecase.execute(MetagenomicsParameters(
+    run = usecase.execute(RunParameters(
         dataType=metagenomics_parameters.dataType,
         sampleSheetFilePath=metagenomics_parameters.sampleSheetFilePath,
         runName=metagenomics_parameters.runName,
