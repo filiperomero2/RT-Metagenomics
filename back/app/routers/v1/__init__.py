@@ -1,12 +1,8 @@
 from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
-from entities.run_parameters import RunParameters
-from schemas import MetagenomicsParametersSchema
-from schemas.response_models import (
-    CreateMetagenomicsResponse,
-    ListMetagenomicsResponse,
-    HealthCheckResponse
-)
+from dto.health_check_response import HealthCheckResponse
+from usecases.create_metagenomic_usecase import CreateMetagenomicsRunInput
+from dto import CreateMetagenomicsRunRequest
 from infra.dependencies import (
     CreateMetagenomicsUseCaseDependency,
     ListMetagenomicsUseCaseDependency,
@@ -15,9 +11,9 @@ from infra.dependencies import (
 
 router = APIRouter(prefix='/v1')
 
-@router.post("/metagenomics", response_model=dict)
+@router.post("/metagenomics/run", response_model=dict)
 async def start_metagenomics(
-    metagenomics_parameters: MetagenomicsParametersSchema,
+    metagenomics_run: CreateMetagenomicsRunRequest,
     usecase: CreateMetagenomicsUseCaseDependency
 ):
     """
@@ -29,29 +25,23 @@ async def start_metagenomics(
     Returns:
         CreateMetagenomicsResponse: The created metagenomics run with success status
     """
-    run = usecase.execute(RunParameters(
-        dataType=metagenomics_parameters.dataType,
-        sampleSheetFilePath=metagenomics_parameters.sampleSheetFilePath,
-        runName=metagenomics_parameters.runName,
-        kraken2DatabasePath=metagenomics_parameters.kraken2DatabasePath,
-        kronaDatabasePath=metagenomics_parameters.kronaDatabasePath,
-        adaptersPath=metagenomics_parameters.adaptersPath,
-        threads=metagenomics_parameters.threads,
-        threadsTotal=metagenomics_parameters.threadsTotal,
-        removeHumanReads=metagenomics_parameters.removeHumanReads,
-        removeUnclassifiedReads=metagenomics_parameters.removeUnclassifiedReads,
-        trim=metagenomics_parameters.trim,
-        minimumReadLength=metagenomics_parameters.minimumReadLength,
-        outputDir=metagenomics_parameters.outputDir
+    run = usecase.execute(CreateMetagenomicsRunInput(
+        dataType=metagenomics_run.dataType,
+        samples=metagenomics_run.samples,
+        runName=metagenomics_run.runName,
+        trim=metagenomics_run.trim,
+        threads=metagenomics_run.threads,
+        threadsTotal=metagenomics_run.threadsTotal,
+        removeHumanReads=metagenomics_run.removeHumanReads,
+        removeUnclassifiedReads=metagenomics_run.removeUnclassifiedReads,
+        minimumReadLength=metagenomics_run.minimumReadLength,
+        kraken2Database=metagenomics_run.kraken2Database,
+        kronaDatabase=metagenomics_run.kronaDatabase,
     ))
     
-    # Convert to response model
-    run_response = CreateMetagenomicsResponse(
-        run=run
-    )
-    return run_response.dict()
+    return run.dict()
     
-@router.get("/metagenomics", response_model=dict)
+@router.get("/metagenomics")
 async def get_metagenomics(usecase: ListMetagenomicsUseCaseDependency):
     """
     Get a list of all metagenomics runs.
@@ -59,11 +49,11 @@ async def get_metagenomics(usecase: ListMetagenomicsUseCaseDependency):
     Returns:
         ListMetagenomicsResponse: List of metagenomics runs with metadata
     """
-    runs_data = list(usecase.execute())
+    runs_data = usecase.execute()
     
     # Convert to response model - return the raw data for now
     # since the frontend expects a simple array
-    return ListMetagenomicsResponse(data=runs_data)
+    return [run.dict() for run in runs_data]
 
 @router.get("/metagenomics/{run_id}/result")
 async def get_metagenomics_result(run_id: int, usecase: GetMetagenomicsResultUseCaseDependency):
@@ -78,7 +68,7 @@ async def get_metagenomics_result(run_id: int, usecase: GetMetagenomicsResultUse
     """
     return StreamingResponse(usecase.execute(run_id), media_type="text/html")
 
-@router.get("/health", response_model=dict)
+@router.get("/health")
 async def health_check():
     """
     Health check endpoint to verify API status.

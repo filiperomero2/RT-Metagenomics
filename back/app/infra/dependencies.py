@@ -3,10 +3,10 @@ from fastapi import Depends
 from sqlmodel import Session
 from services.viralunity_service import ViralUnityService
 from services.viralunity_domain_logic import ViralUnityDomainLogic
-from usecases.create_metagenomic_usecase import CreateMetagenomicsUseCase
+from usecases.create_metagenomic_usecase import CreateMetagenomicsRunUseCase
 from usecases.list_metagenomic_usecase import ListMetagenomicsUseCase
 from usecases.get_metagenomics_result_usecase import GetMetagenomicsResultUseCase
-from repositories.metagenomics_repository import MetagenomicsRepository
+from repositories.metagenomics_repository import MetagenomicsRunRepository
 from infra.database.db import get_session
 
 
@@ -18,11 +18,11 @@ def get_db_session():
 
 
 # Repository dependency
-def get_metagenomics_repository(
+def get_metagenomics_run_repository(
     db_session: Annotated[Session, Depends(get_db_session)]
-) -> MetagenomicsRepository:
+) -> MetagenomicsRunRepository:
     """Get MetagenomicsRepository instance."""
-    return MetagenomicsRepository(db_session)
+    return MetagenomicsRunRepository(db_session)
 
 
 # Domain logic dependency
@@ -34,7 +34,7 @@ def get_viralunity_domain_logic() -> ViralUnityDomainLogic:
 # Service dependency
 def get_viralunity_service(
     domain_logic: Annotated[ViralUnityDomainLogic, Depends(get_viralunity_domain_logic)],
-    repository: Annotated[MetagenomicsRepository, Depends(get_metagenomics_repository)]
+    repository: Annotated[MetagenomicsRunRepository, Depends(get_metagenomics_run_repository)]
 ) -> ViralUnityService:
     """Get ViralUnity service instance."""
     return ViralUnityService(domain_logic, repository)
@@ -43,29 +43,29 @@ def get_viralunity_service(
 # Use case dependencies
 def get_create_metagenomics_usecase(
     viralunity_service: Annotated[ViralUnityService, Depends(get_viralunity_service)],
-    repository: Annotated[MetagenomicsRepository, Depends(get_metagenomics_repository)]
-) -> CreateMetagenomicsUseCase:
+    repository: Annotated[MetagenomicsRunRepository, Depends(get_metagenomics_run_repository)]
+) -> CreateMetagenomicsRunUseCase:
     """Get CreateMetagenomicsUseCase instance."""
-    return CreateMetagenomicsUseCase(viralunity_service, repository)
+    return CreateMetagenomicsRunUseCase(viralunity_service, repository)
 
 
 def get_list_metagenomics_usecase(
-    repository: Annotated[MetagenomicsRepository, Depends(get_metagenomics_repository)]
+    repository: Annotated[MetagenomicsRunRepository, Depends(get_metagenomics_run_repository)]
 ) -> ListMetagenomicsUseCase:
     """Get ListMetagenomicsUseCase instance."""
     return ListMetagenomicsUseCase(repository)
 
 
 def get_get_metagenomics_result_usecase(
-    repository: Annotated[MetagenomicsRepository, Depends(get_metagenomics_repository)]
+    repository: Annotated[MetagenomicsRunRepository, Depends(get_metagenomics_run_repository)]
 ) -> GetMetagenomicsResultUseCase:
     """Get GetMetagenomicsResultUseCase instance."""
     return GetMetagenomicsResultUseCase(repository)
 
 
 # Type aliases for cleaner imports
-CreateMetagenomicsUseCaseDependency = Annotated[CreateMetagenomicsUseCase, Depends(get_create_metagenomics_usecase)]
+CreateMetagenomicsUseCaseDependency = Annotated[CreateMetagenomicsRunUseCase, Depends(get_create_metagenomics_usecase)]
 ListMetagenomicsUseCaseDependency = Annotated[ListMetagenomicsUseCase, Depends(get_list_metagenomics_usecase)]
 GetMetagenomicsResultUseCaseDependency = Annotated[GetMetagenomicsResultUseCase, Depends(get_get_metagenomics_result_usecase)]
 ViralUnityServiceDependency = Annotated[ViralUnityService, Depends(get_viralunity_service)]
-MetagenomicsRepositoryDependency = Annotated[MetagenomicsRepository, Depends(get_metagenomics_repository)] 
+MetagenomicsRepositoryDependency = Annotated[MetagenomicsRunRepository, Depends(get_metagenomics_run_repository)] 

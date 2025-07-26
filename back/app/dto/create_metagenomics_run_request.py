@@ -1,17 +1,16 @@
+from typing import List
 from entities.enum import DataType
 from pydantic import BaseModel
 
-class MetagenomicsParametersSchema(BaseModel):
+class CreateMetagenomicsRunRequest(BaseModel):
     dataType: DataType
-    sampleSheetFilePath: str
-    outputDir: str
+    samples: List[str]
     runName: str
     trim: int
     threads: int
     threadsTotal: int
-    kraken2DatabasePath: str
-    kronaDatabasePath: str
     removeHumanReads: bool
     removeUnclassifiedReads: bool
-    adaptersPath: str
     minimumReadLength: int
+    kraken2Database: str
+    kronaDatabase: str

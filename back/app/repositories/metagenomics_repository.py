@@ -1,43 +1,36 @@
 from sqlmodel import Session, select
+from entities.sample import Sample
 from entities.run import Run
 from entities.run_parameters import RunParameters
 from entities.enum import RunState
 from typing import Optional, List, Tuple
 
-class MetagenomicsRepository:
+class MetagenomicsRunRepository:
     def __init__(self, session: Session):
         self.session = session
+        
     
     def get_pending_run(self) -> Optional[Run]:
         """Get the first pending run (used in ViralUnityService)"""
         stmt = select(Run).where(Run.state == RunState.PENDING).limit(1)
-        return self.session.exec(stmt).first()
+        dbResult = self.session.exec(stmt).first()
+        if dbResult:
+            return dbResult
+        return None
     
-    def get_run_parameters_by_id(self, parameters_id: int) -> Optional[RunParameters]:
-        """Get run parameters by ID (used in ViralUnityService)"""
-        stmt = select(RunParameters).where(RunParameters.id == parameters_id).limit(1)
-        return self.session.exec(stmt).first()
-    
-    def get_run_with_parameters(self, run_id: int) -> Optional[Tuple[Run, RunParameters]]:
+    def get_run(self, run_id: int) -> Optional[Run]:
         """Get run with its parameters (used in GetMetagenomicsResultUseCase)"""
-        stmt = select(Run, RunParameters).join(RunParameters).where(Run.id == run_id)
+        stmt = select(Run).where(Run.id == run_id)
         return self.session.exec(stmt).first()
     
-    def get_all_runs_with_parameters(self) -> List[Tuple[Run, RunParameters]]:
+    def get_all_runs(self) -> List[Run]:
         """Get all runs with their parameters (used in ListMetagenomicsUseCase)"""
-        stmt = select(Run, RunParameters).where(Run.parametersId == RunParameters.id)
-        return list(self.session.exec(stmt))
-    
+        stmt = select(Run)
+        return self.session.exec(stmt).fetchall()
+       
     def save_run(self, run: Run) -> Run:
-        """Save a run (used in ViralUnityService)"""
+        """Save a run"""
         self.session.add(run)
         self.session.commit()
         self.session.refresh(run)
         return run
-    
-    def save_run_parameters(self, parameters: RunParameters) -> RunParameters:
-        """Save run parameters (used in ViralUnityService)"""
-        self.session.add(parameters)
-        self.session.commit()
-        self.session.refresh(parameters)
-        return parameters 

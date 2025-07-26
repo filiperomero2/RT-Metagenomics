@@ -1,3 +1,3 @@
-from .metagenomics_repository import MetagenomicsRepository
+from .metagenomics_repository import MetagenomicsRunRepository
 
-__all__ = ["MetagenomicsRepository"] 
+__all__ = ["MetagenomicsRunRepository"] 

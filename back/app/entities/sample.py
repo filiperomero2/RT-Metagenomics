@@ -9,3 +9,14 @@ class Sample(SQLModel, table=True):
     name: str = Field(default=None)
     runId: int = Field(default=None, foreign_key="run.id")
     run: "Run" = Relationship(back_populates="samples")
+    
+    def dict(self):	
+        return {
+            "id": self.id,
+            "name": self.name,
+            "runId": self.runId
+        }
+    
+    
+    def __repr__(self):
+        return f"Sample(id={self.id}, name={self.name}, runId={self.runId})"
