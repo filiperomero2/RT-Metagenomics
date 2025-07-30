@@ -1,15 +1,13 @@
 export interface MetaGenomic {
   dataType: "illumina" | "nanopore";
-  sampleSheetFilePath: string;
-  outputDir: string;
+  samples: string[];
   runName: string;
   trim: number;
   threads: number;
   threadsTotal: number;
-  kraken2DatabasePath: string;
-  kronaDatabasePath: string;
   removeHumanReads: boolean;
   removeUnclassifiedReads: boolean;
-  adaptersPath: string;
   minimumReadLength: number;
+  kraken2Database: string;
+  kronaDatabase: string;
 }
