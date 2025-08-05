@@ -23,7 +23,7 @@ export function Autocomplete<T extends object = object>({
   return (
     <AutocompleteUI
       size="sm"
-      variant="faded"
+      variant="flat"
       value={inputValue}
       isClearable={false}
       {...rest}

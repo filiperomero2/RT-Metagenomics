@@ -14,7 +14,7 @@ export function Select({
   return (
     <SelectUI
       size="sm"
-      variant="faded"
+      variant="flat"
       {...rest}
       {...field}
       selectedKeys={[field.value]}

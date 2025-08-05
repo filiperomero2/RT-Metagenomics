@@ -1,10 +1,18 @@
+
+import { IconState } from "@/components/icon/state-icon";
 import { EmptyFull } from "@/components/state-components/empty-full";
 import { ErrorFull } from "@/components/state-components/error-full";
 import { LoadingFull } from "@/components/state-components/loading-full";
 import { setFocusedMeta, useFocusedMeta } from "@/hooks/use-focused-meta";
 import { api } from "@/lib/axios";
 import { queryKeys } from "@/utils/query-keys-factory";
-import { Chip, Modal, ModalContent, ModalHeader } from "@heroui/react";
+import {
+  Chip,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalHeader,
+} from "@heroui/react";
 import { useQuery } from "@tanstack/react-query";
 
 export function MetaVisualization() {
@@ -38,8 +46,12 @@ export function MetaVisualization() {
       size="full"
       onClose={() => setFocusedMeta(undefined)}
     >
-      <ModalHeader>Sample 4117</ModalHeader>
-      <ModalContent>{getContent()}</ModalContent>
+      <ModalContent>
+        <ModalHeader className="gap-2 capitalize">
+          <IconState state={focused?.state || "pending"} />
+          {focused?.name}</ModalHeader>
+        <ModalBody>{getContent()}</ModalBody>
+      </ModalContent>
     </Modal>
   );
 }

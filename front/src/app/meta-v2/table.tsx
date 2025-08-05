@@ -1,6 +1,6 @@
 "use client";
 
-import { IconWrapper } from "@/components/icon/icon-wrapper";
+import { IconState } from "@/components/icon/state-icon";
 import { EmptyFull } from "@/components/state-components/empty-full";
 import { ErrorFull } from "@/components/state-components/error-full";
 import { LoadingFull } from "@/components/state-components/loading-full";
@@ -10,42 +10,21 @@ import { MetaGenomicState } from "@/types/meta-genomic-state";
 import { queryKeys } from "@/utils/query-keys-factory";
 import {
   Button,
-  Spinner,
   Table,
   TableBody,
   TableCell,
   TableColumn,
   TableHeader,
   TableRow,
-  Tooltip,
+  Tooltip
 } from "@heroui/react";
 import { useQuery } from "@tanstack/react-query";
 import {
-  Ban,
-  CircleCheck,
-  CircleEllipsis,
-  CircleX,
-  Trash2,
+  Trash2
 } from "lucide-react";
-import { ReactNode, useState } from "react";
+import { useState } from "react";
 
 const loadingStates = ["running", "pending"];
-
-const iconColors: Record<MetaGenomicState["state"], string> = {
-  canceled: "text-danger bg-danger/15",
-  completed: "text-success bg-success/15",
-  failed: "text-danger bg-danger/15",
-  pending: "text-warning bg-warning/15",
-  running: "text-primary  bg-primary/15",
-};
-
-const stateToIcon: Record<MetaGenomicState["state"], ReactNode> = {
-  canceled: <Ban size={24} />,
-  completed: <CircleCheck size={24} />,
-  failed: <CircleX size={24} />,
-  pending: <CircleEllipsis size={24} />,
-  running: <Spinner variant="gradient" size="sm" />,
-};
 
 export function MetaTable() {
   const focused = useFocusedMeta();
@@ -88,10 +67,14 @@ export function MetaTable() {
         <TableColumn>Run Name</TableColumn>
         <TableColumn>Iteractions</TableColumn>
         <TableColumn>
-          <Tooltip content="Number of classified sequencies" showArrow>NCS</Tooltip>
+          <Tooltip content="Number of classified sequencies" showArrow>
+            NCS
+          </Tooltip>
         </TableColumn>
         <TableColumn>
-          <Tooltip content="Total of sequencies analyzed" showArrow>TSA</Tooltip>
+          <Tooltip content="Total of sequencies analyzed" showArrow>
+            TSA
+          </Tooltip>
         </TableColumn>
         <TableColumn>Actions</TableColumn>
       </TableHeader>
@@ -101,9 +84,7 @@ export function MetaTable() {
           .map(({ parameters: meta, name, id, iteration, state }) => (
             <TableRow key={id} className="cursor-pointer">
               <TableCell>
-                <IconWrapper className={iconColors[state]}>
-                  {stateToIcon[state]}
-                </IconWrapper>
+                <IconState state={state} />
               </TableCell>
               <TableCell>{meta.dataType}</TableCell>
               <TableCell className="w-full">{name}</TableCell>
@@ -111,7 +92,7 @@ export function MetaTable() {
               <TableCell>1</TableCell>
               <TableCell>2</TableCell>
               <TableCell className="flex justify-center">
-                <Button size="sm" isIconOnly variant="flat" color="danger">
+                <Button size="sm" isIconOnly color="danger">
                   <Trash2 size={24} />
                 </Button>
               </TableCell>

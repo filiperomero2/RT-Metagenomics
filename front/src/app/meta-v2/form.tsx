@@ -133,7 +133,7 @@ export function MetaForm() {
       >
         New Metagenomic
       </Button>
-      <Drawer {...modal} size="2xl">
+      <Drawer {...modal} size="4xl">
         <DrawerContent>
           <FormProvider {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit)} className="flex-1">
@@ -152,8 +152,8 @@ export function MetaForm() {
 
                 <div className="col-span-3 nth-[0]:px-3">
                   <Accordion
-                    variant="splitted"
-                    className="p-0"
+                    variant="light"
+                    className="p-"
                     selectionMode="multiple"
                     defaultExpandedKeys={["Samples"]}
                   >
@@ -163,7 +163,7 @@ export function MetaForm() {
                       indicator={<Cog />}
                       title={<p className="flex items-center gap-2">Options</p>}
                     >
-                      <div className="grid grid-cols-2 gap-x-2 ">
+                      <div className="grid grid-cols-2 gap-x-2 @container">
                         <NumberInput
                           name="threads"
                           label="Threads"
@@ -186,12 +186,10 @@ export function MetaForm() {
                         />
 
                         <CheckBox
-                          className="pb-4"
                           name="removeUnclassifiedReads"
                           label="Remove Unclassified Reads"
                         />
                         <CheckBox
-                          className="pb-4"
                           name="removeHumanReads"
                           label="Remove Human Reads"
                         />
@@ -249,11 +247,11 @@ export function MetaForm() {
                             </Autocomplete>
                             {samplesArrayField.fields.length > 1 && (
                               <Button
-                                variant="faded"
+                                variant="flat"
                                 isIconOnly
                                 size="lg"
+                                aria-label="Remove Sample"
                                 type="button"
-                                color="primary"
                                 className="flex items-center justify-center"
                                 onPress={() => samplesArrayField.remove(index)}
                               >
