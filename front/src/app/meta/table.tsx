@@ -16,12 +16,10 @@ import {
   TableColumn,
   TableHeader,
   TableRow,
-  Tooltip
+  Tooltip,
 } from "@heroui/react";
 import { useQuery } from "@tanstack/react-query";
-import {
-  Trash2
-} from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { useState } from "react";
 
 const loadingStates = ["running", "pending"];
@@ -92,8 +90,8 @@ export function MetaTable() {
               <TableCell>1</TableCell>
               <TableCell>2</TableCell>
               <TableCell className="flex justify-center">
-                <Button size="sm" isIconOnly color="danger">
-                  <Trash2 size={24} />
+                <Button size="sm" isIconOnly variant="flat">
+                  <Trash2 size={20} className="text-danger"/>
                 </Button>
               </TableCell>
             </TableRow>

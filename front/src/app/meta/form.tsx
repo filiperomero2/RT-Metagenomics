@@ -5,14 +5,29 @@ import { NumberInput } from "@/components/form/number-input";
 import { Select } from "@/components/form/select";
 import { api } from "@/lib/axios";
 import { MetaGenomic } from "@/types/meta-genomic";
-import { Button, Divider, SelectItem } from "@heroui/react";
+import {
+  Accordion,
+  AccordionItem,
+  AutocompleteItem,
+  Button,
+  Drawer,
+  DrawerBody,
+  DrawerContent,
+  DrawerFooter,
+  DrawerHeader,
+  SelectItem,
+} from "@heroui/react";
 import { useMutation } from "@tanstack/react-query";
-import { FormProvider, useForm } from "react-hook-form";
+import { FormProvider, useFieldArray, useForm } from "react-hook-form";
 import { useLocalStorage } from "usehooks-ts";
 
 import { queryKeys } from "@/utils/query-keys-factory";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+
+import { Autocomplete } from "@/components/form/autocomplete";
+import { useModal } from "@/hooks/use-modal";
+import { Cog, Database, Dna, Plus, X } from "lucide-react";
 
 const schema = z.object({
   runName: z.string().min(5, { message: "Run Name is required" }),
@@ -27,20 +42,31 @@ const schema = z.object({
   minimumReadLength: z
     .number()
     .min(1, { message: "Minimum Read Length must be at least 1" }),
-  outputDir: z.string().min(1, { message: "Output Directory is required" }),
-  sampleSheetFilePath: z
-    .string()
-    .min(1, { message: "Sample Sheet Path is required" }),
-  kraken2DatabasePath: z
+  kraken2Database: z
     .string()
     .min(1, { message: "Kraken2 Database Path is required" }),
-  kronaDatabasePath: z
+  kronaDatabase: z
     .string()
     .min(1, { message: "Krona Database Path is required" }),
-  adaptersPath: z.string().min(1, { message: "Adapters Path is required" }),
+  samples: z
+    .array(
+      z.object({
+        value: z.string().min(1, ""),
+        barcode: z.string().min(1, ""),
+      })
+    )
+    .min(1, { message: "At least one sample is required" }),
 });
 
+const barcodes = Array.from({ length: 96 })
+  .fill(0)
+  .map((_, i) => ({
+    key: `${i + 1}`,
+    label: `${i + 1}`,
+  }));
+
 export function MetaForm() {
+  const { modal, handleOpen, handleClose } = useModal();
   const [storedForm, setStoredForm] = useLocalStorage<MetaGenomic | undefined>(
     "meta-genomic-form",
     undefined,
@@ -48,7 +74,7 @@ export function MetaForm() {
   );
 
   const { mutateAsync, isPending } = useMutation({
-    mutationFn: (data: MetaGenomic) => api.post("/v1/metagenomics", data),
+    mutationFn: (data: MetaGenomic) => api.post("/v1/metagenomics/run", data),
     meta: {
       invalidatesQuery: queryKeys.getAllMetaGenomics(),
       successMessage: {
@@ -62,108 +88,225 @@ export function MetaForm() {
     },
   });
 
-  const form = useForm<MetaGenomic>({
+  const form = useForm({
     values: {
       runName: "",
-      dataType: storedForm?.dataType ?? "illumina",
+      dataType: storedForm?.dataType ?? "nanopore",
       threads: 1,
       threadsTotal: 1,
       trim: 0,
       removeHumanReads: false,
       removeUnclassifiedReads: false,
       minimumReadLength: 50,
-      outputDir: storedForm?.outputDir ?? "",
-      sampleSheetFilePath: storedForm?.sampleSheetFilePath ?? "",
-      kraken2DatabasePath: storedForm?.kraken2DatabasePath ?? "",
-      kronaDatabasePath: storedForm?.kronaDatabasePath ?? "",
-      adaptersPath: storedForm?.adaptersPath ?? "",
+      kraken2Database: storedForm?.kraken2Database ?? "",
+      kronaDatabase: storedForm?.kronaDatabase ?? "",
+      samples: Array.from({ length: 3 })
+        .fill(0)
+        .map((_, i) => ({ value: "", barcode: "" })),
     },
-    resolver: zodResolver(schema as any),
+    resolver: zodResolver(schema),
   });
 
-  const handleSubmit = (data: MetaGenomic) => {
+  const samplesArrayField = useFieldArray({
+    control: form.control,
+    name: "samples",
+  });
+
+  const handleSubmit = (data: z.infer<typeof schema>) => {
     form.reset();
-    setStoredForm(data);
-    mutateAsync(data);
+    const transformedData: MetaGenomic = {
+      ...data,
+      samples: data.samples.map((item) => item.value),
+    };
+
+    setStoredForm(transformedData);
+    mutateAsync(transformedData, { onSuccess: handleClose });
   };
 
   return (
-    <FormProvider {...form}>
-      <form
-        onSubmit={form.handleSubmit(handleSubmit)}
-        className="grid grid-cols-2 gap-x-3 gap-y-1 w-full relative h-full content-start @container"
+    <>
+      <Button
+        onPress={handleOpen}
+        color="primary"
+        variant="flat"
+        startContent={<Plus />}
       >
-        <Input name="runName" type="text" label="Run Name" />
-        <Select name="dataType" label="Data Type">
-          <SelectItem key="illumina">Illumina</SelectItem>
-          <SelectItem key="nanopore">Nanopore</SelectItem>
-        </Select>
-        <NumberInput
-          name="threads"
-          label="Threads"
-          className="@md:col-span-1 col-span-2"
-        />
-        <NumberInput
-          name="threadsTotal"
-          label="Threads Total"
-          className="@md:col-span-1 col-span-2"
-        />
-        <NumberInput
-          name="trim"
-          label="Trim"
-          className="@md:col-span-1 col-span-2"
-        />
-        <NumberInput
-          name="minimumReadLength"
-          label="Minimum Read Length"
-          className="@md:col-span-1 col-span-2"
-        />
+        New Metagenomic
+      </Button>
+      <Drawer {...modal} size="4xl">
+        <DrawerContent>
+          <FormProvider {...form}>
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="flex-1">
+              <DrawerHeader>New Metagenomics</DrawerHeader>
+              <DrawerBody className="grid content-start grid-cols-3 gap-x-3 gap-y-1 w-full min-h-[85%]">
+                <Input
+                  name="runName"
+                  type="text"
+                  label="Run Name"
+                  className="col-span-2"
+                />
+                <Select name="dataType" label="Data Type">
+                  <SelectItem key="illumina">Illumina</SelectItem>
+                  <SelectItem key="nanopore">Nanopore</SelectItem>
+                </Select>
 
-        <CheckBox
-          name="removeUnclassifiedReads"
-          label="Remove Unclassified Reads"
-        />
-        <CheckBox name="removeHumanReads" label="Remove Human Reads" />
+                <div className="col-span-3 nth-[0]:px-3">
+                  <Accordion
+                    variant="light"
+                    className="p-"
+                    selectionMode="multiple"
+                    defaultExpandedKeys={["Samples"]}
+                  >
+                    <AccordionItem
+                      key="Options"
+                      textValue="Options"
+                      indicator={<Cog />}
+                      title={<p className="flex items-center gap-2">Options</p>}
+                    >
+                      <div className="grid grid-cols-2 gap-x-2 @container">
+                        <NumberInput
+                          name="threads"
+                          label="Threads"
+                          className="@md:col-span-1 col-span-2"
+                        />
+                        <NumberInput
+                          name="threadsTotal"
+                          label="Threads Total"
+                          className="@md:col-span-1 col-span-2"
+                        />
+                        <NumberInput
+                          name="trim"
+                          label="Trim"
+                          className="@md:col-span-1 col-span-2"
+                        />
+                        <NumberInput
+                          name="minimumReadLength"
+                          label="Minimum Read Length"
+                          className="@md:col-span-1 col-span-2"
+                        />
 
-        <Divider className="col-span-2 my-3" />
+                        <CheckBox
+                          name="removeUnclassifiedReads"
+                          label="Remove Unclassified Reads"
+                        />
+                        <CheckBox
+                          name="removeHumanReads"
+                          label="Remove Human Reads"
+                        />
+                      </div>
+                    </AccordionItem>
 
-        <Input
-          name="outputDir"
-          label="Output Directory"
-          className="col-span-2"
-        />
-        <Input
-          name="sampleSheetFilePath"
-          label="Sample Sheet Path"
-          className="col-span-2"
-        />
-        <Input
-          name="kraken2DatabasePath"
-          label="Kraken2 Database Path"
-          className="col-span-2"
-        />
-        <Input
-          name="kronaDatabasePath"
-          label="Krona Database Path"
-          className="col-span-2"
-        />
-        <Input
-          name="adaptersPath"
-          label="Adapters Path"
-          className="col-span-2"
-        />
-        <div className="col-span-2 mt-5 sticky bottom-0 w-full bg-content1 p-2 z-10 pb-0">
-          <Button
-            variant="solid"
-            color="primary"
-            type="submit"
-            className="w-full"
-            isLoading={isPending}
-          >
-            Submit
-          </Button>
-        </div>
-      </form>
-    </FormProvider>
+                    <AccordionItem
+                      key="Databases"
+                      textValue="Databases"
+                      indicator={<Database />}
+                      title={
+                        <p className="flex items-center gap-2">Databases</p>
+                      }
+                    >
+                      <Input
+                        name="kraken2Database"
+                        label="Kraken2 Database"
+                        className="col-span-2"
+                      />
+                      <Input
+                        name="kronaDatabase"
+                        label="Krona Database"
+                        className="col-span-2"
+                      />
+                    </AccordionItem>
+
+                    <AccordionItem
+                      key="Samples"
+                      textValue="Samples"
+                      indicator={<Dna />}
+                      title={<p className="flex items-center gap-2">Samples</p>}
+                    >
+                      <div className="grid pb-2 gap-2">
+                        {samplesArrayField.fields.map((field, index) => (
+                          <div
+                            key={field.id}
+                            className="flex items-start justify-center gap-2 p-1"
+                          >
+                            <Input
+                              name={`samples.${index}.value`}
+                              label={`Sample ${index + 1}`}
+                              className="pb-0"
+                            />
+                            <Autocomplete
+                              name={`samples.${index}.barcode`}
+                              label={`Barcode`}
+                              className="flex-1/4 pb-0"
+                              defaultItems={barcodes}
+                            >
+                              {(item) => (
+                                <AutocompleteItem key={item.key}>
+                                  {item.label}
+                                </AutocompleteItem>
+                              )}
+                            </Autocomplete>
+                            {samplesArrayField.fields.length > 1 && (
+                              <Button
+                                variant="flat"
+                                isIconOnly
+                                size="lg"
+                                aria-label="Remove Sample"
+                                type="button"
+                                className="flex items-center justify-center"
+                                onPress={() => samplesArrayField.remove(index)}
+                              >
+                                <X
+                                  size={20}
+                                  className="text-danger"
+                                  type="button"
+                                />
+                              </Button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                      <Button
+                        className="w-full"
+                        variant="bordered"
+                        type="button"
+                        onPress={() =>
+                          samplesArrayField.append(
+                            { value: "", barcode: "" },
+                            { focusIndex: samplesArrayField.fields.length }
+                          )
+                        }
+                      >
+                        <Plus />
+                      </Button>
+                    </AccordionItem>
+                  </Accordion>
+                </div>
+              </DrawerBody>
+              <DrawerFooter className="bottom-0 sticky bg-content1 z-10 shadow-2xl rounded-t-3xl">
+                <Button
+                  variant="light"
+                  color="danger"
+                  type="button"
+                  size="lg"
+                  onPress={handleClose}
+                >
+                  Close
+                </Button>
+                <Button
+                  variant="flat"
+                  color="primary"
+                  type="submit"
+                  size="lg"
+                  className="px-10"
+                  isLoading={isPending}
+                >
+                  Submit
+                </Button>
+              </DrawerFooter>
+            </form>
+          </FormProvider>
+        </DrawerContent>
+      </Drawer>
+    </>
   );
 }
