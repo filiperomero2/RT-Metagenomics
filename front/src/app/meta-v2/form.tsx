@@ -8,8 +8,13 @@ import { MetaGenomic } from "@/types/meta-genomic";
 import {
   Accordion,
   AccordionItem,
+  AutocompleteItem,
   Button,
-  ModalFooter,
+  Drawer,
+  DrawerBody,
+  DrawerContent,
+  DrawerFooter,
+  DrawerHeader,
   SelectItem,
 } from "@heroui/react";
 import { useMutation } from "@tanstack/react-query";
@@ -20,10 +25,9 @@ import { queryKeys } from "@/utils/query-keys-factory";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
+import { Autocomplete } from "@/components/form/autocomplete";
 import { useModal } from "@/hooks/use-modal";
-import { Modal, ModalBody, ModalContent, ModalHeader } from "@heroui/react";
-import { AnimatePresence, motion } from "framer-motion";
-import { Cog, Database, Dna, Plus, Trash, X } from "lucide-react";
+import { Cog, Database, Dna, Plus, X } from "lucide-react";
 
 const schema = z.object({
   runName: z.string().min(5, { message: "Run Name is required" }),
@@ -47,11 +51,19 @@ const schema = z.object({
   samples: z
     .array(
       z.object({
-        value: z.string(),
+        value: z.string().min(1, ""),
+        barcode: z.string().min(1, ""),
       })
     )
     .min(1, { message: "At least one sample is required" }),
 });
+
+const barcodes = Array.from({ length: 96 })
+  .fill(0)
+  .map((_, i) => ({
+    key: `${i + 1}`,
+    label: `${i + 1}`,
+  }));
 
 export function MetaForm() {
   const { modal, handleOpen, handleClose } = useModal();
@@ -88,7 +100,9 @@ export function MetaForm() {
       minimumReadLength: 50,
       kraken2Database: storedForm?.kraken2Database ?? "",
       kronaDatabase: storedForm?.kronaDatabase ?? "",
-      samples: [{ value: "" }],
+      samples: Array.from({ length: 3 })
+        .fill(0)
+        .map((_, i) => ({ value: "", barcode: "" })),
     },
     resolver: zodResolver(schema),
   });
@@ -109,19 +123,22 @@ export function MetaForm() {
     mutateAsync(transformedData, { onSuccess: handleClose });
   };
 
-  console.log(samplesArrayField.fields, form.getValues());
-
   return (
     <>
-      <Button onPress={handleOpen} isIconOnly color="primary" variant="shadow">
-        <Plus />
+      <Button
+        onPress={handleOpen}
+        color="primary"
+        variant="flat"
+        startContent={<Plus />}
+      >
+        New Metagenomic
       </Button>
-      <Modal {...modal} size="5xl">
-        <ModalContent>
+      <Drawer {...modal} size="2xl">
+        <DrawerContent>
           <FormProvider {...form}>
-            <form onSubmit={form.handleSubmit(handleSubmit)}>
-              <ModalHeader>New Metagenomics</ModalHeader>
-              <ModalBody className="grid grid-cols-3 gap-x-3 gap-y-1 w-full relative h-full content-start @container">
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="flex-1">
+              <DrawerHeader>New Metagenomics</DrawerHeader>
+              <DrawerBody className="grid content-start grid-cols-3 gap-x-3 gap-y-1 w-full min-h-[85%]">
                 <Input
                   name="runName"
                   type="text"
@@ -138,96 +155,13 @@ export function MetaForm() {
                     variant="splitted"
                     className="p-0"
                     selectionMode="multiple"
-                    defaultExpandedKeys={["1"]}
+                    defaultExpandedKeys={["Samples"]}
                   >
                     <AccordionItem
-                      key="1"
-                      textValue="Samples"
-                      title={
-                        <p className="flex items-center gap-2">
-                          <Dna />
-                          Samples
-                        </p>
-                      }
-                    >
-                      <div className="grid grid-cols-[repeat(auto-fit,minmax(15rem,1fr))] gap-x-2">
-                        {samplesArrayField.fields.map((field, index) => (
-                          <div
-                            key={field.id}
-                            className="flex items-center justify-center gap-2"
-                          >
-                            <Input
-                              name={`samples.${index}.value`}
-                              label={`Sample ${index + 1}`}
-                              className="col-span-2"
-                              endContent={
-                                samplesArrayField.fields.length > 1 && (
-                                  <button className="flex h-full items-center justify-center cursor-pointer transition">
-                                    <motion.div
-                                      whileHover={{ rotateZ: "90deg" }}
-                                      className="hover:bg-danger/20 rounded-2xl p-0.5"
-                                    >
-                                      <X
-                                        size={20}
-                                        className="text-danger"
-                                        onClick={() =>
-                                          samplesArrayField.remove(index)
-                                        }
-                                      />
-                                    </motion.div>
-                                  </button>
-                                )
-                              }
-                            />
-                          </div>
-                        ))}
-                      </div>
-                      <Button
-                        className="w-full"
-                        variant="flat"
-                        color="default"
-                        onPress={() =>
-                          samplesArrayField.append(
-                            { value: "" },
-                            { focusIndex: samplesArrayField.fields.length }
-                          )
-                        }
-                      >
-                        <Plus />
-                      </Button>
-                    </AccordionItem>
-
-                    <AccordionItem
-                      key="2"
-                      textValue="Databases"
-                      title={
-                        <p className="flex items-center gap-2">
-                          <Database />
-                          Databases
-                        </p>
-                      }
-                    >
-                      <Input
-                        name="kraken2Database"
-                        label="Kraken2 Database"
-                        className="col-span-2"
-                      />
-                      <Input
-                        name="kronaDatabase"
-                        label="Krona Database"
-                        className="col-span-2"
-                      />
-                    </AccordionItem>
-
-                    <AccordionItem
-                      key="3"
-                      textValue="Advanced Options"
-                      title={
-                        <p className="flex items-center gap-2">
-                          <Cog />
-                          Advanced Options
-                        </p>
-                      }
+                      key="Options"
+                      textValue="Options"
+                      indicator={<Cog />}
+                      title={<p className="flex items-center gap-2">Options</p>}
                     >
                       <div className="grid grid-cols-2 gap-x-2 ">
                         <NumberInput
@@ -263,10 +197,94 @@ export function MetaForm() {
                         />
                       </div>
                     </AccordionItem>
+
+                    <AccordionItem
+                      key="Databases"
+                      textValue="Databases"
+                      indicator={<Database />}
+                      title={
+                        <p className="flex items-center gap-2">Databases</p>
+                      }
+                    >
+                      <Input
+                        name="kraken2Database"
+                        label="Kraken2 Database"
+                        className="col-span-2"
+                      />
+                      <Input
+                        name="kronaDatabase"
+                        label="Krona Database"
+                        className="col-span-2"
+                      />
+                    </AccordionItem>
+
+                    <AccordionItem
+                      key="Samples"
+                      textValue="Samples"
+                      indicator={<Dna />}
+                      title={<p className="flex items-center gap-2">Samples</p>}
+                    >
+                      <div className="grid pb-2 gap-2">
+                        {samplesArrayField.fields.map((field, index) => (
+                          <div
+                            key={field.id}
+                            className="flex items-start justify-center gap-2 p-1"
+                          >
+                            <Input
+                              name={`samples.${index}.value`}
+                              label={`Sample ${index + 1}`}
+                              className="pb-0"
+                            />
+                            <Autocomplete
+                              name={`samples.${index}.barcode`}
+                              label={`Barcode`}
+                              className="flex-1/4 pb-0"
+                              defaultItems={barcodes}
+                            >
+                              {(item) => (
+                                <AutocompleteItem key={item.key}>
+                                  {item.label}
+                                </AutocompleteItem>
+                              )}
+                            </Autocomplete>
+                            {samplesArrayField.fields.length > 1 && (
+                              <Button
+                                variant="faded"
+                                isIconOnly
+                                size="lg"
+                                type="button"
+                                color="primary"
+                                className="flex items-center justify-center"
+                                onPress={() => samplesArrayField.remove(index)}
+                              >
+                                <X
+                                  size={20}
+                                  className="text-danger"
+                                  type="button"
+                                />
+                              </Button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                      <Button
+                        className="w-full"
+                        variant="bordered"
+                        type="button"
+                        onPress={() =>
+                          samplesArrayField.append(
+                            { value: "", barcode: "" },
+                            { focusIndex: samplesArrayField.fields.length }
+                          )
+                        }
+                      >
+                        <Plus />
+                      </Button>
+                    </AccordionItem>
                   </Accordion>
                 </div>
-              </ModalBody>
-              <ModalFooter>
+              </DrawerBody>
+              <DrawerFooter className="bottom-0 sticky bg-content1 z-10 shadow-2xl rounded-t-3xl">
                 <Button
                   variant="light"
                   color="danger"
@@ -286,11 +304,11 @@ export function MetaForm() {
                 >
                   Submit
                 </Button>
-              </ModalFooter>
+              </DrawerFooter>
             </form>
           </FormProvider>
-        </ModalContent>
-      </Modal>
+        </DrawerContent>
+      </Drawer>
     </>
   );
 }

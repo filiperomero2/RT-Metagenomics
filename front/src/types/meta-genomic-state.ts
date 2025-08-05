@@ -4,5 +4,6 @@ export interface MetaGenomicState {
   id: number;
   state: "pending" | "running" | "completed" | "failed" | "canceled";
   iteration: number;
-  parameters: MetaGenomic;
+  name: string;
+  parameters: Omit<MetaGenomic, "runName" | "samples">;
 }

@@ -7,14 +7,9 @@ import { LoadingFull } from "@/components/state-components/loading-full";
 import { setFocusedMeta, useFocusedMeta } from "@/hooks/use-focused-meta";
 import { api } from "@/lib/axios";
 import { MetaGenomicState } from "@/types/meta-genomic-state";
-import { cn } from "@/utils/cn";
 import { queryKeys } from "@/utils/query-keys-factory";
 import {
-  Accordion,
-  AccordionItem,
-  Checkbox,
-  Divider,
-  ScrollShadow,
+  Button,
   Spinner,
   Table,
   TableBody,
@@ -22,9 +17,16 @@ import {
   TableColumn,
   TableHeader,
   TableRow,
+  Tooltip,
 } from "@heroui/react";
 import { useQuery } from "@tanstack/react-query";
-import { Ban, CircleCheck, CircleEllipsis, CircleX } from "lucide-react";
+import {
+  Ban,
+  CircleCheck,
+  CircleEllipsis,
+  CircleX,
+  Trash2,
+} from "lucide-react";
 import { ReactNode, useState } from "react";
 
 const loadingStates = ["running", "pending"];
@@ -38,10 +40,10 @@ const iconColors: Record<MetaGenomicState["state"], string> = {
 };
 
 const stateToIcon: Record<MetaGenomicState["state"], ReactNode> = {
-  canceled: <Ban />,
-  completed: <CircleCheck />,
-  failed: <CircleX />,
-  pending: <CircleEllipsis />,
+  canceled: <Ban size={24} />,
+  completed: <CircleCheck size={24} />,
+  failed: <CircleX size={24} />,
+  pending: <CircleEllipsis size={24} />,
   running: <Spinner variant="gradient" size="sm" />,
 };
 
@@ -66,6 +68,7 @@ export function MetaTable() {
   return (
     <Table
       aria-label="Metagenomics Table"
+      removeWrapper
       selectionMode="single"
       selectedKeys={[String(focused?.id)]}
       onSelectionChange={(key) => {
@@ -81,49 +84,37 @@ export function MetaTable() {
     >
       <TableHeader>
         <TableColumn width="2.5%">Status</TableColumn>
-        <TableColumn>Run Name</TableColumn>
         <TableColumn>Data Type</TableColumn>
+        <TableColumn>Run Name</TableColumn>
         <TableColumn>Iteractions</TableColumn>
-        {/* <TableColumn>Threads</TableColumn>
-        <TableColumn>Threads Total</TableColumn>
-        <TableColumn>Minimum Read Length</TableColumn>
-        <TableColumn>Trim</TableColumn>
-        <TableColumn>Remove Human Reads</TableColumn>
-        <TableColumn>Remove Unclassified Reads</TableColumn> */}
+        <TableColumn>
+          <Tooltip content="Number of classified sequencies" showArrow>NCS</Tooltip>
+        </TableColumn>
+        <TableColumn>
+          <Tooltip content="Total of sequencies analyzed" showArrow>TSA</Tooltip>
+        </TableColumn>
+        <TableColumn>Actions</TableColumn>
       </TableHeader>
       <TableBody>
         {data
           ?.toReversed()
-          .map(({ parameters: meta, id, iteration, state }) => (
-            <TableRow key={id}>
+          .map(({ parameters: meta, name, id, iteration, state }) => (
+            <TableRow key={id} className="cursor-pointer">
               <TableCell>
                 <IconWrapper className={iconColors[state]}>
                   {stateToIcon[state]}
                 </IconWrapper>
               </TableCell>
-              <TableCell>{meta.runName}</TableCell>
               <TableCell>{meta.dataType}</TableCell>
+              <TableCell className="w-full">{name}</TableCell>
               <TableCell>{iteration}</TableCell>
-              {/* <TableCell>{meta.threads}</TableCell>
-              <TableCell>{meta.threadsTotal}</TableCell>
-              <TableCell>{meta.minimumReadLength}</TableCell>
-              <TableCell>{meta.trim}</TableCell>
-              <TableCell>
-                <Checkbox
-                  className="-mr-5"
-                  isReadOnly
-                  color="default"
-                  defaultSelected={meta.removeHumanReads}
-                />
+              <TableCell>1</TableCell>
+              <TableCell>2</TableCell>
+              <TableCell className="flex justify-center">
+                <Button size="sm" isIconOnly variant="flat" color="danger">
+                  <Trash2 size={24} />
+                </Button>
               </TableCell>
-              <TableCell>
-                <Checkbox
-                  className="-mr-5"
-                  isReadOnly
-                  color="default"
-                  defaultSelected={meta.removeUnclassifiedReads}
-                />
-              </TableCell> */}
             </TableRow>
           ))}
       </TableBody>
