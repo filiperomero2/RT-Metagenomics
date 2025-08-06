@@ -4,7 +4,7 @@ import csv
 from entities.run_parameters import RunParameters
 from config import config
 
-class ViralUnityDomainLogic:
+class FileHashCalculatorService:
     def get_hash_of_task(self, task: RunParameters) -> str:
         sample_hash = ""
         with open(task.sampleSheetFilePath, 'r') as file:
@@ -21,6 +21,7 @@ class ViralUnityDomainLogic:
         task_hash = hashlib.sha256(sample_hash.encode()).hexdigest()
         return task_hash
 
+class ViralUnityDomainLogic:
     def prepare_metagenomics_params(self, metagenomics_parameters: RunParameters) -> dict:
         return {
             "data_type": metagenomics_parameters.dataType.value,
