@@ -1,15 +1,11 @@
 import logging
-import os
-import hashlib
-import csv
 import time
 
 from entities.enum import RunState
-from entities.run import Run
 from entities.run_parameters import RunParameters
 from repositories.metagenomics_run_repository import MetagenomicsRunRepository
 from viralunity.viralunity.viralunity_meta import main as vu_metagenomics
-from services.viralunity_domain_logic import FileHashCalculatorService, ViralUnityDomainLogic
+from services.viralunity_domain_logic import FileHashCalculatorService
 from config import config
 
 logger = logging.getLogger('uvicorn.error')
@@ -18,11 +14,9 @@ logger = logging.getLogger('uvicorn.error')
 class ViralUnityService:
     def __init__(
             self,
-            domain_logic: ViralUnityDomainLogic,
             repository: MetagenomicsRunRepository,
             file_hash_calculator: FileHashCalculatorService
         ):
-        self.domain_logic = domain_logic
         self.repository = repository
 
     def main(self):
@@ -42,7 +36,7 @@ class ViralUnityService:
                         next_task.state = RunState.COMPLETED
                         self.repository.save_run(next_task)
                         continue
-                    # params = self.domain_logic.prepare_metagenomics_params(metagenomics_parameters)
+                    params = self.prepare_metagenomics_params(metagenomics_parameters)
                     next_task.state = RunState.RUNNING
                     next_task.iteration += 1
                     next_task.executionHash = task_hash
@@ -58,3 +52,22 @@ class ViralUnityService:
                     logger.error(f"Error during metagenomics run: {e}")
             except Exception as e:
                 logger.error(f"Error in ViralUnityService main thread: {e}")
+
+    def prepare_metagenomics_params(self, metagenomics_parameters: RunParameters) -> dict:
+        return {
+            "data_type": metagenomics_parameters.dataType.value,
+            "sample_sheet": metagenomics_parameters.sampleSheetFilePath,
+            "config_file": metagenomics_parameters.outputDir + "/config.yaml",
+            "run_name": f"{metagenomics_parameters.id}_{metagenomics_parameters.runName}",
+            "kraken2_database": metagenomics_parameters.kraken2DatabasePath,
+            "krona_database": metagenomics_parameters.kronaDatabasePath,
+            "adapters": metagenomics_parameters.adaptersPath,
+            "threads": metagenomics_parameters.threads,
+            "threads_total": metagenomics_parameters.threadsTotal,
+            "output": metagenomics_parameters.outputDir,
+            "remove_human_reads": metagenomics_parameters.removeHumanReads,
+            "remove_unclassified_reads": metagenomics_parameters.removeUnclassifiedReads,
+            "create_config_only": False,
+            "minimum_read_length": config.service.default_minimum_read_length,
+            "trim": metagenomics_parameters.trim,
+        } 

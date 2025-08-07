@@ -20,23 +20,3 @@ class FileHashCalculatorService:
                         sample_hash += hashlib.sha256(f.read()).hexdigest()
         task_hash = hashlib.sha256(sample_hash.encode()).hexdigest()
         return task_hash
-
-class ViralUnityDomainLogic:
-    def prepare_metagenomics_params(self, metagenomics_parameters: RunParameters) -> dict:
-        return {
-            "data_type": metagenomics_parameters.dataType.value,
-            "sample_sheet": metagenomics_parameters.sampleSheetFilePath,
-            "config_file": metagenomics_parameters.outputDir + "/config.yaml",
-            "run_name": f"{metagenomics_parameters.id}_{metagenomics_parameters.runName}",
-            "kraken2_database": metagenomics_parameters.kraken2DatabasePath,
-            "krona_database": metagenomics_parameters.kronaDatabasePath,
-            "adapters": metagenomics_parameters.adaptersPath,
-            "threads": metagenomics_parameters.threads,
-            "threads_total": metagenomics_parameters.threadsTotal,
-            "output": metagenomics_parameters.outputDir,
-            "remove_human_reads": metagenomics_parameters.removeHumanReads,
-            "remove_unclassified_reads": metagenomics_parameters.removeUnclassifiedReads,
-            "create_config_only": False,
-            "minimum_read_length": config.service.default_minimum_read_length,
-            "trim": metagenomics_parameters.trim,
-        } 

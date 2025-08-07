@@ -24,12 +24,6 @@ def get_metagenomics_run_repository(
     """Get MetagenomicsRepository instance."""
     return MetagenomicsRunRepository(db_session)
 
-
-# Domain logic dependency
-def get_viralunity_domain_logic() -> ViralUnityDomainLogic:
-    """Get ViralUnity domain logic instance."""
-    return ViralUnityDomainLogic()
-
 # File hash calculator dependency
 def get_file_hash_calculator() -> FileHashCalculatorService:
     """Get FileHashCalculatorService instance."""
@@ -38,12 +32,11 @@ def get_file_hash_calculator() -> FileHashCalculatorService:
 
 # Service dependency
 def get_viralunity_service(
-    domain_logic: Annotated[ViralUnityDomainLogic, Depends(get_viralunity_domain_logic)],
     repository: Annotated[MetagenomicsRunRepository, Depends(get_metagenomics_run_repository)],
     file_hash_calculator: Annotated[FileHashCalculatorService, Depends(get_file_hash_calculator)]
 ) -> ViralUnityService:
     """Get ViralUnity service instance."""
-    return ViralUnityService(domain_logic, repository, file_hash_calculator)
+    return ViralUnityService(repository, file_hash_calculator)
 
 
 # Use case dependencies
