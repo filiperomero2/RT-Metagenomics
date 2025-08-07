@@ -153,7 +153,7 @@ export function MetaForm() {
                 <div className="col-span-3 nth-[0]:px-3">
                   <Accordion
                     variant="light"
-                    className="p-"
+                    // className="p-0"
                     selectionMode="multiple"
                     defaultExpandedKeys={["Samples"]}
                   >

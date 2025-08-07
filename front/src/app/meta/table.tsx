@@ -4,12 +4,13 @@ import { IconState } from "@/components/icon/state-icon";
 import { EmptyFull } from "@/components/state-components/empty-full";
 import { ErrorFull } from "@/components/state-components/error-full";
 import { LoadingFull } from "@/components/state-components/loading-full";
-import { setFocusedMeta, useFocusedMeta } from "@/hooks/use-focused-meta";
+import { setFocusedRun, useFocusedRun } from "@/hooks/use-focused-run";
 import { api } from "@/lib/axios";
 import { MetaGenomicState } from "@/types/meta-genomic-state";
 import { queryKeys } from "@/utils/query-keys-factory";
 import {
   Button,
+  Selection,
   Table,
   TableBody,
   TableCell,
@@ -25,7 +26,7 @@ import { useState } from "react";
 const loadingStates = ["running", "pending"];
 
 export function MetaTable() {
-  const focused = useFocusedMeta();
+  const focused = useFocusedRun();
   const [shouldRefetch, setShouldRefetch] = useState(true);
 
   const { data, isPending, isError } = useQuery<MetaGenomicState[]>({
@@ -40,24 +41,13 @@ export function MetaTable() {
 
   if (isPending) return <LoadingFull />;
   if (isError) return <ErrorFull />;
-  if (!data || data.length === 0) return <EmptyFull />;
 
   return (
     <Table
       aria-label="Metagenomics Table"
       removeWrapper
+      defaultSelectedKeys={[focused?.id || ""]}
       selectionMode="single"
-      selectedKeys={[String(focused?.id)]}
-      onSelectionChange={(key) => {
-        const selected = data.find(
-          (item) =>
-            item.id === Number((key as Set<string>).values().next().value)
-        );
-
-        if (selected) {
-          setFocusedMeta(selected);
-        }
-      }}
     >
       <TableHeader>
         <TableColumn width="2.5%">Status</TableColumn>
@@ -76,22 +66,28 @@ export function MetaTable() {
         </TableColumn>
         <TableColumn>Actions</TableColumn>
       </TableHeader>
-      <TableBody>
+      <TableBody emptyContent={"No rows to display."}>
         {data
           ?.toReversed()
-          .map(({ parameters: meta, name, id, iteration, state }) => (
-            <TableRow key={id} className="cursor-pointer">
+          .map(({ parameters, name, id, iteration, state }) => (
+            <TableRow
+              key={id}
+              className="cursor-pointer rounded-xl"
+              onClick={() =>
+                setFocusedRun({ parameters, name, id, iteration, state })
+              }
+            >
               <TableCell>
                 <IconState state={state} />
               </TableCell>
-              <TableCell>{meta.dataType}</TableCell>
+              <TableCell>{parameters.dataType}</TableCell>
               <TableCell className="w-full">{name}</TableCell>
               <TableCell>{iteration}</TableCell>
               <TableCell>1</TableCell>
               <TableCell>2</TableCell>
               <TableCell className="flex justify-center">
                 <Button size="sm" isIconOnly variant="flat">
-                  <Trash2 size={20} className="text-danger"/>
+                  <Trash2 size={20} className="text-danger" />
                 </Button>
               </TableCell>
             </TableRow>
