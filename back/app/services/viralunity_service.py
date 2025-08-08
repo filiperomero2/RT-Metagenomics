@@ -1,11 +1,12 @@
 import logging
 import time
 
+from entities.run import Run
 from entities.enum import RunState
 from entities.run_parameters import RunParameters
 from repositories.metagenomics_run_repository import MetagenomicsRunRepository
 from viralunity.viralunity.viralunity_meta import main as vu_metagenomics
-from services.viralunity_domain_logic import FileHashCalculatorService
+from services.file_hash_calculator_service import FileHashCalculatorService
 from config import config
 
 logger = logging.getLogger('uvicorn.error')
@@ -18,6 +19,7 @@ class ViralUnityService:
             file_hash_calculator: FileHashCalculatorService
         ):
         self.repository = repository
+        self.file_hash_calculator = file_hash_calculator
 
     def main(self):
         logger.info("Starting ViralUnityService main thread...")
@@ -53,21 +55,22 @@ class ViralUnityService:
             except Exception as e:
                 logger.error(f"Error in ViralUnityService main thread: {e}")
 
-    def prepare_metagenomics_params(self, metagenomics_parameters: RunParameters) -> dict:
+    def prepare_metagenomics_params(self, run: Run) -> dict:
+        samples = [[sample.name, sample.sampleLib] for sample in run.samples]
         return {
-            "data_type": metagenomics_parameters.dataType.value,
-            "sample_sheet": metagenomics_parameters.sampleSheetFilePath,
-            "config_file": metagenomics_parameters.outputDir + "/config.yaml",
-            "run_name": f"{metagenomics_parameters.id}_{metagenomics_parameters.runName}",
-            "kraken2_database": metagenomics_parameters.kraken2DatabasePath,
-            "krona_database": metagenomics_parameters.kronaDatabasePath,
-            "adapters": metagenomics_parameters.adaptersPath,
-            "threads": metagenomics_parameters.threads,
-            "threads_total": metagenomics_parameters.threadsTotal,
-            "output": metagenomics_parameters.outputDir,
-            "remove_human_reads": metagenomics_parameters.removeHumanReads,
-            "remove_unclassified_reads": metagenomics_parameters.removeUnclassifiedReads,
+            "data_type": run.parameters.dataType.value,
+            "samples": samples,
+            "config_file": config.output_dir + "/config.yaml",
+            "run_name": f"{run.parameters.id}_{run.parameters.runName}",
+            "kraken2_database": run.parameters.kraken2DatabasePath,
+            "krona_database": run.parameters.kronaDatabasePath,
+            "adapters": run.parameters.adaptersPath,
+            "threads": run.parameters.threads,
+            "threads_total": run.parameters.threadsTotal,
+            "output": run.parameters.outputDir,
+            "remove_human_reads": run.parameters.removeHumanReads,
+            "remove_unclassified_reads": run.parameters.removeUnclassifiedReads,
             "create_config_only": False,
             "minimum_read_length": config.service.default_minimum_read_length,
-            "trim": metagenomics_parameters.trim,
+            "trim": run.parameters.trim,
         } 

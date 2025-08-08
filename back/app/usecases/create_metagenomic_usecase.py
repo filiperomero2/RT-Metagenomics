@@ -4,7 +4,7 @@ from entities.enum import DataType, RunState
 from entities.run import Run
 from entities.sample import Sample
 from entities.run_parameters import RunParameters
-from repositories.metagenomics_repository import MetagenomicsRunRepository
+from repositories.metagenomics_run_repository import MetagenomicsRunRepository
 from services.viralunity_service import ViralUnityService
 from exceptions import TaskExecutionError
 

@@ -2,12 +2,12 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from services.viralunity_domain_logic import FileHashCalculatorService
+from services.file_hash_calculator_service import FileHashCalculatorService
 from routers import router as api_router
 from exceptions import MetagenomicsError, handle_metagenomics_exception
 from config import config
 from infra.database.db import create_db_and_tables
-from infra.dependencies import get_viralunity_domain_logic
+from infra.dependencies import get_file_hash_calculator
 from services.viralunity_service import ViralUnityService
 
 # Initialize database
@@ -57,15 +57,13 @@ def read_root():
 
 # Start background service
 import threading
-from infra.dependencies import get_metagenomics_run_repository, get_viralunity_domain_logic
+from infra.dependencies import get_metagenomics_run_repository, get_file_hash_calculator
 from infra.database.db import get_session
 
 # Create a database session for the background service
 db_session = next(get_session())
 repository = get_metagenomics_run_repository(db_session)
-domain_logic = get_viralunity_domain_logic()
-file_hash_calculator = FileHashCalculatorService()
-viralunity_service = ViralUnityService(domain_logic, repository, file_hash_calculator)
+file_hash_calculator = get_file_hash_calculator()
+viralunity_service = ViralUnityService(repository, file_hash_calculator)
 thread = threading.Thread(target=viralunity_service.main, daemon=True)
 thread.start()
-    

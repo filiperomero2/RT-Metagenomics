@@ -2,11 +2,11 @@ from typing import Annotated
 from fastapi import Depends
 from sqlmodel import Session
 from services.viralunity_service import ViralUnityService
-from services.viralunity_domain_logic import FileHashCalculatorService, ViralUnityDomainLogic
+from services.file_hash_calculator_service import FileHashCalculatorService
 from usecases.create_metagenomic_usecase import CreateMetagenomicsRunUseCase
 from usecases.list_metagenomic_usecase import ListMetagenomicsUseCase
 from usecases.get_metagenomics_result_usecase import GetMetagenomicsResultUseCase
-from repositories.metagenomics_repository import MetagenomicsRunRepository
+from repositories.metagenomics_run_repository import MetagenomicsRunRepository
 from infra.database.db import get_session
 
 
