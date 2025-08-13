@@ -7,16 +7,22 @@ from config import config
 class FileHashCalculatorService:
     def get_hash_of_task(self, task: RunParameters) -> str:
         sample_hash = ""
-        with open(task.sampleSheetFilePath, 'r') as file:
-            reader = csv.reader(file)
-            for row in reader:
-                sample_file_1 = row[1] if len(row) > 1 else None
-                sample_file_2 = row[2] if len(row) > 2 else None
-                if sample_file_1 is not None and os.path.exists(sample_file_1):
-                    with open(sample_file_1, 'rb') as f:
-                        sample_hash += hashlib.sha256(f.read()).hexdigest()
-                if sample_file_2 is not None and sample_file_2 and os.path.exists(sample_file_2):
-                    with open(sample_file_2, 'rb') as f:
-                        sample_hash += hashlib.sha256(f.read()).hexdigest()
+        # Get hash of all files in config.input_dir/task.name and then get the hash of this hash
+        input_dir = os.path.join(config.input_dir, task.name)
+        for file in self.list_files_recursively(input_dir):
+            with open(file, 'rb') as f:
+                sample_hash += hashlib.sha256(f.read()).hexdigest()
         task_hash = hashlib.sha256(sample_hash.encode()).hexdigest()
         return task_hash
+
+    def list_files_recursively(self, directory: str) -> list[str]:
+        files = []
+        try:
+            for file in os.listdir(directory):
+                if os.path.isdir(os.path.join(directory, file)):
+                    files.extend(self.list_files_recursively(os.path.join(directory, file)))
+                else:
+                    files.append(os.path.join(directory, file))
+            return files
+        except Exception as e:
+            return []

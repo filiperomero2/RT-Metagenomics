@@ -1,3 +1,4 @@
+import json
 import logging
 from typing import List
 from entities.enum import DataType, RunState
@@ -37,6 +38,9 @@ class CreateMetagenomicsRunInput:
         self.minimumReadLength = minimumReadLength
         self.kraken2Database = kraken2Database
         self.kronaDatabase = kronaDatabase
+        
+    def __repr__(self):
+        return f"CreateMetagenomicsRunInput(dataType={self.dataType}, samples={self.samples}, runName={self.runName}, trim={self.trim}, threads={self.threads}, threadsTotal={self.threadsTotal}, removeHumanReads={self.removeHumanReads}, removeUnclassifiedReads={self.removeUnclassifiedReads}, minimumReadLength={self.minimumReadLength}, kraken2Database={self.kraken2Database}, kronaDatabase={self.kronaDatabase})"
 
 
 class CreateMetagenomicsRunUseCase:
@@ -73,7 +77,7 @@ class CreateMetagenomicsRunUseCase:
         
         try:
             logger.debug(
-                f"Calling viralunity service to start metagenomics with parameters: {metagenomics_parameters}"
+                f"Creating metagenomics run with parameters: {metagenomics_parameters}"
             )
             run = self.repository.save_run(run)
             return run

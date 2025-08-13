@@ -31,21 +31,24 @@ class ViralUnityService:
                     time.sleep(config.service.polling_interval)
                     continue
                 try:
-                    metagenomics_parameters = next_task.parameters
-                    task_hash = self.file_hash_calculator.get_hash_of_task(next_task.name)
+                    task_hash = self.file_hash_calculator.get_hash_of_task(next_task)
                     if task_hash == next_task.executionHash:
                         logger.debug(f"Task {next_task.id} already processed, marking as COMPLETED.")
                         next_task.state = RunState.COMPLETED
                         self.repository.save_run(next_task)
                         continue
-                    params = self.prepare_metagenomics_params(metagenomics_parameters)
+                    params = self.prepare_metagenomics_params(next_task)
                     next_task.state = RunState.RUNNING
                     next_task.iteration += 1
                     next_task.executionHash = task_hash
                     self.repository.save_run(next_task)
                     result = vu_metagenomics(params)
                     logger.debug(f"Metagenomics run completed with result: {result}")
-                    next_task.state = RunState.PENDING
+                    if(result == 1):
+                        next_task.state = RunState.FAILED
+                        next_task.errorMessage = "ViralUnity failed to run"
+                    else:
+                        next_task.state = RunState.PENDING
                     self.repository.save_run(next_task)
                 except Exception as e:
                     next_task.state = RunState.FAILED
@@ -56,18 +59,21 @@ class ViralUnityService:
                 logger.error(f"Error in ViralUnityService main thread: {e}")
 
     def prepare_metagenomics_params(self, run: Run) -> dict:
-        samples = [[sample.name, sample.sampleLib] for sample in run.samples]
+        samples = {}
+        for sample in run.samples:
+            samples[sample.name] = [config.input_dir + "/" + run.name + "/fastq_pass/" + sample.sampleLib]
+        
+        run_output_dir = config.output_dir + "/" + str(run.id)+ "_" + run.name
         return {
             "data_type": run.parameters.dataType.value,
             "samples": samples,
-            "config_file": config.output_dir + "/config.yaml",
-            "run_name": f"{run.parameters.id}_{run.parameters.runName}",
-            "kraken2_database": run.parameters.kraken2DatabasePath,
-            "krona_database": run.parameters.kronaDatabasePath,
-            "adapters": run.parameters.adaptersPath,
+            "config_file": run_output_dir + "/config.yaml",
+            "run_name": f"{run.parameters.id}_{run.name}",
+            "kraken2_database": run.parameters.kraken2Database,
+            "krona_database": run.parameters.kronaDatabase,
             "threads": run.parameters.threads,
             "threads_total": run.parameters.threadsTotal,
-            "output": run.parameters.outputDir,
+            "output": run_output_dir,
             "remove_human_reads": run.parameters.removeHumanReads,
             "remove_unclassified_reads": run.parameters.removeUnclassifiedReads,
             "create_config_only": False,
