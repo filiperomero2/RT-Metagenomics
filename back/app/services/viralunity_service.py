@@ -61,12 +61,14 @@ class ViralUnityService:
     def prepare_metagenomics_params(self, run: Run) -> dict:
         samples = {}
         for sample in run.samples:
-            samples[sample.name] = [config.input_dir + "/" + run.name + "/fastq_pass/" + sample.sampleLib]
+            samples[sample.name] = [config.input_dir + "/" + run.name + "/fastq_pass/" + sample.sampleLib + "/*"]
+        
         
         run_output_dir = config.output_dir + "/" + str(run.id)+ "_" + run.name
         return {
             "data_type": run.parameters.dataType.value,
             "samples": samples,
+            "sample_sheet": None,
             "config_file": run_output_dir + "/config.yaml",
             "run_name": f"{run.parameters.id}_{run.name}",
             "kraken2_database": run.parameters.kraken2Database,
@@ -79,4 +81,4 @@ class ViralUnityService:
             "create_config_only": False,
             "minimum_read_length": config.service.default_minimum_read_length,
             "trim": run.parameters.trim,
-        } 
+        }
