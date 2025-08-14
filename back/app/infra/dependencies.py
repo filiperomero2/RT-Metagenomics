@@ -2,11 +2,11 @@ from typing import Annotated
 from fastapi import Depends
 from sqlmodel import Session
 from services.viralunity_service import ViralUnityService
-from services.viralunity_domain_logic import ViralUnityDomainLogic
+from services.file_hash_calculator_service import FileHashCalculatorService
 from usecases.create_metagenomic_usecase import CreateMetagenomicsRunUseCase
 from usecases.list_metagenomic_usecase import ListMetagenomicsUseCase
 from usecases.get_metagenomics_result_usecase import GetMetagenomicsResultUseCase
-from repositories.metagenomics_repository import MetagenomicsRunRepository
+from repositories.metagenomics_run_repository import MetagenomicsRunRepository
 from infra.database.db import get_session
 
 
@@ -24,20 +24,19 @@ def get_metagenomics_run_repository(
     """Get MetagenomicsRepository instance."""
     return MetagenomicsRunRepository(db_session)
 
-
-# Domain logic dependency
-def get_viralunity_domain_logic() -> ViralUnityDomainLogic:
-    """Get ViralUnity domain logic instance."""
-    return ViralUnityDomainLogic()
+# File hash calculator dependency
+def get_file_hash_calculator() -> FileHashCalculatorService:
+    """Get FileHashCalculatorService instance."""
+    return FileHashCalculatorService()
 
 
 # Service dependency
 def get_viralunity_service(
-    domain_logic: Annotated[ViralUnityDomainLogic, Depends(get_viralunity_domain_logic)],
-    repository: Annotated[MetagenomicsRunRepository, Depends(get_metagenomics_run_repository)]
+    repository: Annotated[MetagenomicsRunRepository, Depends(get_metagenomics_run_repository)],
+    file_hash_calculator: Annotated[FileHashCalculatorService, Depends(get_file_hash_calculator)]
 ) -> ViralUnityService:
     """Get ViralUnity service instance."""
-    return ViralUnityService(domain_logic, repository)
+    return ViralUnityService(repository, file_hash_calculator)
 
 
 # Use case dependencies

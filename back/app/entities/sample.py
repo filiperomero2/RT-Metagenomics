@@ -6,6 +6,7 @@ if TYPE_CHECKING:
 
 class Sample(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
+    sampleLib: str = Field(default="barcode01") # TODO: Remove this default value
     name: str = Field(default=None)
     runId: int = Field(default=None, foreign_key="run.id")
     run: "Run" = Relationship(back_populates="samples")

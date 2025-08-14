@@ -55,8 +55,8 @@ async def get_metagenomics(usecase: ListMetagenomicsUseCaseDependency):
     # since the frontend expects a simple array
     return [run.dict() for run in runs_data]
 
-@router.get("/metagenomics/{run_id}/result")
-async def get_metagenomics_result(run_id: int, usecase: GetMetagenomicsResultUseCaseDependency):
+@router.get("/metagenomics/{run_id}/{sample_id}/result")
+async def get_metagenomics_result(run_id: int, sample_id: int, usecase: GetMetagenomicsResultUseCaseDependency):
     """
     Get the results of a specific metagenomics run.
     
@@ -66,7 +66,7 @@ async def get_metagenomics_result(run_id: int, usecase: GetMetagenomicsResultUse
     Returns:
         StreamingResponse: HTML report of the metagenomics results
     """
-    return StreamingResponse(usecase.execute(run_id), media_type="text/html")
+    return StreamingResponse(usecase.execute(run_id, sample_id), media_type="text/html")
 
 @router.get("/health")
 async def health_check():

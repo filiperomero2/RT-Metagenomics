@@ -37,4 +37,4 @@ class RunParameters(SQLModel, table=True):
         }
 
     def __repr__(self):
-        return f"RunParameters(dataType={self.dataType}, sampleSheetFilePath={self.sampleSheetFilePath}, outputDir={self.outputDir}, runName={self.runName}, trim={self.trim}, threads={self.threads}, threadsTotal={self.threadsTotal}, kraken2DatabasePath={self.kraken2DatabasePath}, kronaDatabasePath={self.kronaDatabasePath}, removeHumanReads={self.removeHumanReads}, removeUnclassifiedReads={self.removeUnclassifiedReads}, adaptersPath={self.adaptersPath}, minimumReadLength={self.minimumReadLength})"
+        return f"RunParameters(dataType={self.dataType}, trim={self.trim}, threads={self.threads}, threadsTotal={self.threadsTotal}, kraken2Database={self.kraken2Database}, kronaDatabase={self.kronaDatabase}, removeHumanReads={self.removeHumanReads}, removeUnclassifiedReads={self.removeUnclassifiedReads}, minimumReadLength={self.minimumReadLength})"

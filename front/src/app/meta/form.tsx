@@ -61,8 +61,8 @@ const schema = z.object({
 const barcodes = Array.from({ length: 96 })
   .fill(0)
   .map((_, i) => ({
-    key: `${i + 1}`,
-    label: `${i + 1}`,
+    key: `barcode${i + 1 < 10 ? "0" + (i + 1) : i + 1}`,
+    label: `barcode${i + 1 < 10 ? "0" + (i + 1) : i + 1}`,
   }));
 
 export function MetaForm() {

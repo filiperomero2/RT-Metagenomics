@@ -3,7 +3,7 @@ from typing import List
 from entities.run import Run
 from entities.run_parameters import RunParameters
 from entities.sample import Sample
-from repositories.metagenomics_repository import MetagenomicsRunRepository
+from repositories.metagenomics_run_repository import MetagenomicsRunRepository
 
 logger = logging.getLogger('uvicorn.error')
 
