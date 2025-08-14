@@ -153,7 +153,6 @@ export function MetaForm() {
                 <div className="col-span-3 nth-[0]:px-3">
                   <Accordion
                     variant="light"
-                    // className="p-0"
                     selectionMode="multiple"
                     defaultExpandedKeys={["Samples"]}
                   >
@@ -267,7 +266,7 @@ export function MetaForm() {
                       </div>
                       <Button
                         className="w-full"
-                        variant="bordered"
+                        variant="ghost"
                         type="button"
                         onPress={() =>
                           samplesArrayField.append(

@@ -1,9 +1,14 @@
 import { IconState } from "@/components/icon/state-icon";
+import { EmptyFull } from "@/components/state-components/empty-full";
+import { ErrorFull } from "@/components/state-components/error-full";
+import { LoadingFull } from "@/components/state-components/loading-full";
 import { setFocusedRun, useFocusedRun } from "@/hooks/use-focused-run";
 import {
   toggleSelectedCharts,
   useIsChartSelected,
 } from "@/hooks/use-selected-charts";
+import { api } from "@/lib/axios";
+import { queryKeys } from "@/utils/query-keys-factory";
 import {
   Button,
   Checkbox,
@@ -12,6 +17,7 @@ import {
   ModalContent,
   ModalHeader,
 } from "@heroui/react";
+import { useQuery } from "@tanstack/react-query";
 import { Maximize, Minimize } from "lucide-react";
 import { useEffect, useId, useState } from "react";
 
@@ -30,7 +36,7 @@ export function MetaVisualization() {
       <ModalContent>
         <ModalHeader className="gap-2 capitalize">
           <IconState state={focused?.state || "pending"} />
-          {focused?.name}
+          {`${focused?.parameters.dataType} - ${focused?.name}`}
         </ModalHeader>
         <ModalBody>
           <div className="w-full h-full space-y-1.5 overflow-y-auto snap-y scrollbar-hide">
@@ -51,17 +57,17 @@ export function Chart({
   id: number;
   hideSelection?: boolean;
 }) {
-  const uniqueId = useId()
+  const uniqueId = useId();
   const [isFullScreen, setFullScreen] = useState(false);
   const isSelected = useIsChartSelected(id);
-  // const { data, isPending, isError } = useQuery({
-  //   enabled: !!id,
-  //   queryKey: queryKeys.getMetaGenomic(Number(id)),
-  //   queryFn: async () => {
-  //     const response = await api.get(`v1/metagenomics/${id}/result`);
-  //     return response.data;
-  //   },
-  // });
+  const { data, isPending, isError } = useQuery({
+    enabled: !!id,
+    queryKey: queryKeys.getMetaGenomic(Number(id)),
+    queryFn: async () => {
+      const response = await api.get(`v1/metagenomics/${id}/result`);
+      return response.data;
+    },
+  });
 
   useEffect(() => {
     document.addEventListener("fullscreenchange", (e) => {
@@ -85,12 +91,10 @@ export function Chart({
 
   return (
     <div
-      className="w-full h-[98%] overflow-hidden rounded-2xl relative snap-center"
+      className="w-full h-[98%] overflow-hidden rounded-xl relative snap-center"
       id={uniqueId}
     >
-      {/* <iframe srcDoc={data} className="w-full h-full rounded-sm bg-white" /> */}
-
-      <div className="w-full h-full rounded-sm bg-amber-400" />
+      <iframe srcDoc={data} className="w-full h-full bg-white" />
 
       <div className="absolute bottom-1 right-1 bg-content1/50 px-1 py-1 rounded-xl shadow flex items-center justify-center">
         {!hideSelection && (

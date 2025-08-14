@@ -12,17 +12,15 @@ import {
 } from "@heroui/react";
 import { motion } from "framer-motion";
 import { SquareSplitHorizontal, X } from "lucide-react";
-import { Chart } from "./visualization";
-import { setFocusedRun } from "@/hooks/use-focused-run";
-import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { Fragment } from "react";
+import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
+import { Chart } from "./visualization";
 
 export function MetaComparator() {
   const modal = useModal();
   const ids = useSelectedCharts();
 
   const handleCompare = () => {
-    // setFocusedRun(undefined);
     modal.handleOpen();
   };
 
