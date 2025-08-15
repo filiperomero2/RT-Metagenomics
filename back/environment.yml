@@ -1,4 +1,4 @@
-name: viralunity
+name: rt-meta
 channels:
   - local
   - bioconda

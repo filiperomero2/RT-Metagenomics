@@ -15,8 +15,22 @@ RT-Metagenomics is a project for real-time metagenomic analysis, featuring separ
     cd RT-Metagenomics
     ```
 
+2. **Build docker image:**
+    ```bash
+    docker build -t rt-meta:dev .
+    ```
+    it may take some time to finish
+
+3. **Run trhough docker image:**
+    ```bash
+    docker run -p 3000:3000 -p 8000:8000 rt-meta:dev
+    ```
+
+You can also run backend and frontend by itself
+
 2. **Backend Setup:**
     - See [back/README.md](back/README.md) for backend installation and usage instructions.
 
 3. **Frontend Setup:**
     - See [front/README.md](front/README.md) for frontend installation and usage instructions.
+
