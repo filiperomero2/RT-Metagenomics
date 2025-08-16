@@ -45,13 +45,14 @@ cd back
 
 ### 2. Create Virtual Environment
 ```bash
-conda create -n rt-meta python=3.9
+conda create -n rt-meta python=3.11
 conda activate rt-meta
 ```
 
 ### 3. Install Dependencies
 ```bash
-conda env update -n rt-meta --file environment.yaml
+conda env update -n rt-meta --file environment.yml && conda clean -a -y
+conda env update -n rt-meta --file app/viralunity/environment.yml && conda clean -a -y
 ```
 
 ### 4. Environment Configuration
