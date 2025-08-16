@@ -70,7 +70,8 @@ export function Chart({
 
   const { data, isPending, isError } = useQuery({
     queryKey: queryKeys.getMetaGenomic(sample),
-    retry: false,
+    retry: Infinity,
+    refetchInterval: 30000,
     queryFn: async () => {
       const response = await api.get(
         `v1/metagenomics/${sample.runId}/${sample.id}/result`
