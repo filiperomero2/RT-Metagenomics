@@ -10,7 +10,6 @@ import { Chart } from "./chart";
 
 export function MetaVisualization() {
   const focused = useFocusedRun();
-  console.log("Focused", focused);
 
   if (!focused?.samples.length) return null;
 
