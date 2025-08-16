@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from fastapi.responses import StreamingResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from dto.health_check_response import HealthCheckResponse
 from usecases.create_metagenomic_usecase import CreateMetagenomicsRunInput, CreateMetagenomicsSampleInput
 from dto import CreateMetagenomicsRunRequest
@@ -66,7 +66,12 @@ async def get_metagenomics_result(run_id: int, sample_id: int, usecase: GetMetag
     Returns:
         StreamingResponse: HTML report of the metagenomics results
     """
-    return StreamingResponse(usecase.execute(run_id, sample_id), media_type="text/html")
+    result = usecase.execute(run_id, sample_id)
+    return FileResponse(
+        path=result["file_path"],
+        media_type=result["content_type"],
+        filename=result["filename"]
+    )
 
 @router.get("/health")
 async def health_check():
