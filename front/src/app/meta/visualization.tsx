@@ -20,7 +20,7 @@ import {
   ModalHeader,
 } from "@heroui/react";
 import { useQuery } from "@tanstack/react-query";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { ChevronRight, Maximize, Minimize } from "lucide-react";
 import { useEffect, useId, useState } from "react";
 
@@ -44,8 +44,8 @@ export function MetaVisualization() {
           <IconState state={focused?.state || "pending"} />
           {`${focused?.parameters.dataType} - ${focused?.name}`}
         </ModalHeader>
-        <ModalBody className=" overflow-auto">
-          <div className="w-full h-full overflow-y-auto snap-y  scrollbar-hide space-y-1">
+        <ModalBody className="overflow-auto">
+          <div className="w-full overflow-y-auto snap-y scrollbar-hide space-y-1 gap-x-1">
             {focused?.samples.map((sample) => (
               <Chart key={`${sample.runId}-${sample.id}`} sample={sample} />
             ))}
@@ -81,7 +81,7 @@ export function Chart({
 
   useEffect(() => {
     document.addEventListener("fullscreenchange", (e) => {
-      setFullScreen(!!document.fullscreenElement);
+      setFullScreen(document.fullscreenElement?.id === uniqueId);
     });
     return () => document.removeEventListener("fullscreenchange", () => {});
   }, []);
@@ -103,7 +103,7 @@ export function Chart({
       id={uniqueId}
     >
       <div className="bg-content2/70 px-3 py-1 rounded-xl shadow  flex items-center justify-between gap-2 w-full mx-auto">
-        <div className="flex">
+        <div className="flex capitalize">
           {!isFullScreen && !isComparing && (
             <motion.div animate={{ rotateZ: showSample ? 90 : 0 }}>
               <Button
@@ -117,7 +117,7 @@ export function Chart({
             </motion.div>
           )}
           {isComparing ? (
-            <h1>{sample.name.toUpperCase()}</h1>
+            <h1>{sample.name}</h1>
           ) : (
             <Checkbox
               className="pl-3"
@@ -125,19 +125,24 @@ export function Chart({
               isSelected={isSelected}
               onChange={() => toggleSelectedCharts(sample)}
             >
-              {sample.name.toUpperCase()}
+              {sample.name}
             </Checkbox>
           )}
         </div>
-        <Button
-          onPress={handleFullScreen}
-          isIconOnly
-          size="sm"
-          variant="light"
-          className="z-10"
+        <motion.div
+          animate={{ opacity: isClosed ? 0 : 1, translateX: isClosed ? 40 : 0 }}
+          initial={{ opacity: 0, translateX: 40 }}
         >
-          {isFullScreen ? <Minimize /> : <Maximize />}
-        </Button>
+          <Button
+            onPress={handleFullScreen}
+            isIconOnly
+            size="sm"
+            variant="light"
+            className="z-10"
+          >
+            {isFullScreen ? <Minimize /> : <Maximize />}
+          </Button>
+        </motion.div>
       </div>
       <ShowComponent
         show={showSample}
@@ -145,7 +150,7 @@ export function Chart({
         initial={false}
         gridInnerClassName="bg-content2 mt-1 rounded-xl"
       >
-        <div className={cn("h-[85vh]", isFullScreen && "h-full")}>
+        <div className={cn("h-[83dvh]", isFullScreen && "h-full")}>
           {isPending && <LoadingFull />}
           {isError && <ErrorFull label="Visualization not ready" />}
           {data && <iframe srcDoc={data} className="w-full h-full bg-white" />}
