@@ -1,16 +1,14 @@
 "use client";
 
 import { IconState } from "@/components/icon/state-icon";
-import { EmptyFull } from "@/components/state-components/empty-full";
 import { ErrorFull } from "@/components/state-components/error-full";
 import { LoadingFull } from "@/components/state-components/loading-full";
 import { setFocusedRun, useFocusedRun } from "@/hooks/use-focused-run";
 import { api } from "@/lib/axios";
-import { MetaGenomicState } from "@/types/meta-genomic-state";
+import { MetaGenomicRun } from "@/types/meta-genomic-run";
 import { queryKeys } from "@/utils/query-keys-factory";
 import {
   Button,
-  Selection,
   Table,
   TableBody,
   TableCell,
@@ -29,18 +27,19 @@ export function MetaTable() {
   const focused = useFocusedRun();
   const [shouldRefetch, setShouldRefetch] = useState(true);
 
-  const { data, isPending, isError } = useQuery<MetaGenomicState[]>({
+  const { data, isPending, isError } = useQuery<MetaGenomicRun[]>({
     queryKey: queryKeys.getAllMetaGenomics(),
     refetchInterval: shouldRefetch ? 2000 : 0,
     queryFn: async () => {
-      const { data } = await api.get<MetaGenomicState[]>("/v1/metagenomics");
+      const { data } = await api.get<MetaGenomicRun[]>("/v1/metagenomics");
       setShouldRefetch(data.some((item) => loadingStates.includes(item.state)));
       return data;
     },
   });
 
-  if (isPending) return <LoadingFull />;
   if (isError) return <ErrorFull />;
+
+  const reversedData = data ? [...data].toReversed() : [];
 
   return (
     <Table
@@ -66,32 +65,32 @@ export function MetaTable() {
         </TableColumn>
         <TableColumn>Actions</TableColumn>
       </TableHeader>
-      <TableBody emptyContent={"No rows to display."}>
-        {data
-          ?.toReversed()
-          .map(({ parameters, name, id, iteration, state }) => (
-            <TableRow
-              key={id}
-              className="cursor-pointer rounded-xl"
-              onClick={() =>
-                setFocusedRun({ parameters, name, id, iteration, state })
-              }
-            >
-              <TableCell>
-                <IconState state={state} />
-              </TableCell>
-              <TableCell>{parameters.dataType}</TableCell>
-              <TableCell className="w-full">{name}</TableCell>
-              <TableCell>{iteration}</TableCell>
-              <TableCell>1</TableCell>
-              <TableCell>2</TableCell>
-              <TableCell className="flex justify-center">
-                <Button size="sm" isIconOnly variant="flat">
-                  <Trash2 size={20} className="text-danger" />
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
+      <TableBody
+        emptyContent={"No rows to display."}
+        isLoading={isPending}
+        loadingContent={<LoadingFull className="mt-[3.5rem]" />}
+      >
+        {reversedData.map((run) => (
+          <TableRow
+            key={run.id}
+            className="cursor-pointer rounded-xl"
+            onClick={() => setFocusedRun(run)}
+          >
+            <TableCell>
+              <IconState state={run.state} />
+            </TableCell>
+            <TableCell>{run.parameters.dataType}</TableCell>
+            <TableCell className="w-full">{run.name}</TableCell>
+            <TableCell>{run.iteration}</TableCell>
+            <TableCell>1</TableCell>
+            <TableCell>2</TableCell>
+            <TableCell className="flex justify-center">
+              <Button size="sm" isIconOnly variant="flat">
+                <Trash2 size={20} className="text-danger" />
+              </Button>
+            </TableCell>
+          </TableRow>
+        ))}
       </TableBody>
     </Table>
   );

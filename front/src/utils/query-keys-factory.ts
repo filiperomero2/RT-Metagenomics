@@ -1,4 +1,6 @@
+import { Sample } from "@/types/meta-genomic-run";
+
 export const queryKeys = {
   getAllMetaGenomics: () => ["list-meta-genomics"],
-  getMetaGenomic: (id: number) => ["get-meta-genomic", id],
+  getMetaGenomic: (sample: Sample) => ["get-meta-genomic", sample],
 };

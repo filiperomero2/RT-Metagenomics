@@ -1,4 +1,4 @@
-import { MetaGenomicState } from "@/types/meta-genomic-state";
+import { MetaGenomicRun } from "@/types/meta-genomic-run";
 import { cn } from "@/utils/cn";
 import { ReactNode } from "react";
 import {
@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { Spinner } from "@heroui/react";
 
-const iconColors: Record<MetaGenomicState["state"], string> = {
+const iconColors: Record<MetaGenomicRun["state"], string> = {
   canceled: "text-danger bg-danger/15",
   completed: "text-success bg-success/15",
   failed: "text-danger bg-danger/15",
@@ -18,7 +18,7 @@ const iconColors: Record<MetaGenomicState["state"], string> = {
   running: "text-primary  bg-primary/15",
 };
 
-const stateToIcon: Record<MetaGenomicState["state"], ReactNode> = {
+const stateToIcon: Record<MetaGenomicRun["state"], ReactNode> = {
   canceled: <Ban size={24} />,
   completed: <CircleCheck size={24} />,
   failed: <CircleX size={24} />,
@@ -28,7 +28,7 @@ const stateToIcon: Record<MetaGenomicState["state"], ReactNode> = {
 
 type IconWrapperProps = {
   className?: string;
-  state: MetaGenomicState["state"];
+  state: MetaGenomicRun["state"];
 };
 
 export const IconState = ({ className, state }: IconWrapperProps) => (
