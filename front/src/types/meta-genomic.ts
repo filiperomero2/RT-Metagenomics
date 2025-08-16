@@ -1,6 +1,6 @@
 export interface MetaGenomic {
   dataType: "illumina" | "nanopore";
-  samples: string[];
+  samples: { name: string; barcode: string }[];
   runName: string;
   trim: number;
   threads: number;

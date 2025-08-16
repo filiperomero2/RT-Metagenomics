@@ -51,7 +51,7 @@ const schema = z.object({
   samples: z
     .array(
       z.object({
-        value: z.string().min(1, ""),
+        name: z.string().min(1, ""),
         barcode: z.string().min(1, ""),
       })
     )
@@ -102,7 +102,7 @@ export function MetaForm() {
       kronaDatabase: storedForm?.kronaDatabase ?? "",
       samples: Array.from({ length: 3 })
         .fill(0)
-        .map((_, i) => ({ value: "", barcode: "" })),
+        .map((_, i) => ({ name: "", barcode: "" })),
     },
     resolver: zodResolver(schema),
   });
@@ -114,13 +114,9 @@ export function MetaForm() {
 
   const handleSubmit = (data: z.infer<typeof schema>) => {
     form.reset();
-    const transformedData: MetaGenomic = {
-      ...data,
-      samples: data.samples.map((item) => item.value),
-    };
 
-    setStoredForm(transformedData);
-    mutateAsync(transformedData, { onSuccess: handleClose });
+    setStoredForm(data);
+    mutateAsync(data, { onSuccess: handleClose });
   };
 
   return (
@@ -228,7 +224,7 @@ export function MetaForm() {
                             className="flex items-start justify-center gap-2 p-1"
                           >
                             <Input
-                              name={`samples.${index}.value`}
+                              name={`samples.${index}.name`}
                               label={`Sample ${index + 1}`}
                               className="pb-0"
                             />
@@ -270,7 +266,7 @@ export function MetaForm() {
                         type="button"
                         onPress={() =>
                           samplesArrayField.append(
-                            { value: "", barcode: "" },
+                            { name: "", barcode: "" },
                             { focusIndex: samplesArrayField.fields.length }
                           )
                         }
