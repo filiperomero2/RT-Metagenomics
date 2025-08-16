@@ -11,12 +11,20 @@ from exceptions import TaskExecutionError
 
 logger = logging.getLogger("uvicorn.error")
 
+class CreateMetagenomicsSampleInput:
+    def __init__(
+        self,
+        name: str,
+        barcode: str,
+    ):
+        self.name = name
+        self.barcode = barcode
 
 class CreateMetagenomicsRunInput:
     def __init__(
         self,
         dataType: DataType,
-        samples: List[str],
+        samples: List[CreateMetagenomicsSampleInput],
         runName: str,
         trim: int,
         threads: int,
@@ -70,8 +78,8 @@ class CreateMetagenomicsRunUseCase:
                 kronaDatabase=metagenomics_parameters.kronaDatabase,
             ),
             samples=[
-                Sample(name=sampleName)
-                for sampleName in metagenomics_parameters.samples
+                Sample(name=sample.name, sampleLib=sample.barcode)
+                for sample in metagenomics_parameters.samples
             ],
         )
         

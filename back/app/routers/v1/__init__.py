@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
 from dto.health_check_response import HealthCheckResponse
-from usecases.create_metagenomic_usecase import CreateMetagenomicsRunInput
+from usecases.create_metagenomic_usecase import CreateMetagenomicsRunInput, CreateMetagenomicsSampleInput
 from dto import CreateMetagenomicsRunRequest
 from infra.dependencies import (
     CreateMetagenomicsUseCaseDependency,
@@ -27,7 +27,7 @@ async def start_metagenomics(
     """
     run = usecase.execute(CreateMetagenomicsRunInput(
         dataType=metagenomics_run.dataType,
-        samples=metagenomics_run.samples,
+        samples=[CreateMetagenomicsSampleInput(name=sample.name, barcode=sample.barcode) for sample in metagenomics_run.samples],
         runName=metagenomics_run.runName,
         trim=metagenomics_run.trim,
         threads=metagenomics_run.threads,

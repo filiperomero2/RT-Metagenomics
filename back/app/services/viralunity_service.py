@@ -64,7 +64,7 @@ class ViralUnityService:
             samples[sample.name] = [config.input_dir + "/" + run.name + "/fastq_pass/" + sample.sampleLib + "/*"]
         
         
-        run_output_dir = config.output_dir + "/" + str(run.id)+ "_" + run.name
+        run_output_dir = config.output_dir + "/" #+ str(run.id)+ "_" + run.name
         return {
             "data_type": run.parameters.dataType.value,
             "samples": samples,

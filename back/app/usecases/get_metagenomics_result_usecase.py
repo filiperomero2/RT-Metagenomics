@@ -13,5 +13,5 @@ class GetMetagenomicsResultUseCase:
         sample = next(x for x in run.samples if x.id == sample_id)
         if sample is not None:
             parameters = run.parameters
-            with open(f"{config.output_dir}/{run.id}_{run.name}/metagenomics/taxonomic_assignments/reports/{sample.name}.output.krona.html", "r") as krona_plot:
+            with open(f"{config.output_dir}/{run.id}_{run.name}/metagenomics/taxonomic_assignments/reports/sample-{sample.name}.output.krona.html", "r") as krona_plot:
                 yield from krona_plot
