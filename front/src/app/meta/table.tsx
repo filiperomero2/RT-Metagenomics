@@ -8,17 +8,15 @@ import { api } from "@/lib/axios";
 import { MetaGenomicRun } from "@/types/meta-genomic-run";
 import { queryKeys } from "@/utils/query-keys-factory";
 import {
-  Button,
   Table,
   TableBody,
   TableCell,
   TableColumn,
   TableHeader,
   TableRow,
-  Tooltip,
+  Tooltip
 } from "@heroui/react";
 import { useQuery } from "@tanstack/react-query";
-import { Trash2 } from "lucide-react";
 import { useState } from "react";
 
 const loadingStates = ["running", "pending"];
@@ -63,7 +61,7 @@ export function MetaTable() {
             TSA
           </Tooltip>
         </TableColumn>
-        <TableColumn>Actions</TableColumn>
+        {/* <TableColumn>Actions</TableColumn> */}
       </TableHeader>
       <TableBody
         emptyContent={"No rows to display."}
@@ -82,13 +80,13 @@ export function MetaTable() {
             <TableCell>{run.parameters.dataType}</TableCell>
             <TableCell className="w-full">{run.name}</TableCell>
             <TableCell>{run.iteration}</TableCell>
-            <TableCell>1</TableCell>
-            <TableCell>2</TableCell>
-            <TableCell className="flex justify-center">
+            <TableCell>N/A</TableCell>
+            <TableCell>N/A</TableCell>
+            {/* <TableCell className="flex justify-center">
               <Button size="sm" isIconOnly variant="flat">
                 <Trash2 size={20} className="text-danger" />
               </Button>
-            </TableCell>
+            </TableCell> */}
           </TableRow>
         ))}
       </TableBody>

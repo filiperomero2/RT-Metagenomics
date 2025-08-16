@@ -14,7 +14,7 @@ import { motion } from "framer-motion";
 import { SquareSplitHorizontal, X } from "lucide-react";
 import { Fragment } from "react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
-import { Chart } from "./visualization";
+import { Chart } from "./chart";
 
 export function MetaComparator() {
   const modal = useModal();
@@ -59,7 +59,9 @@ export function MetaComparator() {
       </motion.div>
       <Modal {...modal.modal} size="full" isDismissable={false}>
         <ModalContent>
-          <ModalHeader>Comparing charts {samples.map(s => s.name).join(", ")}</ModalHeader>
+          <ModalHeader>
+            Comparing charts {samples.map((s) => s.name).join(", ")}
+          </ModalHeader>
 
           <ModalBody>
             <PanelGroup
@@ -72,7 +74,7 @@ export function MetaComparator() {
                   <Panel key={`${sample.runId}-${sample.id}`}>
                     <Chart sample={sample} isComparing />
                   </Panel>
-                  {index < samples.length-1 && <PanelResizeHandle />}
+                  {index < samples.length - 1 && <PanelResizeHandle />}
                 </Fragment>
               ))}
             </PanelGroup>
