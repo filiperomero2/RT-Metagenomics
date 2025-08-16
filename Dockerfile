@@ -8,17 +8,14 @@ WORKDIR /app
 COPY back /app/back/
 COPY front /app/front/
 
-# Install the environment
+# Install the conda environment
 RUN conda create -n rt-meta python=3.11
 ENV PATH=/opt/conda/envs/rt-meta/bin:$PATH
 
 RUN conda env update -n rt-meta --file back/environment.yml && conda clean -a -y
 RUN conda env update -n rt-meta --file back/app/viralunity/environment.yml && conda clean -a -y
-#RUN conda env create --quiet -f back/environment.yml && conda clean -a -y
-#RUN conda env create --quiet -f back/app/viralunity/environment.yml && conda clean -a -y
 
-#ENV PATH=/opt/conda/envs/viralunity/bin:$PATH
-
+# Install nodejs and pnpm
 RUN apt-get install -y curl
 RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
 RUN apt-get install -y nodejs
@@ -33,5 +30,7 @@ COPY run.sh /app/run.sh
 RUN chmod +x /app/run.sh
 
 WORKDIR /
+
+EXPOSE 3000
 
 CMD ["/bin/bash", "/app/run.sh"]
