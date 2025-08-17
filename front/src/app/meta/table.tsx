@@ -88,7 +88,7 @@ export function MetaTable() {
             <TableCell>N/A</TableCell>
             <TableCell>N/A</TableCell>
             <TableCell className="flex justify-center">
-              <Popover placement="left" showArrow={true} backdrop="opaque">
+              <Popover placement="left" showArrow={true} color="default">
                 <PopoverTrigger>
                   <Button variant="light" size="sm" isIconOnly>
                     <Info />
@@ -124,7 +124,7 @@ function ParameterItem({
     <div className="flex justify-between gap-2">
       <p className="font-semibold capitalize">{label}</p>
       <Tooltip delay={1000} content={String(value)} placement="bottom-end">
-        <p className="line-clamp-1 text-foreground-500 w-1/2 text-end">
+        <p className="line-clamp-1 text-foreground-400 w-1/2 text-end">
           {String(value)}
         </p>
       </Tooltip>
