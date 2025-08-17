@@ -1,11 +1,17 @@
 import { IconState } from "@/components/icon/state-icon";
 import { setFocusedRun, useFocusedRun } from "@/hooks/use-focused-run";
 import {
+  Button,
   Modal,
   ModalBody,
   ModalContent,
-  ModalHeader
+  ModalHeader,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  Tooltip,
 } from "@heroui/react";
+import { Info } from "lucide-react";
 import { Chart } from "./chart";
 
 export function MetaVisualization() {
@@ -23,12 +29,15 @@ export function MetaVisualization() {
       }}
     >
       <ModalContent>
-        <ModalHeader className="gap-2 capitalize">
+        <ModalHeader className="gap-2 capitalize items-center">
           <IconState state={focused?.state || "pending"} />
-          {`${focused?.parameters.dataType} - ${focused?.name}`}
+          <span className="flex-1">
+            {`${focused?.parameters.dataType} - ${focused?.name}`}
+          </span>
         </ModalHeader>
         <ModalBody className="overflow-auto">
           <div className="w-full overflow-y-auto snap-y scrollbar-hide space-y-1 gap-x-1">
+
             {focused?.samples.map((sample) => (
               <Chart key={`${sample.runId}-${sample.id}`} sample={sample} />
             ))}
@@ -38,3 +47,4 @@ export function MetaVisualization() {
     </Modal>
   );
 }
+

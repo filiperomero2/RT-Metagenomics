@@ -8,15 +8,20 @@ import { api } from "@/lib/axios";
 import { MetaGenomicRun } from "@/types/meta-genomic-run";
 import { queryKeys } from "@/utils/query-keys-factory";
 import {
+  Button,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
   Table,
   TableBody,
   TableCell,
   TableColumn,
   TableHeader,
   TableRow,
-  Tooltip
+  Tooltip,
 } from "@heroui/react";
 import { useQuery } from "@tanstack/react-query";
+import { Info } from "lucide-react";
 import { useState } from "react";
 
 const loadingStates = ["running", "pending"];
@@ -61,7 +66,7 @@ export function MetaTable() {
             TSA
           </Tooltip>
         </TableColumn>
-        {/* <TableColumn>Actions</TableColumn> */}
+        <TableColumn>Parameters</TableColumn>
       </TableHeader>
       <TableBody
         emptyContent={"No rows to display."}
@@ -82,14 +87,47 @@ export function MetaTable() {
             <TableCell>{run.iteration}</TableCell>
             <TableCell>N/A</TableCell>
             <TableCell>N/A</TableCell>
-            {/* <TableCell className="flex justify-center">
-              <Button size="sm" isIconOnly variant="flat">
-                <Trash2 size={20} className="text-danger" />
-              </Button>
-            </TableCell> */}
+            <TableCell className="flex justify-center">
+              <Popover placement="left" showArrow={true} backdrop="opaque">
+                <PopoverTrigger>
+                  <Button variant="light" size="sm" isIconOnly>
+                    <Info />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent>
+                  <div className="px-2 py-2 w-lg flex flex-col gap-2">
+                    <p className="text-medium font-bold m-auto pb-3">
+                      PARAMETERS
+                    </p>
+                    {Object.entries(run.parameters).map(([key, value]) => (
+                      <ParameterItem key={key} label={key} value={value} />
+                    ))}
+                  </div>
+                </PopoverContent>
+              </Popover>
+            </TableCell>
           </TableRow>
         ))}
       </TableBody>
     </Table>
+  );
+}
+
+function ParameterItem({
+  label,
+  value,
+}: {
+  label: string;
+  value: string | number | boolean | undefined;
+}) {
+  return (
+    <div className="flex justify-between gap-2">
+      <p className="font-semibold capitalize">{label}</p>
+      <Tooltip delay={1000} content={String(value)} placement="bottom-end">
+        <p className="line-clamp-1 text-foreground-500 w-1/2 text-end">
+          {String(value)}
+        </p>
+      </Tooltip>
+    </div>
   );
 }
