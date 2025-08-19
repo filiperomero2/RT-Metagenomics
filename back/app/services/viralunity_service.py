@@ -63,19 +63,17 @@ class ViralUnityService:
         for sample in run.samples:
             samples[sample.name] = [config.input_dir + "/" + run.name + "/fastq_pass/" + sample.sampleLib + "/*"]
         
-        
-        run_output_dir = config.output_dir + "/" #+ str(run.id)+ "_" + run.name
         return {
             "data_type": run.parameters.dataType.value,
             "samples": samples,
             "sample_sheet": None,
-            "config_file": run_output_dir + "/config.yaml",
+            "config_file": config.output_dir + "/" + str(run.id)+ "_" + run.name + "/config.yaml",
             "run_name": f"{run.parameters.id}_{run.name}",
             "kraken2_database": run.parameters.kraken2Database,
             "krona_database": run.parameters.kronaDatabase,
             "threads": run.parameters.threads,
             "threads_total": run.parameters.threadsTotal,
-            "output": run_output_dir,
+            "output": config.output_dir,
             "remove_human_reads": run.parameters.removeHumanReads,
             "remove_unclassified_reads": run.parameters.removeUnclassifiedReads,
             "create_config_only": False,
