@@ -1,9 +1,10 @@
-name: viralunity
+name: rt-meta
 channels:
   - local
   - bioconda
   - conda-forge
 dependencies:
   - fastapi=0.115.12
-  - viralunity=1.0.4
+  #- viralunity=1.0.4
   - sqlmodel=0.0.24
+  - pydantic=2.11.7

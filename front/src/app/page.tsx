@@ -7,7 +7,7 @@ import Link from "next/link";
 
 export default function Home() {
   const links = [
-    { href: "/meta", label: "Meta", icon: ChartPie },
+    { href: "/meta", label: "Meta v1", icon: ChartPie },
     // { href: "/about", label: "About", icon: BookText },
   ];
 

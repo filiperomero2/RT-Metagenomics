@@ -14,7 +14,7 @@ export function NumberInput({
   return (
     <NumberInputUI
       size="sm"
-      variant="faded"
+      variant="flat"
       {...rest}
       {...field}
       className={cn(!fieldState.invalid && "pb-4", className)}
