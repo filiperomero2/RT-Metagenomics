@@ -15,7 +15,7 @@ The easiest way to run RT-Metagenomics is using Docker. This approach ensures co
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/RT-Metagenomics.git
+git clone --recurse-submodules https://github.com/filiperomero2/RT-Metagenomics.git
 cd RT-Metagenomics
 ```
 

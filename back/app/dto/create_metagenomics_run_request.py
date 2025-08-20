@@ -1,12 +1,11 @@
 from typing import List
 from entities.enum import DataType
-from pydantic import BaseModel
 
-class CreateMetagenomicsSampleRequest(BaseModel):
+class CreateMetagenomicsSampleRequest:
     name: str
     barcode: str
     
-class CreateMetagenomicsRunRequest(BaseModel):
+class CreateMetagenomicsRunRequest:
     dataType: DataType
     samples: List[CreateMetagenomicsSampleRequest]
     runName: str
