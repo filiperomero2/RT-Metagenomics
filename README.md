@@ -39,6 +39,7 @@ docker run -p 3000:3000 -p 8000:8000 rt-meta:latest
 docker run -d \
   --name rt-metagenomics \
   -p 3000:3000 \
+  -p 8000:8000 \
   -v /path/to/your/input/data:/app/rt-meta/input \
   -v /path/to/your/output/directory:/app/rt-meta/output \
   -v /path/to/your/kraken2db:/app/rt-meta/db/kraken2 \
