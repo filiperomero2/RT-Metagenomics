@@ -20,7 +20,7 @@ export function CheckBox({
           "inline-flex w-full max-w-md bg-content2 py-2.5 gap-1 m-0 mb-4 px-2",
           "hover:bg-content3 items-center justify-start",
           "cursor-pointer rounded-lg border-2 border-transparent",
-          "data-[selected=true]:border-primary "
+          "data-[selected=true]:border-primary ",
         ),
         label: "w-full",
       }}

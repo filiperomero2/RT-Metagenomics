@@ -27,7 +27,7 @@ export function MetaComparator() {
   return (
     <>
       <motion.div
-        className="fixed bottom-4 z-[60] left-1/2 -translate-x-1/2 flex gap-2 bg-content1 py-2 px-3 rounded-2xl"
+        className="bg-content1 fixed bottom-4 left-1/2 z-[60] flex -translate-x-1/2 gap-2 rounded-2xl px-3 py-2"
         initial={{ opacity: 0, y: 200 }}
         animate={
           samples.length > 1 && !modal.modal.isOpen
@@ -65,7 +65,7 @@ export function MetaComparator() {
 
           <ModalBody>
             <PanelGroup
-              className="flex gap-1 w-full h-full"
+              className="flex h-full w-full gap-1"
               direction="horizontal"
               // autoSaveId={`meta-comparator-${ids.join("-")}`}
             >

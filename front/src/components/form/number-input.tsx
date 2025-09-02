@@ -1,7 +1,10 @@
 "use client";
 
 import { cn } from "@/utils/cn";
-import { type NumberInputProps, NumberInput as NumberInputUI } from "@heroui/react";
+import {
+  type NumberInputProps,
+  NumberInput as NumberInputUI,
+} from "@heroui/react";
 import { useController } from "react-hook-form";
 
 export function NumberInput({

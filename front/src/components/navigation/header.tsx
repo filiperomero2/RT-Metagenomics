@@ -24,11 +24,11 @@ export function Header() {
 
   return (
     <Navbar isBordered maxWidth="full">
-      <NavbarContent className="flex gap-4 w-full" justify="center">
+      <NavbarContent className="flex w-full gap-4" justify="center">
         <NavbarBrand>
-          <NavbarItem className="items-center justify-center flex">
+          <NavbarItem className="flex items-center justify-center">
             <Link href="/">
-              <img className="bg-background w-10 h-10" src="/logo.webp" />
+              <img className="bg-background h-10 w-10" src="/logo.webp" />
             </Link>
           </NavbarItem>
         </NavbarBrand>
@@ -49,7 +49,7 @@ export function Header() {
             <DropdownTrigger>
               <Button
                 disableRipple
-                className="p-0 bg-transparent data-[hover=true]:bg-transparent"
+                className="bg-transparent p-0 data-[hover=true]:bg-transparent"
                 radius="sm"
                 variant="light"
                 isIconOnly
@@ -58,7 +58,7 @@ export function Header() {
               </Button>
             </DropdownTrigger>
           </NavbarItem>
-          <DropdownMenu aria-label="Settings" className="py-3 px-4">
+          <DropdownMenu aria-label="Settings" className="px-4 py-3">
             <DropdownItem key={"theme-switcher"} isReadOnly>
               <ThemeSwitcher />
             </DropdownItem>

@@ -33,7 +33,7 @@ export function Chart({
     refetchInterval: 30000,
     queryFn: async () => {
       const response = await api.get(
-        `v1/metagenomics/${sample.runId}/${sample.id}/result`
+        `v1/metagenomics/${sample.runId}/${sample.id}/result`,
       );
       return response.data;
     },
@@ -59,11 +59,11 @@ export function Chart({
 
   return (
     <div
-      className="w-full overflow-hidden rounded-xl relative flex flex-col snap-center bg-content1 "
+      className="bg-content1 relative flex w-full snap-center flex-col overflow-hidden rounded-xl"
       id={uniqueId}
     >
-      <div className="bg-content2/70 text-content2-foreground px-3 py-1 rounded-xl shadow relative flex items-center justify-between gap-2 w-full mx-auto">
-        <div className="flex capitalize items-center">
+      <div className="bg-content2/70 text-content2-foreground relative mx-auto flex w-full items-center justify-between gap-2 rounded-xl px-3 py-1 shadow">
+        <div className="flex items-center capitalize">
           {!isFullScreen && !isComparing && (
             <motion.div animate={{ rotateZ: showSample ? 90 : 0 }}>
               <Button
@@ -89,14 +89,14 @@ export function Chart({
           )}
         </div>
 
-        <div className="flex relative">
+        <div className="relative flex items-center">
           <AnimatePresence mode="popLayout">
             {!showSample && (
               <motion.div
                 initial={{ opacity: 0, translateX: 35 }}
                 animate={{ opacity: 1, translateX: 0 }}
                 exit={{ opacity: 0, translateX: 35 }}
-                className="w-full h-full flex items-center justify-center"
+                className="flex h-full w-full items-center justify-center"
               >
                 <IconState
                   state={isError ? "failed" : isPending ? "running" : "pending"}
@@ -111,7 +111,7 @@ export function Chart({
                 initial={{ opacity: 0, translateX: 35 }}
                 animate={{ opacity: 1, translateX: 0 }}
                 exit={{ opacity: 0, translateX: 35 }}
-                className="w-full h-full flex items-center justify-center"
+                className="flex h-full w-full items-center justify-center"
               >
                 <Button
                   onPress={handleFullScreen}
@@ -136,7 +136,7 @@ export function Chart({
         <div className={cn("h-[83dvh]", isFullScreen && "h-full")}>
           {isPending && <LoadingFull />}
           {isError && <ErrorFull label="Visualization not ready" />}
-          {data && <iframe srcDoc={data} className="w-full h-full bg-white" />}
+          {data && <iframe srcDoc={data} className="h-full w-full bg-white" />}
         </div>
       </ShowComponent>
     </div>

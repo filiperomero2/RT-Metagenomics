@@ -11,8 +11,8 @@ export default function Meta() {
       <MetaVisualization />
       <MetaComparator />
 
-      <div className="bg-content1 p-4 py-6 rounded-2xl shadow-md">
-        <div className="w-full flex justify-between items-center gap-3 mb-4 text-3xl font-bold text-foreground-800 pb-6">
+      <div className="bg-content1 rounded-2xl p-4 py-6 shadow-md">
+        <div className="text-foreground-800 mb-4 flex w-full items-center justify-between gap-3 pb-6 text-3xl font-bold">
           <h1>All Metagenomics</h1>
           <MetaForm />
         </div>

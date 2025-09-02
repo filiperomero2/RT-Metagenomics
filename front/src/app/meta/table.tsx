@@ -41,7 +41,6 @@ export function MetaTable() {
   });
 
   if (isError) return <ErrorFull />;
-
   const reversedData = data ? [...data].toReversed() : [];
 
   return (
@@ -95,8 +94,8 @@ export function MetaTable() {
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent>
-                  <div className="px-2 py-2 w-lg flex flex-col gap-2">
-                    <p className="text-medium font-bold m-auto pb-3">
+                  <div className="flex w-lg flex-col gap-2 px-2 py-2">
+                    <p className="text-medium m-auto pb-3 font-bold">
                       PARAMETERS
                     </p>
                     {Object.entries(run.parameters).map(([key, value]) => (
@@ -124,7 +123,7 @@ function ParameterItem({
     <div className="flex justify-between gap-2">
       <p className="font-semibold capitalize">{label}</p>
       <Tooltip delay={1000} content={String(value)} placement="bottom-end">
-        <p className="line-clamp-1 text-foreground-400 w-1/2 text-end">
+        <p className="text-foreground-400 line-clamp-1 w-1/2 text-end">
           {String(value)}
         </p>
       </Tooltip>

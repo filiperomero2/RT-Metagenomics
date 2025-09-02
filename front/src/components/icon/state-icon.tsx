@@ -36,7 +36,7 @@ export const IconState = ({ className, state }: IconWrapperProps) => (
     className={cn(
       className,
       iconColors[state],
-      "flex items-center rounded-small justify-center w-fit h-fit p-1 "
+      "rounded-small flex h-fit w-fit items-center justify-center p-1",
     )}
   >
     {stateToIcon[state]}

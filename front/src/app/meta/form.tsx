@@ -53,7 +53,7 @@ const schema = z.object({
       z.object({
         name: z.string().min(1, ""),
         barcode: z.string().min(1, ""),
-      })
+      }),
     )
     .min(1, { message: "At least one sample is required" }),
 });
@@ -70,7 +70,7 @@ export function MetaForm() {
   const [storedForm, setStoredForm] = useLocalStorage<MetaGenomic | undefined>(
     "meta-genomic-form",
     undefined,
-    { initializeWithValue: false }
+    { initializeWithValue: false },
   );
 
   const { mutateAsync, isPending } = useMutation({
@@ -134,7 +134,7 @@ export function MetaForm() {
           <FormProvider {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit)} className="flex-1">
               <DrawerHeader>New Metagenomics</DrawerHeader>
-              <DrawerBody className="grid content-start grid-cols-3 gap-x-3 gap-y-1 w-full min-h-[85%]">
+              <DrawerBody className="grid min-h-[85%] w-full grid-cols-3 content-start gap-x-3 gap-y-1">
                 <Input
                   name="runName"
                   type="text"
@@ -158,26 +158,26 @@ export function MetaForm() {
                       indicator={<Cog />}
                       title={<p className="flex items-center gap-2">Options</p>}
                     >
-                      <div className="grid grid-cols-2 gap-x-2 @container">
+                      <div className="@container grid grid-cols-2 gap-x-2">
                         <NumberInput
                           name="threads"
                           label="Threads"
-                          className="@md:col-span-1 col-span-2"
+                          className="col-span-2 @md:col-span-1"
                         />
                         <NumberInput
                           name="threadsTotal"
                           label="Threads Total"
-                          className="@md:col-span-1 col-span-2"
+                          className="col-span-2 @md:col-span-1"
                         />
                         <NumberInput
                           name="trim"
                           label="Trim"
-                          className="@md:col-span-1 col-span-2"
+                          className="col-span-2 @md:col-span-1"
                         />
                         <NumberInput
                           name="minimumReadLength"
                           label="Minimum Read Length"
-                          className="@md:col-span-1 col-span-2"
+                          className="col-span-2 @md:col-span-1"
                         />
 
                         <CheckBox
@@ -217,7 +217,7 @@ export function MetaForm() {
                       indicator={<Dna />}
                       title={<p className="flex items-center gap-2">Samples</p>}
                     >
-                      <div className="grid pb-2 gap-2">
+                      <div className="grid gap-2 pb-2">
                         {samplesArrayField.fields.map((field, index) => (
                           <div
                             key={field.id}
@@ -267,7 +267,7 @@ export function MetaForm() {
                         onPress={() =>
                           samplesArrayField.append(
                             { name: "", barcode: "" },
-                            { focusIndex: samplesArrayField.fields.length }
+                            { focusIndex: samplesArrayField.fields.length },
                           )
                         }
                       >
@@ -277,7 +277,7 @@ export function MetaForm() {
                   </Accordion>
                 </div>
               </DrawerBody>
-              <DrawerFooter className="bottom-0 sticky bg-content1 z-10 shadow-2xl rounded-t-3xl">
+              <DrawerFooter className="bg-content1 sticky bottom-0 z-10 rounded-t-3xl shadow-2xl">
                 <Button
                   variant="light"
                   color="danger"

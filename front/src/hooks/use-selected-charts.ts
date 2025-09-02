@@ -12,7 +12,7 @@ export const useSelectedCharts = () => {
 
 export const useIsChartSelected = (sample: Sample) => {
   return !!useStore(store, (state) =>
-    state.find((s) => isSameSample(s, sample))
+    state.find((s) => isSameSample(s, sample)),
   );
 };
 
