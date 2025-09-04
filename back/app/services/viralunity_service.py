@@ -1,5 +1,6 @@
 import logging
 import time
+import os
 
 from entities.run import Run
 from entities.enum import RunState
@@ -61,7 +62,11 @@ class ViralUnityService:
     def prepare_metagenomics_params(self, run: Run) -> dict:
         samples = {}
         for sample in run.samples:
-            samples[sample.name] = [config.input_dir + "/" + run.name + "/fastq_pass/" + sample.sampleLib + "/*"]
+            folder_name = config.input_dir + "/" + run.name + "/fastq_pass/" + sample.sampleLib
+            if (os.path.exists(folder_name)):
+                samples[sample.name] = [folder_name + "/*"]
+            else:
+                logger.warning(f"Folder {folder_name} does not exist yet, skipping sample {sample.name} for this iteration")
         
         return {
             "data_type": run.parameters.dataType.value,
