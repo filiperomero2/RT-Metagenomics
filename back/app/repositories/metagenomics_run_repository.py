@@ -1,9 +1,9 @@
 from sqlmodel import Session, select
-from entities.sample import Sample
 from entities.run import Run
-from entities.run_parameters import RunParameters
 from entities.enum import RunState
-from typing import Optional, List, Tuple
+from typing import Optional, List
+from config import config
+import datetime
 
 class MetagenomicsRunRepository:
     def __init__(self, session: Session):
@@ -12,7 +12,7 @@ class MetagenomicsRunRepository:
     
     def get_pending_run(self) -> Optional[Run]:
         """Get the first pending run (used in ViralUnityService)"""
-        stmt = select(Run).where(Run.state == RunState.PENDING).limit(1)
+        stmt = select(Run).where(Run.state == RunState.PENDING).limit(1).where(Run.next_scheduled_run_at <= datetime.datetime.now()).order_by(Run.next_scheduled_run_at.desc())
         dbResult = self.session.exec(stmt).first()
         if dbResult:
             return dbResult
@@ -30,6 +30,8 @@ class MetagenomicsRunRepository:
        
     def save_run(self, run: Run) -> Run:
         """Save a run"""
+        run.updatedAt = datetime.datetime.now()
+        run.next_scheduled_run_at = datetime.datetime.now() + datetime.timedelta(minutes=config.service.iteration_interval)
         self.session.add(run)
         self.session.commit()
         self.session.refresh(run)

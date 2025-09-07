@@ -18,6 +18,7 @@ class Run(SQLModel, table=True):
     iteration: int = Field(default=1)
     createdAt: datetime.datetime | None = Field(default=datetime.datetime.now())
     updatedAt: datetime.datetime | None = Field(default=datetime.datetime.now())
+    next_scheduled_run_at: datetime.datetime | None = Field(default=datetime.datetime.now())
     
     # Relationships
     samples: List["Sample"] = Relationship(back_populates="run")

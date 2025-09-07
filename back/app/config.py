@@ -13,6 +13,7 @@ class ServiceConfig:
     polling_interval: int = 1  # seconds
     max_retries: int = 3
     task_timeout: int = 3600  # 1 hour in seconds
+    iteration_interval: int = 1  # 1 minute
     
     # File processing settings
     default_minimum_read_length: int = 50
@@ -77,6 +78,7 @@ def load_config() -> AppConfig:
     
     # Service configuration
     service_config.polling_interval = int(os.getenv("POLLING_INTERVAL", service_config.polling_interval))
+    service_config.iteration_interval = int(os.getenv("ITERATION_INTERVAL", service_config.iteration_interval))
     service_config.max_retries = int(os.getenv("MAX_RETRIES", service_config.max_retries))
     service_config.task_timeout = int(os.getenv("TASK_TIMEOUT", service_config.task_timeout))
     service_config.default_minimum_read_length = int(os.getenv("DEFAULT_MINIMUM_READ_LENGTH", service_config.default_minimum_read_length))
