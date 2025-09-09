@@ -26,7 +26,7 @@ import { useState } from "react";
 
 const loadingStates = ["running", "pending"];
 
-export function MetaTable() {
+export function RunTable() {
   const focused = useFocusedRun();
   const [shouldRefetch, setShouldRefetch] = useState(true);
 

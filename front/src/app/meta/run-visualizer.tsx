@@ -1,9 +1,10 @@
 import { IconState } from "@/components/icon/state-icon";
 import { setFocusedRun, useFocusedRun } from "@/hooks/use-focused-run";
 import { Modal, ModalBody, ModalContent, ModalHeader } from "@heroui/react";
-import { Chart } from "./chart";
+import { SampleVisualizer } from "./sample-visualizer";
+import { RunCharts } from "./run-charts";
 
-export function MetaVisualization() {
+export function RunVisualizer() {
   const focused = useFocusedRun();
 
   if (!focused?.samples.length) return null;
@@ -27,8 +28,9 @@ export function MetaVisualization() {
         </ModalHeader>
         <ModalBody className="overflow-auto">
           <div className="scrollbar-hide w-full snap-y space-y-1 gap-x-1 overflow-y-auto">
+          <RunCharts />
             {focused?.samples.map((sample) => (
-              <Chart key={`${sample.runId}-${sample.id}`} sample={sample} />
+              <SampleVisualizer key={`${sample.runId}-${sample.id}`} sample={sample} />
             ))}
           </div>
         </ModalBody>
