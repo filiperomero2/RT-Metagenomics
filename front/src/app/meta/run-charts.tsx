@@ -177,10 +177,10 @@ export function BarChart({ title, dataSets, legend }: ChartProps) {
                     text: legend,
                     position: "center",
                   },
-                
                 },
                 colors: {
-                  enabled: true,
+                  enabled: true, 
+                  
                   // forceOverride: true,
                 },
               },
