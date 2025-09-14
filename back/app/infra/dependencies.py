@@ -1,6 +1,7 @@
 from typing import Annotated
 from fastapi import Depends
 from sqlmodel import Session
+from usecases.get_metagenomics_metrics_usecase import GetMetagenomicsMetricsUseCase
 from services.viralunity_service import ViralUnityService
 from services.file_hash_calculator_service import FileHashCalculatorService
 from usecases.create_metagenomic_usecase import CreateMetagenomicsRunUseCase
@@ -62,9 +63,17 @@ def get_get_metagenomics_result_usecase(
     return GetMetagenomicsResultUseCase(repository)
 
 
+def get_get_metagenomics_metrics_usecase(
+    repository: Annotated[MetagenomicsRunRepository, Depends(get_metagenomics_run_repository)]
+) -> GetMetagenomicsMetricsUseCase:
+    """Get GetMetagenomicsMetricsUseCase instance."""
+    return GetMetagenomicsMetricsUseCase(repository)
+
+
 # Type aliases for cleaner imports
 CreateMetagenomicsUseCaseDependency = Annotated[CreateMetagenomicsRunUseCase, Depends(get_create_metagenomics_usecase)]
 ListMetagenomicsUseCaseDependency = Annotated[ListMetagenomicsUseCase, Depends(get_list_metagenomics_usecase)]
 GetMetagenomicsResultUseCaseDependency = Annotated[GetMetagenomicsResultUseCase, Depends(get_get_metagenomics_result_usecase)]
 ViralUnityServiceDependency = Annotated[ViralUnityService, Depends(get_viralunity_service)]
 MetagenomicsRepositoryDependency = Annotated[MetagenomicsRunRepository, Depends(get_metagenomics_run_repository)] 
+GetMetagenomicsMetricsUseCaseDependency = Annotated[GetMetagenomicsMetricsUseCase, Depends(get_get_metagenomics_metrics_usecase)]

@@ -6,7 +6,8 @@ from dto import CreateMetagenomicsRunRequest
 from infra.dependencies import (
     CreateMetagenomicsUseCaseDependency,
     ListMetagenomicsUseCaseDependency,
-    GetMetagenomicsResultUseCaseDependency
+    GetMetagenomicsResultUseCaseDependency,
+    GetMetagenomicsMetricsUseCaseDependency,
 )
 
 router = APIRouter(prefix='/v1')
@@ -72,6 +73,18 @@ async def get_metagenomics_result(run_id: int, sample_id: int, usecase: GetMetag
         media_type=result["content_type"],
         filename=result["filename"]
     )
+
+@router.get("/metagenomics/{run_id}/metrics")
+async def get_metagenomics_metrics(run_id: int, usecase: GetMetagenomicsMetricsUseCaseDependency):
+    """
+    Get the metrics of a specific metagenomics run.
+    
+    Args:
+        run_id: The ID of the metagenomics run
+    """
+    metrics = usecase.execute(run_id)
+    return None # TODO: return the metrics
+
 
 @router.get("/health")
 async def health_check():
