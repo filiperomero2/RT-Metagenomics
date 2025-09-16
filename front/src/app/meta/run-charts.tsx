@@ -15,6 +15,7 @@ import {
 } from "chart.js";
 import { useState } from "react";
 import { Bar } from "react-chartjs-2";
+import interpolate from "color-interpolate";
 
 ChartJS.register(
   CategoryScale,
@@ -91,16 +92,16 @@ export function RunCharts() {
 
   return (
     <>
-      <HeatMapChart title="HeatMap" dataSets={familyData} />
+      <BarChart
+        title="Total reads per sample (Classified vs Unclassified)"
+        dataSets={viralData}
+      />
       <BarChart
         title="Reads per family per sample (absolute)"
         legend="Family"
         dataSets={familyData}
       />
-      <BarChart
-        title="Total reads per sample (Viral vs Non-viral)"
-        dataSets={viralData}
-      />
+      <HeatMapChart title="HeatMap" dataSets={familyData} />
     </>
   );
 }
@@ -110,6 +111,9 @@ interface ChartProps {
   legend?: string;
   dataSets: { dataSetTitle: string; data: number[] }[];
 }
+
+const colors = ["white", "yellow", "red"];
+const colorScale = interpolate(colors);
 
 export function HeatMapChart({ title, dataSets }: ChartProps) {
   const [show, setShow] = useState(true);
@@ -121,9 +125,8 @@ export function HeatMapChart({ title, dataSets }: ChartProps) {
   const higherNumber = Math.max(...flatData);
 
   function generateBackgroundColor(value: number) {
-    const percentage = (value - lowerNumber) / (higherNumber - lowerNumber);
-    const lightness = 80 - percentage * 55;
-    return `hsl(186.67deg 79.75% ${lightness}%)`;
+    const ratio = (value - lowerNumber) / (higherNumber - lowerNumber);
+    return colorScale(ratio);
   }
 
   return (
@@ -135,7 +138,7 @@ export function HeatMapChart({ title, dataSets }: ChartProps) {
             <div
               className="my-3 w-5 flex-1 rounded"
               style={{
-                background: `linear-gradient(to top, ${generateBackgroundColor(lowerNumber)}, ${generateBackgroundColor(higherNumber)})`,
+                background: `linear-gradient(to top, ${colors[0]}, ${colors[1]}, ${colors[2]})`,
               }}
             />
             <span>{lowerNumber}</span>
@@ -165,9 +168,7 @@ export function HeatMapChart({ title, dataSets }: ChartProps) {
 
             <div className="flex w-full gap-1">
               {focused?.samples.map((s) => (
-                <span className="text-medium flex-1 text-center capitalize">
-                  {s.name}
-                </span>
+                <span className="text-medium flex-1 text-center">{s.name}</span>
               ))}
               <span className="w-32 p-1" />
             </div>
