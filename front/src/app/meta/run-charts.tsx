@@ -1,6 +1,11 @@
 import { Accordion } from "@/components/custom-accordion";
 import { useFocusedRun } from "@/hooks/use-focused-run";
-import { faker, he } from "@faker-js/faker";
+import {
+  infernoColorGenerator,
+  magmaColorGenerator,
+  viridisColorGenerator,
+} from "@/utils/color-generator";
+import { faker } from "@faker-js/faker";
 import { Switch, Tooltip as TooltipHero } from "@heroui/react";
 import {
   BarElement,
@@ -13,9 +18,9 @@ import {
   Title,
   Tooltip,
 } from "chart.js";
+import interpolate from "color-interpolate";
 import { useState } from "react";
 import { Bar } from "react-chartjs-2";
-import interpolate from "color-interpolate";
 
 ChartJS.register(
   CategoryScale,
@@ -112,7 +117,11 @@ interface ChartProps {
   dataSets: { dataSetTitle: string; data: number[] }[];
 }
 
-const colors = ["white", "yellow", "red"];
+const colors = [
+  infernoColorGenerator(1),
+  infernoColorGenerator(0.5),
+  infernoColorGenerator(0),
+];
 const colorScale = interpolate(colors);
 
 export function HeatMapChart({ title, dataSets }: ChartProps) {
@@ -203,9 +212,10 @@ export function BarChart({ title, dataSets, legend }: ChartProps) {
           <Bar
             data={{
               labels: focused?.samples.map((s) => s.name),
-              datasets: dataSets.map((d) => ({
+              datasets: dataSets.map((d, i) => ({
                 label: d.dataSetTitle,
                 data: d.data,
+                backgroundColor: viridisColorGenerator((i / (dataSets.length-1))),
               })),
             }}
             options={{
