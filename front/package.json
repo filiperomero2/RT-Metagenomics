@@ -23,6 +23,7 @@
     "axios": "^1.11.0",
     "chart.js": "^4.5.0",
     "clsx": "^2.1.1",
+    "color-interpolate": "^2.0.0",
     "faker": "^6.6.6",
     "framer-motion": "12.23.12",
     "lucide-react": "^0.510.0",
