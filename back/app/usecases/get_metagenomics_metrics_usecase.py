@@ -13,13 +13,12 @@ class GetMetagenomicsMetricsUseCase:
 
     def execute(self, run_id: int):
         run = self.repository.get_run(run_id)
-        summary_file_path = f"{config.output_dir}/{run.id}_{run.name}/metagenomics/metagenomics_summary.txt"
-        summary_metrics = self.metrics_service.get_summary_metrics(summary_file_path)
+        
+        summary_metrics = self.metrics_service.get_summary_metrics(run.id, run.name)
+        print(summary_metrics)
         sample_metrics = {}
         for sample in run.samples:            
-            sample_file_path = f"{config.output_dir}/{run.id}_{run.name}/metagenomics/taxonomic_assignments/results/sample-{sample.name}.output.krona.txt"
-            sample_metrics[sample.name] = self.metrics_service.get_sample_metrics(sample_file_path)             
-                
+            sample_metrics[sample.name] = self.metrics_service.get_sample_metrics(run.id, run.name, sample.name)             
         return {
             "summary_metrics": summary_metrics,
             "sample_metrics": sample_metrics

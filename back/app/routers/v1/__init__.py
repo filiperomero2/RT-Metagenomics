@@ -83,7 +83,7 @@ async def get_metagenomics_metrics(run_id: int, usecase: GetMetagenomicsMetricsU
         run_id: The ID of the metagenomics run
     """
     metrics = usecase.execute(run_id)
-    return None # TODO: return the metrics
+    return metrics
 
 
 @router.get("/health")
