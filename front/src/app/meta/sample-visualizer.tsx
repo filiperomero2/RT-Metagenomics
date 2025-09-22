@@ -1,6 +1,4 @@
 import { Accordion } from "@/components/custom-accordion";
-import { IconState } from "@/components/icon/state-icon";
-import { ShowComponent } from "@/components/show-components";
 import { ErrorFull } from "@/components/state-components/error-full";
 import { LoadingFull } from "@/components/state-components/loading-full";
 import {
@@ -11,10 +9,8 @@ import { api } from "@/lib/axios";
 import { Sample } from "@/types/meta-genomic-run";
 import { cn } from "@/utils/cn";
 import { queryKeys } from "@/utils/query-keys-factory";
-import { Button, Checkbox } from "@heroui/react";
+import { Checkbox } from "@heroui/react";
 import { useQuery } from "@tanstack/react-query";
-import { AnimatePresence, motion } from "framer-motion";
-import { ChevronRight, Maximize, Minimize, Trash } from "lucide-react";
 import { useEffect, useId, useState } from "react";
 
 export function SampleVisualizer({
