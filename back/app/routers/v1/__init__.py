@@ -2,12 +2,14 @@ from fastapi import APIRouter
 from fastapi.responses import FileResponse, StreamingResponse
 from dto.health_check_response import HealthCheckResponse
 from usecases.create_metagenomic_usecase import CreateMetagenomicsRunInput, CreateMetagenomicsSampleInput
+
 from dto import CreateMetagenomicsRunRequest
 from infra.dependencies import (
     CreateMetagenomicsUseCaseDependency,
     ListMetagenomicsUseCaseDependency,
     GetMetagenomicsResultUseCaseDependency,
     GetMetagenomicsMetricsUseCaseDependency,
+    GetMetagenomicsChartsUseCaseDependency
 )
 
 router = APIRouter(prefix='/v1')
@@ -73,6 +75,18 @@ async def get_metagenomics_result(run_id: int, sample_id: int, usecase: GetMetag
         media_type=result["content_type"],
         filename=result["filename"]
     )
+
+@router.get("/metagenomics/{run_id}/charts")
+async def get_metagenomics_charts(run_id: int, usecase: GetMetagenomicsChartsUseCaseDependency):
+    """
+    Get the charts data of a specific metagenomics run.
+    
+    Args:
+        run_id: The ID of the metagenomics run
+    """
+    charts = usecase.execute(run_id)
+    return charts
+
 
 @router.get("/metagenomics/{run_id}/metrics")
 async def get_metagenomics_metrics(run_id: int, usecase: GetMetagenomicsMetricsUseCaseDependency):

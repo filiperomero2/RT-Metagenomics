@@ -1,12 +1,14 @@
 import { Accordion } from "@/components/custom-accordion";
 import { useFocusedRun } from "@/hooks/use-focused-run";
+import { api } from "@/lib/axios";
 import {
   infernoColorGenerator,
-  magmaColorGenerator,
   viridisColorGenerator,
 } from "@/utils/color-generator";
+import { queryKeys } from "@/utils/query-keys-factory";
 import { faker } from "@faker-js/faker";
 import { Switch, Tooltip as TooltipHero } from "@heroui/react";
+import { useQuery } from "@tanstack/react-query";
 import {
   BarElement,
   CategoryScale,
@@ -35,78 +37,28 @@ ChartJS.register(
 
 export function RunCharts() {
   const focused = useFocusedRun();
-  const viralData = [
-    {
-      dataSetTitle: "Viral",
-      data:
-        focused?.samples.map(() => faker.number.int({ min: 0, max: 300 })) ??
-        [],
+  const { data } = useQuery({
+    queryKey: queryKeys.getCharts(focused),
+    queryFn: async () => {
+      const response = await api.get(`/v1/metagenomics/${focused?.id}/charts`);
+      return response.data;
     },
-    {
-      dataSetTitle: "Non-viral",
-      data:
-        focused?.samples.map(() => faker.number.int({ min: 0, max: 300 })) ??
-        [],
-    },
-  ];
+  });
 
-  const familyData = [
-    {
-      dataSetTitle: "Coronaviridae",
-      data:
-        focused?.samples.map(() => faker.number.int({ min: 0, max: 300 })) ??
-        [],
-    },
-    {
-      dataSetTitle: "Pneumoviridae",
-      data:
-        focused?.samples.map(() => faker.number.int({ min: 0, max: 300 })) ??
-        [],
-    },
-    {
-      dataSetTitle: "Ornithoviridae",
-      data:
-        focused?.samples.map(() => faker.number.int({ min: 0, max: 300 })) ??
-        [],
-    },
-    {
-      dataSetTitle: "Baculoviridae",
-      data:
-        focused?.samples.map(() => faker.number.int({ min: 0, max: 300 })) ??
-        [],
-    },
-    {
-      dataSetTitle: "Poxviridae",
-      data:
-        focused?.samples.map(() => faker.number.int({ min: 0, max: 300 })) ??
-        [],
-    },
-    {
-      dataSetTitle: "Retroviridae",
-      data:
-        focused?.samples.map(() => faker.number.int({ min: 0, max: 300 })) ??
-        [],
-    },
-    {
-      dataSetTitle: "Steitoviridae",
-      data:
-        focused?.samples.map(() => faker.number.int({ min: 0, max: 300 })) ??
-        [],
-    },
-  ];
+  if (!data) return null;
 
   return (
     <>
       <BarChart
         title="Total reads per sample (Classified vs Unclassified)"
-        dataSets={viralData}
+        dataSets={data.viralDatasets}
       />
       <BarChart
         title="Reads per family per sample (absolute)"
         legend="Family"
-        dataSets={familyData}
+        dataSets={data.familyDatasets}
       />
-      <HeatMapChart title="HeatMap" dataSets={familyData} />
+      <HeatMapChart title="HeatMap" dataSets={data.familyDatasets} />
     </>
   );
 }
@@ -215,7 +167,9 @@ export function BarChart({ title, dataSets, legend }: ChartProps) {
               datasets: dataSets.map((d, i) => ({
                 label: d.dataSetTitle,
                 data: d.data,
-                backgroundColor: viridisColorGenerator((i / (dataSets.length-1))),
+                backgroundColor: viridisColorGenerator(
+                  i / (dataSets.length - 1),
+                ),
               })),
             }}
             options={{
@@ -248,11 +202,6 @@ export function BarChart({ title, dataSets, legend }: ChartProps) {
                     text: legend,
                     position: "center",
                   },
-                },
-                colors: {
-                  enabled: true,
-
-                  // forceOverride: true,
                 },
               },
             }}
