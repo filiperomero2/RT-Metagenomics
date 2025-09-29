@@ -43,14 +43,6 @@ export function SampleVisualizer({
     return () => document.removeEventListener("fullscreenchange", () => {});
   }, []);
 
-  const handleFullScreen = () => {
-    const element = document.getElementById(uniqueId);
-    if (!isFullScreen) {
-      element?.requestFullscreen();
-    } else {
-      document.exitFullscreen();
-    }
-  };
   const handleToggle = () => setClosed(!isClosed);
 
   const showSample = !isClosed || isFullScreen || !!isComparing;

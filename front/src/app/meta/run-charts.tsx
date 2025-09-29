@@ -106,14 +106,34 @@ export function HeatMapChart({ title, dataSets }: ChartProps) {
           </div>
 
           <div className="flex w-full flex-col items-center gap-1">
-            {dataSets.map((dts) => (
+            {dataSets.map((dts, dtsIndex) => (
               <div key={dts.dataSetTitle} className="flex w-full gap-1">
-                {dts.data.map((cell, index) => (
+                {dts.data.map((cell, cellIndex) => (
                   <TooltipHero
                     showArrow
-                    // placement="right"
-                    key={index}
-                    content={<span className="px-2 py-1">{cell}</span>}
+                    placement="right"
+                    key={`${dtsIndex}-${cellIndex}`}
+                    className="bg-background/90 rounded-sm p-0"
+                    classNames={{
+                      arrow: "bg-background/90",
+                    }}
+                    content={
+                      <div className="flex flex-col gap-1 px-2 py-1">
+                        <span>{focused?.samples[cellIndex].name}</span>
+
+                        <span className="flex items-center gap-1">
+                          <div
+                            className="h-3 w-3 rounded-xs border"
+                            style={{
+                              backgroundColor: generateBackgroundColor(cell),
+                            }}
+                          />
+                          <span>
+                            {dts.dataSetTitle}: {cell}
+                          </span>
+                        </span>
+                      </div>
+                    }
                   >
                     <span
                       className="h-10 flex-1 rounded-xs bg-current transition hover:brightness-90"
