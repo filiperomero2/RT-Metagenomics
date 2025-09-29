@@ -21,6 +21,7 @@ import {
   Tooltip,
 } from "chart.js";
 import interpolate from "color-interpolate";
+import { ChartNoAxesColumnIncreasing } from "lucide-react";
 import { useState } from "react";
 import { Bar } from "react-chartjs-2";
 
@@ -78,10 +79,16 @@ const colorScale = interpolate(colors);
 
 export function HeatMapChart({ title, dataSets }: ChartProps) {
   const [show, setShow] = useState(true);
+  const [log, setLog] = useState(false);
 
   const focused = useFocusedRun();
 
-  const flatData = dataSets.flatMap((dts) => dts.data);
+  const processedDataSets = dataSets.map((dts) => ({
+    ...dts,
+    data: dts.data.map((v) => (log && v > 0 ? Number(Math.log10(v).toFixed(2)) : v)),
+  }));
+
+  const flatData = processedDataSets.flatMap((dts) => dts.data);
   const lowerNumber = Math.min(...flatData);
   const higherNumber = Math.max(...flatData);
 
@@ -91,7 +98,19 @@ export function HeatMapChart({ title, dataSets }: ChartProps) {
   }
 
   return (
-    <Accordion show={show} toggle={() => setShow(!show)} title={title}>
+    <Accordion
+      show={show}
+      toggle={() => setShow(!show)}
+      title={title}
+      actions={[
+        {
+          label: "Log10",
+          active: log,
+          icon: <ChartNoAxesColumnIncreasing />,
+          onPress: () => setLog(!log),
+        },
+      ]}
+    >
       <div className="flex h-full w-full">
         <div className="m-auto flex w-11/12 py-4">
           <div className="mr-5 mb-8 flex flex-col items-center">
@@ -106,7 +125,7 @@ export function HeatMapChart({ title, dataSets }: ChartProps) {
           </div>
 
           <div className="flex w-full flex-col items-center gap-1">
-            {dataSets.map((dts, dtsIndex) => (
+            {processedDataSets.map((dts, dtsIndex) => (
               <div key={dts.dataSetTitle} className="flex w-full gap-1">
                 {dts.data.map((cell, cellIndex) => (
                   <TooltipHero
@@ -149,7 +168,9 @@ export function HeatMapChart({ title, dataSets }: ChartProps) {
 
             <div className="flex w-full gap-1">
               {focused?.samples.map((s) => (
-                <span className="text-medium flex-1 text-center">{s.name}</span>
+                <span key={s.id} className="text-medium flex-1 text-center">
+                  {s.name}
+                </span>
               ))}
               <span className="w-32 p-1" />
             </div>
@@ -166,6 +187,11 @@ export function BarChart({ title, dataSets, legend }: ChartProps) {
 
   const focused = useFocusedRun();
 
+  const processedDataSets = dataSets.map((dts) => ({
+    ...dts,
+    data: dts.data.map((v) => (log ? Number(Math.log10(v).toFixed(2)) : v)),
+  }));
+
   return (
     <Accordion
       show={show}
@@ -173,8 +199,9 @@ export function BarChart({ title, dataSets, legend }: ChartProps) {
       title={title}
       actions={[
         {
-          label: "Toggle logarithmic",
-          icon: <Switch size="sm" isReadOnly inert isSelected={log} />,
+          label: "Log10",
+          active: log,
+          icon: <ChartNoAxesColumnIncreasing />,
           onPress: () => setLog(!log),
         },
       ]}
@@ -184,11 +211,11 @@ export function BarChart({ title, dataSets, legend }: ChartProps) {
           <Bar
             data={{
               labels: focused?.samples.map((s) => s.name),
-              datasets: dataSets.map((d, i) => ({
+              datasets: processedDataSets.map((d, i) => ({
                 label: d.dataSetTitle,
                 data: d.data,
                 backgroundColor: viridisColorGenerator(
-                  i / (dataSets.length - 1),
+                  i / (processedDataSets.length - 1),
                 ),
               })),
             }}
@@ -206,7 +233,7 @@ export function BarChart({ title, dataSets, legend }: ChartProps) {
                 },
                 y: {
                   stacked: true,
-                  type: log ? "logarithmic" : "linear",
+                  type: "linear",
                   title: {
                     display: true,
                     text: "Reads",

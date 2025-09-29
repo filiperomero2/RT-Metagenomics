@@ -11,6 +11,7 @@ interface AccordionProps {
   title?: React.ReactNode;
   actions?: {
     icon: React.ReactNode;
+    active?: boolean;
     label: string;
     onPress: () => void;
   }[];
@@ -58,13 +59,14 @@ export function Accordion({
           )}
           <div className="flex flex-1">{title}</div>
 
-          <div className="relative flex items-center gap-2">
+          <div className="relative flex items-center gap-1">
             {actions?.map((action) => (
               <Button
                 key={action.label}
                 onPress={action.onPress}
                 size="sm"
-                variant="light"
+                variant={action.active ? "shadow" : "light"}
+                color={action.active ? "primary" : "default"}
                 startContent={action.icon}
               >
                 {action.label}
@@ -75,6 +77,7 @@ export function Accordion({
               isIconOnly
               size="sm"
               variant="light"
+              className="ml-2"
             >
               {isFullScreen ? <Minimize /> : <Maximize />}
             </Button>
