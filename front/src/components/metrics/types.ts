@@ -1,5 +1,11 @@
+import { Dataset, SampleMetrics } from "@/types/metrics";
+
 export interface ChartProps {
   title: string;
   legend?: string;
-  dataSets: { dataSetTitle: string; data: number[] }[];
+  dataSets?: Dataset[];
+}
+
+export interface MetricsTableProps {
+  sampleMetrics?: SampleMetrics;
 }

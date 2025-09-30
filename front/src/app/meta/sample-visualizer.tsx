@@ -11,7 +11,7 @@ import { cn } from "@/utils/cn";
 import { queryKeys } from "@/utils/query-keys-factory";
 import { Checkbox } from "@heroui/react";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useId, useState } from "react";
+import { useState } from "react";
 
 export function SampleVisualizer({
   sample,
@@ -20,11 +20,8 @@ export function SampleVisualizer({
   sample: Sample;
   isComparing?: boolean;
 }) {
-  const uniqueId = useId();
-  const [isFullScreen, setFullScreen] = useState(false);
   const [isClosed, setClosed] = useState(true);
   const isSelected = useIsChartSelected(sample);
-
   const { data, isPending, isError } = useQuery({
     queryKey: queryKeys.getMetaGenomic(sample),
     refetchInterval: 30000,
@@ -35,17 +32,9 @@ export function SampleVisualizer({
       return response.data;
     },
   });
-
-  useEffect(() => {
-    document.addEventListener("fullscreenchange", (e) => {
-      setFullScreen(document.fullscreenElement?.id === uniqueId);
-    });
-    return () => document.removeEventListener("fullscreenchange", () => {});
-  }, []);
+  const showSample = !isClosed || !!isComparing;
 
   const handleToggle = () => setClosed(!isClosed);
-
-  const showSample = !isClosed || isFullScreen || !!isComparing;
 
   return (
     <Accordion
@@ -66,7 +55,7 @@ export function SampleVisualizer({
         )
       }
     >
-      <div className={cn("h-[83dvh]", isFullScreen && "h-full")}>
+      <div className={cn("h-[83dvh] my-auto")}>
         {isPending && <LoadingFull />}
         {isError && <ErrorFull label="Visualization not ready" />}
         {data && <iframe srcDoc={data} className="h-full w-full bg-white" />}

@@ -7,10 +7,15 @@ import {
   TableRow,
 } from "@heroui/react";
 import { Accordion } from "../custom-accordion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { MetricsTableProps } from "./types";
 
-export function MetricsTable() {
-  const [show, setShow] = useState(true);
+export function MetricsTable({ sampleMetrics }: MetricsTableProps) {
+  const [show, setShow] = useState(!!sampleMetrics);
+
+  useEffect(() => {
+    setShow(!!sampleMetrics);
+  }, [sampleMetrics]);
 
   return (
     <Accordion title="Metrics" show={show} toggle={() => setShow(!show)}>

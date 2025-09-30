@@ -8,7 +8,6 @@ from usecases.create_metagenomic_usecase import CreateMetagenomicsRunUseCase
 from usecases.list_metagenomic_usecase import ListMetagenomicsUseCase
 from usecases.get_metagenomics_result_usecase import GetMetagenomicsResultUseCase
 from repositories.metagenomics_run_repository import MetagenomicsRunRepository
-from usecases.get_metagenomics_charts_usecase import GetMetagenomicsChartsUseCase
 from infra.database.db import get_session
 
 
@@ -70,14 +69,6 @@ def get_get_metagenomics_metrics_usecase(
     """Get GetMetagenomicsMetricsUseCase instance."""
     return GetMetagenomicsMetricsUseCase(repository)
 
-def get_get_metagenomics_charts_usecase(
-    repository: Annotated[MetagenomicsRunRepository, Depends(get_metagenomics_run_repository)]
-) -> GetMetagenomicsChartsUseCase:
-    """Get GetMetagenomicsChartsUseCase instance."""
-    return GetMetagenomicsChartsUseCase(repository)
-
-
-
 # Type aliases for cleaner imports
 CreateMetagenomicsUseCaseDependency = Annotated[CreateMetagenomicsRunUseCase, Depends(get_create_metagenomics_usecase)]
 ListMetagenomicsUseCaseDependency = Annotated[ListMetagenomicsUseCase, Depends(get_list_metagenomics_usecase)]
@@ -85,4 +76,3 @@ GetMetagenomicsResultUseCaseDependency = Annotated[GetMetagenomicsResultUseCase,
 ViralUnityServiceDependency = Annotated[ViralUnityService, Depends(get_viralunity_service)]
 MetagenomicsRepositoryDependency = Annotated[MetagenomicsRunRepository, Depends(get_metagenomics_run_repository)] 
 GetMetagenomicsMetricsUseCaseDependency = Annotated[GetMetagenomicsMetricsUseCase, Depends(get_get_metagenomics_metrics_usecase)]
-GetMetagenomicsChartsUseCaseDependency = Annotated[GetMetagenomicsChartsUseCase, Depends(get_get_metagenomics_charts_usecase)] 

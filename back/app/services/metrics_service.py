@@ -1,6 +1,7 @@
 import logging
 import os
 import csv
+import random
 from typing import List, Dict, Optional, Any
 from config import config
 
@@ -45,7 +46,7 @@ class MetricsService:
                     summary_metrics.append({
                         "sample": self.extract_sample_name(row[0]),
                         "taxon": row[8],
-                        "n_reads_rooted": int(row[2])
+                        "nReadsRooted": int(row[2])
                     })
         except (IOError, IndexError, ValueError) as e:
             logger.error(f"Error reading summary file {summary_file_path}: {e}")
@@ -122,9 +123,9 @@ class MetricsService:
                 percentage_identified = n_identified_sequences / n_sequences if n_sequences > 0 else 0
                 
                 return {
-                    "n_sequences": n_sequences,
-                    "n_identified_sequences": n_identified_sequences,
-                    "percentage_of_identified_sequences": percentage_identified
+                    "nSequences": n_sequences,
+                    "nIdentifiedSequences": n_identified_sequences,
+                    "percentageOfIdentifiedSequences": percentage_identified
                 }
         except (IOError, IndexError, ValueError) as e:
             logger.error(f"Error processing sequence metrics from {sample_file_path}: {e}")
@@ -153,7 +154,7 @@ class MetricsService:
                         current_family is not None):
                         current_family["pathogens"].append({
                             "pathogen": previous_row[7].lstrip(), 
-                            "n_reads": int(previous_row[2])
+                            "nReads": int(previous_row[2])
                         })
 
                     # Check if we need to close current family and start new one
@@ -170,7 +171,7 @@ class MetricsService:
                                 pathologies.append(current_family)
                             current_family = {
                                 "name": row[7].lstrip(),
-                                "n_reads": int(row[1]),
+                                "nReads": int(row[1]),
                                 "pathogens": []
                             }
                     
@@ -180,7 +181,7 @@ class MetricsService:
                 if current_family is not None:
                     current_family["pathogens"].append({
                         "pathogen": previous_row[7].lstrip(),
-                        "n_reads": int(previous_row[2])
+                        "nReads": int(previous_row[2])
                     })
                     pathologies.append(current_family)
                     
@@ -189,7 +190,66 @@ class MetricsService:
             return []
             
         return pathologies
-                
+
+    def get_viral_datasets(self, samples: List["Sample"]):
+        data = []
+        
+        data.append({
+            "dataSetTitle": "Viral",
+            "data": [self._get_random_number() for _ in samples]
+        })
+        
+        data.append({
+            "dataSetTitle": "Non-viral",
+            "data": [self._get_random_number() for _ in samples]
+        })
+        
+        return data
+
+    def get_family_datasets(self, samples: List["Sample"]):
+        data = []
+
+        data.append({
+            "dataSetTitle": "Coronaviridae",
+            "data": [self._get_random_number() for _ in samples]
+        })
+        
+        data.append({
+            "dataSetTitle": "Pneumoviridae",
+            "data": [self._get_random_number() for _ in samples]
+        })
+        
+        data.append({
+            "dataSetTitle": "Ornithoviridae",
+            "data": [self._get_random_number() for _ in samples]
+        })
+        
+        data.append({
+            "dataSetTitle": "Baculoviridae",
+            "data": [self._get_random_number() for _ in samples]
+        })
+        
+        data.append({
+            "dataSetTitle": "Poxviridae",
+            "data": [self._get_random_number() for _ in samples]
+        })
+        
+        data.append({
+            "dataSetTitle": "Retroviridae",
+            "data": [self._get_random_number() for _ in samples]
+        })
+        
+        data.append({
+            "dataSetTitle": "Steitoviridae",
+            "data": [self._get_random_number() for _ in samples]
+        })
+        
+        return data
+
+
+    def _get_random_number(self): 
+        return random.randint(0, 100)
+           
     def _count_report_padding(self, string: str) -> int:
         """
         Count the number of leading spaces in a string to determine indentation level.

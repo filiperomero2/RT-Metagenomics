@@ -69,8 +69,8 @@ def load_config() -> AppConfig:
     api_config = APIConfig()
     logging_config = LoggingConfig()
     
-    output_dir = os.getenv("OUTPUT_DIR", "/tmp/rtmeta/output")
-    input_dir = os.getenv("INPUT_DIR", "/tmp/rtmeta/input")
+    output_dir = os.getenv("OUTPUT_DIR", "/home/hiagomm/code/RT-Metagenomics/back/output")
+    input_dir = os.getenv("INPUT_DIR", "/home/hiagomm/code/RT-Metagenomics/back/input")
     
     # Database configuration
     database_config.url = os.getenv("DATABASE_URL", database_config.url)

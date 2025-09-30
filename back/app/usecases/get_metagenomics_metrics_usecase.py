@@ -19,7 +19,13 @@ class GetMetagenomicsMetricsUseCase:
         sample_metrics = {}
         for sample in run.samples:            
             sample_metrics[sample.name] = self.metrics_service.get_sample_metrics(run.id, run.name, sample.name)             
+        
+        viralDatasets = self.metrics_service.get_viral_datasets(run.samples)
+        familyDatasets = self.metrics_service.get_family_datasets(run.samples)
+            
         return {
-            "summary_metrics": summary_metrics,
-            "sample_metrics": sample_metrics
+            "summaryMetrics": summary_metrics,
+            "sampleMetrics": sample_metrics,
+            "viralDatasets": viralDatasets,
+            "familyDatasets": familyDatasets
         }

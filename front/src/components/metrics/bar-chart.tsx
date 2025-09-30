@@ -13,7 +13,7 @@ import {
   Tooltip,
 } from "chart.js";
 import { ChartNoAxesColumnIncreasing } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Bar } from "react-chartjs-2";
 import { ChartProps } from "./types";
 
@@ -29,15 +29,17 @@ ChartJS.register(
 );
 
 export function BarChart({ title, dataSets, legend }: ChartProps) {
-  const [show, setShow] = useState(true);
+  const [show, setShow] = useState(!!dataSets);
   const [log, setLog] = useState(false);
-
   const focused = useFocusedRun();
-
-  const processedDataSets = dataSets.map((dts) => ({
+  const processedDataSets = dataSets?.map((dts) => ({
     ...dts,
     data: dts.data.map((v) => (log ? Number(Math.log10(v).toFixed(2)) : v)),
   }));
+
+  useEffect(() => {
+    setShow(!!dataSets);
+  }, [dataSets]);
 
   return (
     <Accordion
@@ -53,55 +55,57 @@ export function BarChart({ title, dataSets, legend }: ChartProps) {
         },
       ]}
     >
-      <div className="flex h-full items-center justify-center">
-        <div className="flex h-[85vh] w-full items-center justify-center p-4">
-          <Bar
-            data={{
-              labels: focused?.samples.map((s) => s.name),
-              datasets: processedDataSets.map((d, i) => ({
-                label: d.dataSetTitle,
-                data: d.data,
-                backgroundColor: viridisColorGenerator(
-                  i / (processedDataSets.length - 1),
-                ),
-              })),
-            }}
-            options={{
-              responsive: true,
-              animation: { duration: 500 },
-              aspectRatio: 19.5 / 9,
-              scales: {
-                x: {
-                  stacked: true,
-                  title: {
-                    display: true,
-                    text: "Samples",
+      {processedDataSets && (
+        <div className="flex h-full items-center justify-center">
+          <div className="flex h-[85vh] w-full items-center justify-center p-4">
+            <Bar
+              data={{
+                labels: focused?.samples.map((s) => s.name),
+                datasets: processedDataSets.map((d, i) => ({
+                  label: d.dataSetTitle,
+                  data: d.data,
+                  backgroundColor: viridisColorGenerator(
+                    i / (processedDataSets.length - 1),
+                  ),
+                })),
+              }}
+              options={{
+                responsive: true,
+                animation: { duration: 500 },
+                aspectRatio: 19.5 / 9,
+                scales: {
+                  x: {
+                    stacked: true,
+                    title: {
+                      display: true,
+                      text: "Samples",
+                    },
+                  },
+                  y: {
+                    stacked: true,
+                    type: "linear",
+                    title: {
+                      display: true,
+                      text: "Reads",
+                    },
                   },
                 },
-                y: {
-                  stacked: true,
-                  type: "linear",
-                  title: {
-                    display: true,
-                    text: "Reads",
-                  },
-                },
-              },
 
-              plugins: {
-                legend: {
-                  position: "right" as const,
-                  title: {
-                    display: true,
-                    text: legend,
-                    position: "center",
+                plugins: {
+                  legend: {
+                    position: "right" as const,
+                    title: {
+                      display: true,
+                      text: legend,
+                      position: "center",
+                    },
                   },
                 },
-              },
-            }}
-          />
+              }}
+            />
+          </div>
         </div>
-      </div>
+      )}
     </Accordion>
   );
 }
