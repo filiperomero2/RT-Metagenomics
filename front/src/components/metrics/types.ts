@@ -1,4 +1,4 @@
-import { Dataset, SampleMetrics } from "@/types/metrics";
+import { Dataset, SampleMetrics, SummaryMetric } from "@/types/metrics";
 
 export interface ChartProps {
   title: string;
@@ -8,4 +8,5 @@ export interface ChartProps {
 
 export interface MetricsTableProps {
   sampleMetrics?: SampleMetrics;
+  summaryMetrics?: SummaryMetric[]
 }

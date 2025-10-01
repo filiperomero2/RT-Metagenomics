@@ -9,6 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 
 export function RunMetrics() {
   const focused = useFocusedRun();
+
   const { data } = useQuery({
     queryKey: queryKeys.getCharts(focused),
     queryFn: async () => {
