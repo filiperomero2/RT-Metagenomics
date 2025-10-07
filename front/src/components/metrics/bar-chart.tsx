@@ -46,6 +46,7 @@ export function BarChart({ title, dataSets, legend }: ChartProps) {
       show={show}
       toggle={() => setShow(!show)}
       title={title}
+      className="h-[83dvh] data-[fullscreen='true']:h-full"
       actions={[
         {
           label: "Log10",
@@ -57,7 +58,7 @@ export function BarChart({ title, dataSets, legend }: ChartProps) {
     >
       {processedDataSets && (
         <div className="flex h-full items-center justify-center">
-          <div className="flex h-[85vh] w-full items-center justify-center p-4">
+          <div className="flex h-full w-full items-center justify-center p-4">
             <Bar
               data={{
                 labels: focused?.samples.map((s) => s.name),

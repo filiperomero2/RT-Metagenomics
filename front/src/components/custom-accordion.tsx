@@ -3,12 +3,15 @@ import { ShowComponent } from "./show-components";
 import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "@heroui/react";
 import { ChevronRight, Maximize, Minimize } from "lucide-react";
+import { cn } from "@/utils/cn";
 
 interface AccordionProps {
   show?: boolean;
   toggle?: () => void;
   children?: React.ReactNode;
   title?: React.ReactNode;
+  className?: string;
+  fitContent?: boolean;
   actions?: {
     icon: React.ReactNode;
     active?: boolean;
@@ -23,6 +26,8 @@ export function Accordion({
   toggle,
   title,
   actions,
+  className,
+  fitContent,
 }: AccordionProps) {
   const uniqueId = useId();
   const [isFullScreen, setFullScreen] = useState(false);
@@ -45,10 +50,15 @@ export function Accordion({
 
   return (
     <div
-      className="bg-content1 relative flex w-full snap-center flex-col overflow-hidden rounded-xl"
+      className="bg-content1 flex w-full snap-center flex-col overflow-auto"
       id={uniqueId}
     >
-      <div className="bg-content2/70 text-content2-foreground relative mx-auto flex w-full items-center justify-between gap-2 rounded-xl px-4 py-2 shadow">
+      <div
+        className={cn(
+          "bg-content2/60 text-content2-foreground sticky top-0 z-10 mx-auto flex w-full items-center justify-between gap-2 rounded-xl px-4 py-2 shadow",
+          isFullScreen && "rounded-t-none",
+        )}
+      >
         <div className="flex w-full items-center">
           {toggle && !isFullScreen && (
             <motion.div animate={{ rotateZ: show ? 90 : 0 }}>
@@ -86,11 +96,16 @@ export function Accordion({
       </div>
       <ShowComponent
         show={show || isFullScreen}
-        gridClassName="h-full"
+        gridClassName={cn("h-full")}
         initial={false}
-        gridInnerClassName="bg-content2 mt-1 rounded-xl"
+        gridInnerClassName={fitContent ? "h-fit" : undefined}
       >
-        {children}
+        <div
+          className={cn("bg-content2/70 mt-1 rounded-xl", className)}
+          data-fullscreen={isFullScreen}
+        >
+          {children}
+        </div>
       </ShowComponent>
     </div>
   );

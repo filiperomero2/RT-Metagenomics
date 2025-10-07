@@ -40,12 +40,13 @@ export function SampleVisualizer({
     <Accordion
       show={showSample}
       toggle={!isComparing ? handleToggle : undefined}
+      className="h-[83dvh] data-[fullscreen='true']:h-full"
       title={
         isComparing ? (
           <h1>{sample.name}</h1>
         ) : (
           <Checkbox
-            className="pl-4 py-0"
+            className="py-0 pl-4"
             size="lg"
             isSelected={isSelected}
             onChange={() => toggleSelectedCharts(sample)}
@@ -55,11 +56,9 @@ export function SampleVisualizer({
         )
       }
     >
-      <div className={cn("h-[83dvh] my-auto")}>
-        {isPending && <LoadingFull />}
-        {isError && <ErrorFull label="Visualization not ready" />}
-        {data && <iframe srcDoc={data} className="h-full w-full bg-white" />}
-      </div>
+      {isPending && <LoadingFull />}
+      {isError && <ErrorFull label="Visualization not ready" />}
+      {data && <iframe srcDoc={data} className="h-full w-full bg-white" />}
     </Accordion>
   );
 }

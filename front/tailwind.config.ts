@@ -14,7 +14,7 @@ module.exports = {
   plugins: [
     heroui({
       themes: {
-        "rt-meta-dark": {
+        dark: {
           extend: "dark",
           colors: {
             primary: {
@@ -34,7 +34,7 @@ module.exports = {
             focus: "#0ba0af",
           },
         },
-        "rt-meta-light": {
+        light: {
           extend: "light",
           colors: {
             primary: {

@@ -14,7 +14,7 @@ export const ThemeSwitcher = () => {
   }, []);
 
   const toggle = () => {
-    setTheme(theme === "rt-meta-dark" ? "rt-meta-light" : "rt-meta-dark");
+    setTheme(theme === "dark" ? "light" : "dark");
   };
 
   return (
@@ -22,7 +22,7 @@ export const ThemeSwitcher = () => {
       defaultSelected
       color="primary"
       size="sm"
-      isSelected={mounted && theme === "rt-meta-dark"}
+      isSelected={mounted && theme === "dark"}
       onValueChange={toggle}
       startContent={<SunIcon />}
       endContent={<MoonIcon />}
