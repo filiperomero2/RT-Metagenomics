@@ -14,12 +14,12 @@ class GetMetagenomicsMetricsUseCase:
     def execute(self, run_id: int):
         run = self.repository.get_run(run_id)
         
-        summary_metrics = self.metrics_service.get_summary_metrics(run.id, run.name)
-        print(summary_metrics)
         sample_metrics = {}
         for sample in run.samples:            
             sample_metrics[sample.name] = self.metrics_service.get_sample_metrics(run.id, run.name, sample.name)             
         
+        summary_metrics = self.metrics_service.get_summary_metrics(run, sample_metrics)
+
         viralDatasets = self.metrics_service.get_viral_datasets(run.samples)
         familyDatasets = self.metrics_service.get_family_datasets(run.samples)
             

@@ -43,7 +43,13 @@ class ViralUnityService:
                     next_task.iteration += 1
                     next_task.executionHash = task_hash
                     self.repository.save_run(next_task)
+                    
+                    before = time.time()
                     result = vu_metagenomics(params)
+                    after = time.time()
+                    next_task.lastElapsedTimeOfAnalysisExecutionSeconds = after - before
+                    next_task.totalElapsedTimeOfAnalysisExecutionSeconds += next_task.lastElapsedTimeOfAnalysisExecutionSeconds
+                    
                     logger.debug(f"Metagenomics run completed with result: {result}")
                     if(result == 1):
                         next_task.state = RunState.FAILED

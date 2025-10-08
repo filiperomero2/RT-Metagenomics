@@ -2,10 +2,39 @@ import logging
 import os
 import csv
 import random
-from typing import List, Dict, Optional, Any
+from typing import List, Dict, Optional, Any, TypedDict
+from entities.run import Run
 from config import config
 
 logger = logging.getLogger('uvicorn.error')
+
+
+class SequenceMetrics(TypedDict):
+    """Type definition for sequence metrics dictionary."""
+    nSequences: int
+    nIdentifiedSequences: int
+    percentageOfIdentifiedSequences: float
+
+
+class Pathogen(TypedDict):
+    """Type definition for pathogen information."""
+    pathogen: str
+    nReads: int
+
+
+class Pathology(TypedDict):
+    """Type definition for pathology family information."""
+    name: str
+    nReads: int
+    pathogens: List[Pathogen]
+
+
+class SampleMetrics(TypedDict):
+    """Type definition for sample metrics dictionary."""
+    nSequences: int
+    nIdentifiedSequences: int
+    percentageOfIdentifiedSequences: float
+    pathologies: List[Pathology]
 
 
 class MetricsService:
@@ -20,7 +49,7 @@ class MetricsService:
         """Initialize the MetricsService."""
         pass
 
-    def get_summary_metrics(self, run_id: str, run_name: str) -> Optional[List[Dict[str, Any]]]:
+    def get_summary_metrics(self, run: Run, sample_metrics: Dict[str, SampleMetrics]) -> Optional[List[Dict[str, Any]]]:
         """
         Extract summary metrics from the metagenomics summary file.
         
@@ -31,27 +60,17 @@ class MetricsService:
         Returns:
             List of summary metrics dictionaries or None if file doesn't exist
         """
-        summary_file_path = f"{config.output_dir}/{run_id}_{run_name}/metagenomics/metagenomics_summary.txt"
-        if not os.path.exists(summary_file_path):
-            logger.warning(f"Summary file not found: {summary_file_path}")
-            return None
+        nTotalReads = sum([sample_metrics[sample]["nSequences"] for sample in sample_metrics])
+        nTotalIdentifiedReads = sum([sample_metrics[sample]["nIdentifiedSequences"] for sample in sample_metrics])
+        percentageOfIdentifiedReads = nTotalIdentifiedReads / nTotalReads if nTotalReads > 0 else 0
+        summary_metrics = {
+            "nTotalReads": nTotalReads,
+            "nTotalIdentifiedReads": nTotalIdentifiedReads,
+            "percentageOfIdentifiedReads": percentageOfIdentifiedReads,
+            "meanTimeOfAnalysis": run.totalElapsedTimeOfAnalysisExecutionSeconds/run.iteration,
+            "lastAnalysisTime": run.lastElapsedTimeOfAnalysisExecutionSeconds,
+        }   
         
-        summary_metrics = []
-        try:
-            with open(summary_file_path, 'r') as file:
-                reader = csv.reader(file)
-                next(reader)  # skip the header
-                for row in reader:
-                    # Example of row: /tmp/rtmeta/output/6_teste_1/metagenomics/taxonomic_assignments/results/sample-dengue.report.txt,79.58,22281,0,1092787,9771,F,11118,Coronaviridae
-                    summary_metrics.append({
-                        "sample": self.extract_sample_name(row[0]),
-                        "taxon": row[8],
-                        "nReadsRooted": int(row[2])
-                    })
-        except (IOError, IndexError, ValueError) as e:
-            logger.error(f"Error reading summary file {summary_file_path}: {e}")
-            return None
-                
         return summary_metrics
     
     def extract_sample_name(self, file_name: str) -> str:
@@ -70,7 +89,7 @@ class MetricsService:
         sample_name = filename.split(".")[0]
         return sample_name.replace(self.SAMPLE_PREFIX, "")
                 
-    def get_sample_metrics(self, run_id: str, run_name: str, sample_name: str) -> Optional[Dict[str, Any]]:
+    def get_sample_metrics(self, run_id: str, run_name: str, sample_name: str) -> Optional[Dict[str, SampleMetrics]]:
         """
         Get comprehensive metrics for a specific sample.
         
@@ -107,7 +126,7 @@ class MetricsService:
             
         return sample_metrics
 
-    def _process_sequence_metrics(self, sample_file_path: str) -> Optional[Dict[str, Any]]:
+    def _process_sequence_metrics(self, sample_file_path: str) -> Optional[SequenceMetrics]:
         """Process sequence identification metrics from krona file."""
         try:
             with open(sample_file_path, 'r') as file:
@@ -131,7 +150,7 @@ class MetricsService:
             logger.error(f"Error processing sequence metrics from {sample_file_path}: {e}")
             return None
 
-    def _process_pathology_data(self, report_file_path: str) -> List[Dict[str, Any]]:
+    def _process_pathology_data(self, report_file_path: str) -> List[Pathology]:
         """Process pathology data from report file."""
         pathologies = []
         family_index = self.TAXONOMIC_CATEGORIES.index(self.FAMILY_CATEGORY)
