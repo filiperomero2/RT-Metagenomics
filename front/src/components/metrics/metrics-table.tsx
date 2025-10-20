@@ -9,7 +9,7 @@ import { LoadingFull } from "../state-components/loading-full";
 export function MetricsTable() {
   const focused = useFocusedRun();
   const { data, isPending } = useMetrics();
-  const [show, setShow] = useState(false);
+  const [show, setShow] = useState(true);
 
   return (
     <Accordion

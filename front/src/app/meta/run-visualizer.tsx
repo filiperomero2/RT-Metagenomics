@@ -39,7 +39,7 @@ export function RunVisualizer() {
       onClose={() => setFocusedRun(undefined)}
     >
       <ModalContent className="scrollbar-hide overflow-auto">
-        <ModalHeader className="bg-content1/60 sticky top-0 z-5 grid grid-cols-[1fr_3fr_auto] items-center gap-1.5 p-2 px-6 capitalize backdrop-blur-2xl">
+        <ModalHeader className="bg-content1/70 sticky top-0 z-20 grid grid-cols-[1fr_3fr_auto] items-center gap-1.5 p-2 px-6 capitalize backdrop-blur-2xl">
           <div className="flex items-center gap-2">
             <IconState state={focused?.state || "pending"} />
             <span className="text-medium flex-1">
@@ -47,7 +47,7 @@ export function RunVisualizer() {
             </span>
           </div>
 
-          <div className="bg-content2/60 border-content2-foreground/20 relative flex h-full items-center rounded-sm border p-2 px-6 shadow backdrop-blur-2xl">
+          <div className="bg-content2/40 border-content2-foreground/20 relative flex h-full items-center rounded-sm border p-2 px-6 shadow backdrop-blur-xs">
             <div className="flex w-1/3 flex-col pr-2 text-xs">
               <span className="flex justify-between font-semibold">
                 lastAnalysisTime:

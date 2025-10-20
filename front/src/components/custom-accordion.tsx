@@ -53,12 +53,12 @@ export function Accordion({
 
   return (
     <div
-      className="flex w-full snap-center flex-col overflow-auto scrollbar-hide"
+      className="scrollbar-hide flex w-full snap-center flex-col overflow-auto"
       id={uniqueId}
     >
       <div
         className={cn(
-          "bg-content2/60 text-content2-foreground sticky top-0 z-10 mx-auto flex w-full items-center justify-between gap-2 overflow-clip rounded-xl px-4 py-1.5 shadow",
+          "bg-content2/60 text-content2-foreground sticky top-0 z-10 mx-auto flex w-full items-center justify-between gap-2 overflow-clip rounded-xl px-4 py-1.5 shadow backdrop-blur-2xl",
           isFullScreen && "rounded-t-none",
         )}
       >
