@@ -28,8 +28,8 @@ ChartJS.register(
   Colors,
 );
 
-export function BarChart({ title, dataSets, legend }: ChartProps) {
-  const [show, setShow] = useState(!!dataSets);
+export function BarChart({ title, dataSets, legend, isLoading }: ChartProps) {
+  const [show, setShow] = useState(false);
   const [log, setLog] = useState(false);
   const focused = useFocusedRun();
   const processedDataSets = dataSets?.map((dts) => ({
@@ -37,16 +37,13 @@ export function BarChart({ title, dataSets, legend }: ChartProps) {
     data: dts.data.map((v) => (log ? Number(Math.log10(v).toFixed(2)) : v)),
   }));
 
-  useEffect(() => {
-    setShow(!!dataSets);
-  }, [dataSets]);
-
   return (
     <Accordion
       show={show}
       toggle={() => setShow(!show)}
       title={title}
       className="h-[83dvh] data-[fullscreen='true']:h-full"
+      isLoading={isLoading}
       actions={[
         {
           label: "Log10",

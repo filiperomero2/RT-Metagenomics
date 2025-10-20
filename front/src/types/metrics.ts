@@ -1,18 +1,11 @@
 export interface Metrics {
-  summaryMetrics: SummaryMetric[];
+  summaryMetrics: SummaryMetrics;
   sampleMetrics: SampleMetrics;
   viralDatasets: Dataset[];
   familyDatasets: Dataset[];
 }
 
-export interface SummaryMetric {
-  sample: string;
-  taxon: string;
-  nReadsRooted: number;
-}
-
 export type SampleMetrics = Record<string, SampleMetric>;
-
 export interface SampleMetric {
   nSequences: number;
   nIdentifiedSequences: number;
@@ -34,4 +27,12 @@ export interface Pathogen {
 export interface Dataset {
   dataSetTitle: string;
   data: number[];
+}
+
+export interface SummaryMetrics {
+  nTotalReads:                 number;
+  nTotalIdentifiedReads:       number;
+  percentageOfIdentifiedReads: number;
+  meanTimeOfAnalysis:          number;
+  lastAnalysisTime:            number;
 }

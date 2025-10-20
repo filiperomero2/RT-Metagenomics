@@ -1,21 +1,15 @@
 import { useFocusedRun } from "@/hooks/use-focused-run";
+import { useMetrics } from "@/hooks/use-metrics";
 import { cn } from "@/utils/cn";
 import { Progress } from "@heroui/react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Accordion } from "../custom-accordion";
-import { MetricsTableProps } from "./types";
-import { motion } from "framer-motion";
+import { LoadingFull } from "../state-components/loading-full";
 
-export function MetricsTable({
-  sampleMetrics,
-  summaryMetrics,
-}: MetricsTableProps) {
+export function MetricsTable() {
   const focused = useFocusedRun();
-  const [show, setShow] = useState(!!sampleMetrics);
-
-  useEffect(() => {
-    setShow(!!sampleMetrics);
-  }, [sampleMetrics]);
+  const { data, isPending } = useMetrics();
+  const [show, setShow] = useState(false);
 
   return (
     <Accordion
@@ -23,11 +17,13 @@ export function MetricsTable({
       title="Metrics"
       show={show}
       toggle={() => setShow(!show)}
+      isLoading={isPending}
     >
-      {sampleMetrics && (
+      {isPending && <LoadingFull />}
+      {data?.sampleMetrics && (
         <div className="grid grid-cols-2 gap-0.5 p-1 text-sm [--line-size:4px]">
           {focused?.samples.map((sample, sampleIndex) => {
-            const metrics = sampleMetrics[sample.name];
+            const metrics = data?.sampleMetrics[sample.name];
             const isOdd = sampleIndex % 2 === 0;
 
             return (
@@ -58,19 +54,21 @@ export function MetricsTable({
                     maxValue={metrics.nSequences}
                   />
                 </div>
-                <div className="flex flex-col gap-2 p-3 pb-4 [&:hover_>:not(:hover)]:scale-98 [&:hover_>:not(:hover)]:blur-[2px] [&:hover_>:not(:hover)]:grayscale">
+                <div className="m-3 mb-4 flex flex-col gap-2 [&:hover_>:not(:hover)]:scale-98 [&:hover_>:not(:hover)]:blur-[2px] [&:hover_>:not(:hover)]:grayscale">
                   {metrics.pathologies.map((pathology) => (
                     <div
                       key={pathology.name}
-                      className="grid grid-cols-[1.5fr_auto_3fr] items-center justify-center transition cursor-pointer"
+                      className="grid cursor-pointer grid-cols-[1.5fr_auto_3fr] items-center justify-center transition"
                     >
-                      <div className="dark:bg-primary-900/15 bg-content1 border-primary-900/60 flex flex-col justify-center rounded-md border-3 p-2 py-3">
+                      <div className="dark:bg-primary-900/15 bg-content1 border-primary-900/60 flex flex-col justify-center rounded-md border-3 p-1.5 py-2">
                         <p className="font-semibold">{pathology.name}</p>
                         <Progress
                           showValueLabel
                           size="sm"
                           classNames={{
                             indicator: "bg-primary-900/60",
+                            label: "text-xs",
+                            value: "text-xs",
                           }}
                           label={`${pathology.nReads} of ${metrics.nSequences}`}
                           value={pathology.nReads}
@@ -106,7 +104,7 @@ export function MetricsTable({
                               )}
                               <div className="bg-primary-900/60 h-(--line-size) w-3 self-center" />
                             </div>
-                            <div className="dark:bg-primary-900/15 border-primary-900/60 text-content1-foreground bg-content1 my-0.5 flex w-full flex-col gap-1 rounded-md border-3 p-2">
+                            <div className="dark:bg-primary-900/15 border-primary-900/60 text-content1-foreground bg-content1 my-0.5 flex w-full flex-col gap-1 rounded-md border-3 p-1.5 py-2">
                               <p className="font-semibold">
                                 {pathogen.pathogen}
                               </p>
@@ -116,6 +114,8 @@ export function MetricsTable({
                                 size="sm"
                                 classNames={{
                                   indicator: "bg-primary-900/60",
+                                  label: "text-xs",
+                                  value: "text-xs",
                                 }}
                                 label={`${pathogen.nReads} of ${metrics.nSequences}`}
                                 value={pathogen.nReads}

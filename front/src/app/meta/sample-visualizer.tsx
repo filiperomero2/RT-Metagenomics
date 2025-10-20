@@ -1,16 +1,13 @@
 import { Accordion } from "@/components/custom-accordion";
 import { ErrorFull } from "@/components/state-components/error-full";
 import { LoadingFull } from "@/components/state-components/loading-full";
+import { useSample } from "@/hooks/use-sample";
 import {
   toggleSelectedCharts,
   useIsChartSelected,
 } from "@/hooks/use-selected-charts";
-import { api } from "@/lib/axios";
 import { Sample } from "@/types/meta-genomic-run";
-import { cn } from "@/utils/cn";
-import { queryKeys } from "@/utils/query-keys-factory";
 import { Checkbox } from "@heroui/react";
-import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 
 export function SampleVisualizer({
@@ -22,16 +19,8 @@ export function SampleVisualizer({
 }) {
   const [isClosed, setClosed] = useState(true);
   const isSelected = useIsChartSelected(sample);
-  const { data, isPending, isError } = useQuery({
-    queryKey: queryKeys.getMetaGenomic(sample),
-    refetchInterval: 30000,
-    queryFn: async () => {
-      const response = await api.get(
-        `v1/metagenomics/${sample.runId}/${sample.id}/result`,
-      );
-      return response.data;
-    },
-  });
+  const { data, isPending, isError } = useSample(sample);
+
   const showSample = !isClosed || !!isComparing;
 
   const handleToggle = () => setClosed(!isClosed);
@@ -41,6 +30,7 @@ export function SampleVisualizer({
       show={showSample}
       toggle={!isComparing ? handleToggle : undefined}
       className="h-[83dvh] data-[fullscreen='true']:h-full"
+      isLoading={isPending}
       title={
         isComparing ? (
           <h1>{sample.name}</h1>

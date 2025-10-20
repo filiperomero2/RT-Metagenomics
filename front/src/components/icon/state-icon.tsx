@@ -1,14 +1,13 @@
 import { MetaGenomicRun } from "@/types/meta-genomic-run";
 import { cn } from "@/utils/cn";
-import { ReactNode } from "react";
+import { Spinner } from "@heroui/react";
 import {
   Ban,
   CircleCheck,
   CircleEllipsis,
-  CircleX,
-  Trash2,
+  CircleX
 } from "lucide-react";
-import { Spinner } from "@heroui/react";
+import { ReactNode } from "react";
 
 const iconColors: Record<MetaGenomicRun["state"], string> = {
   canceled: "text-danger bg-danger/15",

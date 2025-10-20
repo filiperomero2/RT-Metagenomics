@@ -1,9 +1,10 @@
 import { useEffect, useId, useState } from "react";
 import { ShowComponent } from "./show-components";
 import { AnimatePresence, motion } from "framer-motion";
-import { Button } from "@heroui/react";
+import { Button, Progress, Skeleton, Spinner } from "@heroui/react";
 import { ChevronRight, Maximize, Minimize } from "lucide-react";
 import { cn } from "@/utils/cn";
+import { IconState } from "./icon/state-icon";
 
 interface AccordionProps {
   show?: boolean;
@@ -12,6 +13,7 @@ interface AccordionProps {
   title?: React.ReactNode;
   className?: string;
   fitContent?: boolean;
+  isLoading?: boolean;
   actions?: {
     icon: React.ReactNode;
     active?: boolean;
@@ -28,6 +30,7 @@ export function Accordion({
   actions,
   className,
   fitContent,
+  isLoading,
 }: AccordionProps) {
   const uniqueId = useId();
   const [isFullScreen, setFullScreen] = useState(false);
@@ -50,16 +53,17 @@ export function Accordion({
 
   return (
     <div
-      className="bg-content1 flex w-full snap-center flex-col overflow-auto"
+      className="flex w-full snap-center flex-col overflow-auto scrollbar-hide"
       id={uniqueId}
     >
       <div
         className={cn(
-          "bg-content2/60 text-content2-foreground sticky top-0 z-10 mx-auto flex w-full items-center justify-between gap-2 rounded-xl px-4 py-2 shadow",
+          "bg-content2/60 text-content2-foreground sticky top-0 z-10 mx-auto flex w-full items-center justify-between gap-2 overflow-clip rounded-xl px-4 py-1.5 shadow",
           isFullScreen && "rounded-t-none",
         )}
       >
-        <div className="flex w-full items-center">
+        {/* <Progress isIndeterminate size="sm" color="warning" className="absolute bottom-0 left-0" /> */}
+        <div className="z-10 flex w-full items-center">
           {toggle && !isFullScreen && (
             <motion.div animate={{ rotateZ: show ? 90 : 0 }}>
               <Button isIconOnly variant="light" onPress={toggle}>
@@ -82,6 +86,7 @@ export function Accordion({
                 {action.label}
               </Button>
             ))}
+
             <Button
               onPress={handleFullScreen}
               isIconOnly
@@ -93,6 +98,18 @@ export function Accordion({
             </Button>
           </div>
         </div>
+        <AnimatePresence>
+          {isLoading && (
+            <motion.div
+              className="absolute inset-0 z-0"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <Skeleton className="absolute inset-0 z-0" />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
       <ShowComponent
         show={show || isFullScreen}

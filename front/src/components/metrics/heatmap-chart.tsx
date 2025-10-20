@@ -14,8 +14,8 @@ const colors = [
 ];
 const colorScale = interpolate(colors);
 
-export function HeatMapChart({ title, dataSets }: ChartProps) {
-  const [show, setShow] = useState(!!dataSets);
+export function HeatMapChart({ title, dataSets, isLoading }: ChartProps) {
+  const [show, setShow] = useState(false);
   const [log, setLog] = useState(false);
   const focused = useFocusedRun();
   const processedDataSets = dataSets?.map((dts) => ({
@@ -28,10 +28,6 @@ export function HeatMapChart({ title, dataSets }: ChartProps) {
   const lowerNumber = Math.min(...flatData);
   const higherNumber = Math.max(...flatData);
 
-  useEffect(() => {
-    setShow(!!dataSets);
-  }, [dataSets]);
-
   function generateBackgroundColor(value: number) {
     const ratio = (value - lowerNumber) / (higherNumber - lowerNumber);
     return colorScale(ratio);
@@ -43,6 +39,7 @@ export function HeatMapChart({ title, dataSets }: ChartProps) {
       toggle={() => setShow(!show)}
       title={title}
       className="h-full"
+      isLoading={isLoading}
       actions={[
         {
           label: "Log10",
@@ -54,7 +51,7 @@ export function HeatMapChart({ title, dataSets }: ChartProps) {
     >
       {processedDataSets && (
         <div className="flex h-full items-center justify-center">
-          <div className="flex  w-full">
+          <div className="flex w-full">
             <div className="m-auto flex w-11/12 py-4">
               <div className="mr-5 mb-8 flex flex-col items-center">
                 <span>{higherNumber}</span>
