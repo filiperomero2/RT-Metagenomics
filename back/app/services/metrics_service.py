@@ -48,8 +48,14 @@ class MetricsService:
     def __init__(self):
         """Initialize the MetricsService."""
         pass
+    
+    def get_sample_file_path_from_sample_name(self, run_id: str, run_name: str, sample_name: str) -> str:
+        return f"{config.output_dir}/{run_id}_{run_name}/metagenomics/taxonomic_assignments/results/sample-{sample_name}.output.krona.txt"
+        
+    def get_sample_report_file_path_from_sample_name(self, run_id: str, run_name: str, sample_name: str) -> str:
+        return f"{config.output_dir}/{run_id}_{run_name}/metagenomics/taxonomic_assignments/results/sample-{sample_name}.report.txt"
 
-    def get_summary_metrics(self, run: Run, sample_metrics: Dict[str, SampleMetrics]) -> Optional[List[Dict[str, Any]]]:
+    def get_summary_metrics(self, run: Run) -> Dict[str, Any]:
         """
         Extract summary metrics from the metagenomics summary file.
         
@@ -60,9 +66,15 @@ class MetricsService:
         Returns:
             List of summary metrics dictionaries or None if file doesn't exist
         """
-        nTotalReads = sum([sample_metrics[sample]["nSequences"] for sample in sample_metrics])
-        nTotalIdentifiedReads = sum([sample_metrics[sample]["nIdentifiedSequences"] for sample in sample_metrics])
-        percentageOfIdentifiedReads = nTotalIdentifiedReads / nTotalReads if nTotalReads > 0 else 0
+        samples = [self.get_sample_file_path_from_sample_name(str(run.id), run.name, sample.name) for sample in run.samples]
+        sample_summary_metric = {}
+        for sample_file_path in samples:
+            sample_summary_metric[sample_file_path] = self._process_sequence_metrics(sample_file_path)
+
+        nTotalReads = sum([sample_summary_metric[sample]["nSequences"] for sample in sample_summary_metric if sample_summary_metric[sample] is not None])
+        nTotalIdentifiedReads = sum([sample_summary_metric[sample]["nIdentifiedSequences"] for sample in sample_summary_metric if sample_summary_metric[sample] is not None])
+
+        percentageOfIdentifiedReads = nTotalIdentifiedReads / nTotalReads if nTotalReads > 0 else 0.0
         summary_metrics = {
             "nTotalReads": nTotalReads,
             "nTotalIdentifiedReads": nTotalIdentifiedReads,
@@ -101,9 +113,9 @@ class MetricsService:
         Returns:
             Dictionary containing sample metrics or None if files don't exist
         """
-        sample_file_path = f"{config.output_dir}/{run_id}_{run_name}/metagenomics/taxonomic_assignments/results/sample-{sample_name}.output.krona.txt"
-        report_file_path = f"{config.output_dir}/{run_id}_{run_name}/metagenomics/taxonomic_assignments/results/sample-{sample_name}.report.txt"
-        
+        sample_file_path = self.get_sample_file_path_from_sample_name(run_id, run_name, sample_name)
+        report_file_path = self.get_sample_report_file_path_from_sample_name(run_id, run_name, sample_name)
+
         if not os.path.exists(sample_file_path):
             logger.warning(f"Sample file not found: {sample_file_path}")
             return None

@@ -55,7 +55,7 @@ async def get_metagenomics(usecase: ListMetagenomicsUseCaseDependency):
     
     # Convert to response model - return the raw data for now
     # since the frontend expects a simple array
-    return [run.dict() for run in runs_data]
+    return runs_data
 
 @router.get("/metagenomics/{run_id}/{sample_id}/result")
 async def get_metagenomics_result(run_id: int, sample_id: int, usecase: GetMetagenomicsResultUseCaseDependency):

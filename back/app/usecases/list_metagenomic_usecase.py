@@ -1,17 +1,26 @@
 import logging
 from typing import List
+from services.metrics_service import MetricsService
 from entities.run import Run
-from entities.run_parameters import RunParameters
-from entities.sample import Sample
 from repositories.metagenomics_run_repository import MetagenomicsRunRepository
 
 logger = logging.getLogger('uvicorn.error')
 
+class RunResult(dict):
+    def __init__(self, run: Run, metrics: dict = {}):
+        super().__init__(**run.dict())
+        self["metrics"] = metrics
+
 class ListMetagenomicsUseCase:
     def __init__(self, repository: MetagenomicsRunRepository):
         self.repository = repository
+        self.metrics_service = MetricsService()
 
-    def execute(self) -> List[Run]:
+    def execute(self) -> List[RunResult]:
         results = self.repository.get_all_runs()
 
-        return results
+        run_results = []
+        for result in results:
+            run_metrics =  self.metrics_service.get_summary_metrics(result)
+            run_results.append(RunResult(result, run_metrics))
+        return run_results
