@@ -81,6 +81,7 @@ class MetricsService:
             "percentageOfIdentifiedReads": percentageOfIdentifiedReads,
             "meanTimeOfAnalysis": run.totalElapsedTimeOfAnalysisExecutionSeconds/run.iteration,
             "lastAnalysisTime": run.lastElapsedTimeOfAnalysisExecutionSeconds,
+            "iteration": run.iteration,
         }   
         
         return summary_metrics
