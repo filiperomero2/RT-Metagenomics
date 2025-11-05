@@ -56,13 +56,13 @@ export function MetricsTable() {
                       labelWrapper: "px-1",
                       indicator: "bg-primary-900 rounded-none",
                     }}
-                    label={`Identified Sequences: ${metrics.nIdentifiedSequences} of ${metrics.nSequences}`}
-                    value={metrics.nIdentifiedSequences}
-                    maxValue={metrics.nSequences}
+                    label={`Identified Sequences: ${metrics?.nIdentifiedSequences ?? 0} of ${metrics?.nSequences ?? 0}`}
+                    value={metrics?.nIdentifiedSequences ?? 0}
+                    maxValue={metrics?.nSequences ?? 1}
                   />
                 </div>
                 <div className="m-3 mb-4 flex flex-col gap-2 [&:hover_>:not(:hover)]:scale-98 [&:hover_>:not(:hover)]:blur-[2px] [&:hover_>:not(:hover)]:grayscale">
-                  {metrics.pathologies.map((pathology) => (
+                  {metrics?.pathologies?.map((pathology) => (
                     <div
                       key={pathology.name}
                       className="grid cursor-pointer grid-cols-[1.5fr_auto_3fr] items-center justify-center transition"

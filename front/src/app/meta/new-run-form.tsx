@@ -51,7 +51,7 @@ const schema = z.object({
   samples: z
     .array(
       z.object({
-        name: z.string().min(1, ""),
+        name: z.string().min(1, "").regex(/^[a-zA-Z_-]+$/, "Only letters, underscores, and hyphens are allowed"),
         barcode: z.string().min(1, ""),
       }),
     )

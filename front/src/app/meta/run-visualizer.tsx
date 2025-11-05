@@ -10,8 +10,7 @@ import {
   ModalHeader,
   Progress,
 } from "@heroui/react";
-import { motion } from "framer-motion";
-import { InfoIcon, XIcon } from "lucide-react";
+import { DownloadIcon, XIcon } from "lucide-react";
 import { RunMetrics } from "./run-metrics";
 import { SampleVisualizer } from "./sample-visualizer";
 
@@ -47,7 +46,7 @@ export function RunVisualizer() {
             </span>
           </div>
 
-          <div className="bg-content2/40 border-content2-foreground/20 relative flex h-full items-center rounded-sm border p-2 px-6 shadow backdrop-blur-xs">
+          <div className="bg-content2/40 border-content2-foreground/20 relative flex h-full items-center rounded-sm border p-2  shadow backdrop-blur-xs">
             <div className="flex w-1/3 flex-col pr-2 text-xs">
               <span className="flex justify-between font-semibold">
                 lastAnalysisTime:
@@ -87,6 +86,17 @@ export function RunVisualizer() {
               value={summary?.nTotalIdentifiedReads ?? 0}
               maxValue={summary?.nTotalReads ?? 1}
             />
+            <Button
+              as="a"
+              href={`http://localhost:8000/v1/metagenomics/${focused.id}/export`}
+              download
+              variant="solid"
+              isIconOnly
+              size="sm"
+              className="ml-2"
+            >
+              <DownloadIcon size={18}/>
+            </Button>
           </div>
 
           <Button
