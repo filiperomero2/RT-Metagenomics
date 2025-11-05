@@ -1,10 +1,10 @@
+import { cn } from "@/utils/cn";
+import { Button, Skeleton } from "@heroui/react";
+import { AnimatePresence, motion } from "framer-motion";
+import { ChevronRight, Maximize, Minimize } from "lucide-react";
 import { useEffect, useId, useState } from "react";
 import { ShowComponent } from "./show-components";
-import { AnimatePresence, motion } from "framer-motion";
-import { Button, Progress, Skeleton, Spinner } from "@heroui/react";
-import { ChevronRight, Maximize, Minimize } from "lucide-react";
-import { cn } from "@/utils/cn";
-import { IconState } from "./icon/state-icon";
+import { LoadingFull } from "./state-components/loading-full";
 
 interface AccordionProps {
   show?: boolean;
@@ -14,6 +14,7 @@ interface AccordionProps {
   className?: string;
   fitContent?: boolean;
   isLoading?: boolean;
+  stateIndicator?: "warning" | "error" | "success";
   actions?: {
     icon: React.ReactNode;
     active?: boolean;
@@ -31,6 +32,7 @@ export function Accordion({
   className,
   fitContent,
   isLoading,
+  stateIndicator,
 }: AccordionProps) {
   const uniqueId = useId();
   const [isFullScreen, setFullScreen] = useState(false);
@@ -60,17 +62,22 @@ export function Accordion({
         className={cn(
           "bg-content2/60 text-content2-foreground sticky top-0 z-10 mx-auto flex w-full items-center justify-between gap-2 overflow-clip rounded-xl px-4 py-1.5 shadow backdrop-blur-2xl",
           isFullScreen && "rounded-t-none",
+          {
+            "border-l-warning border-l-2": stateIndicator === "warning",
+            "border-l-danger border-l-2": stateIndicator === "error",
+            "border-l-success border-l-2": stateIndicator === "success",
+          },
         )}
       >
-        {/* <Progress isIndeterminate size="sm" color="warning" className="absolute bottom-0 left-0" /> */}
         <div className="z-10 flex w-full items-center">
           {toggle && !isFullScreen && (
             <motion.div animate={{ rotateZ: show ? 90 : 0 }}>
               <Button isIconOnly variant="light" onPress={toggle}>
-                <ChevronRight />
+                <ChevronRight className="text-foreground-700" />
               </Button>
             </motion.div>
           )}
+
           <div className="flex flex-1">{title}</div>
 
           <div className="relative flex items-center gap-1">
@@ -82,6 +89,7 @@ export function Accordion({
                 variant={action.active ? "shadow" : "light"}
                 color={action.active ? "primary" : "default"}
                 startContent={action.icon}
+                className="text-foreground-700"
               >
                 {action.label}
               </Button>
@@ -94,7 +102,11 @@ export function Accordion({
               variant="light"
               className="ml-2"
             >
-              {isFullScreen ? <Minimize /> : <Maximize />}
+              {isFullScreen ? (
+                <Minimize className="text-foreground-700" />
+              ) : (
+                <Maximize className="text-foreground-700" />
+              )}
             </Button>
           </div>
         </div>
@@ -118,9 +130,13 @@ export function Accordion({
         gridInnerClassName={fitContent ? "h-fit" : undefined}
       >
         <div
-          className={cn("bg-content2/70 mt-1 rounded-xl", className)}
+          className={cn(
+            "bg-content2/70 mt-1 overflow-clip rounded-xl",
+            className,
+          )}
           data-fullscreen={isFullScreen}
         >
+          {isLoading && <LoadingFull />}
           {children}
         </div>
       </ShowComponent>

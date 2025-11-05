@@ -43,6 +43,7 @@ export function BarChart({ title, dataSets, legend, isLoading }: ChartProps) {
       toggle={() => setShow(!show)}
       title={title}
       className="h-[83dvh] data-[fullscreen='true']:h-full"
+      stateIndicator={dataSets ? "success" : "warning"}
       isLoading={isLoading}
       actions={[
         {

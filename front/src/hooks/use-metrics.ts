@@ -10,7 +10,7 @@ export function useMetrics() {
   return useQuery({
     enabled: !!focused?.id,
     queryKey: queryKeys.getCharts(focused),
-    refetchInterval: 30000,
+    refetchInterval: 10000,
     queryFn: async () => {
       const response = await api.get<Metrics>(
         `/v1/metagenomics/${focused?.id}/metrics`,

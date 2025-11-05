@@ -40,6 +40,7 @@ export function HeatMapChart({ title, dataSets, isLoading }: ChartProps) {
       title={title}
       className="h-full"
       isLoading={isLoading}
+      stateIndicator={dataSets ? "success" : "warning"}
       actions={[
         {
           label: "Log10",
