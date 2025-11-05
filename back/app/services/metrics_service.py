@@ -79,7 +79,7 @@ class MetricsService:
             "nTotalReads": nTotalReads,
             "nTotalIdentifiedReads": nTotalIdentifiedReads,
             "percentageOfIdentifiedReads": percentageOfIdentifiedReads,
-            "meanTimeOfAnalysis": run.totalElapsedTimeOfAnalysisExecutionSeconds/run.iteration,
+            "meanTimeOfAnalysis": run.totalElapsedTimeOfAnalysisExecutionSeconds/run.iteration if run.iteration > 0 else 0.0,
             "lastAnalysisTime": run.lastElapsedTimeOfAnalysisExecutionSeconds,
             "iteration": run.iteration,
         }   
