@@ -84,8 +84,8 @@ export function RunTable() {
             <TableCell>{run.parameters.dataType}</TableCell>
             <TableCell className="w-full">{run.name}</TableCell>
             <TableCell>{run.iteration}</TableCell>
-            <TableCell>N/A</TableCell>
-            <TableCell>N/A</TableCell>
+            <TableCell>{run.metrics.nTotalIdentifiedReads}</TableCell>
+            <TableCell>{run.metrics.nTotalReads}</TableCell>
             <TableCell className="flex justify-center">
               <Popover placement="left" showArrow={true} color="default">
                 <PopoverTrigger>

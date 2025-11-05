@@ -9,6 +9,12 @@ export interface MetaGenomicRun {
   updatedAt: Date;
   samples: Sample[];
   parameters: Parameters;
+  metrics: RunMetrics
+}
+
+export interface RunMetrics {
+  nTotalReads: number;
+  nTotalIdentifiedReads: number;
 }
 
 export interface Parameters {

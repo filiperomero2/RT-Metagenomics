@@ -14,11 +14,15 @@ class GetMetagenomicsMetricsUseCase:
     def execute(self, run_id: int):
         run = self.repository.get_run(run_id)
         
+        if run is None:
+            logger.error(f"Run with ID {run_id} not found.")
+            return None
+        
         sample_metrics = {}
         for sample in run.samples:            
-            sample_metrics[sample.name] = self.metrics_service.get_sample_metrics(run.id, run.name, sample.name)             
+            sample_metrics[sample.name] = self.metrics_service.get_sample_metrics(str(run.id), run.name, sample.name)             
         
-        summary_metrics = self.metrics_service.get_summary_metrics(run, sample_metrics)
+        summary_metrics = self.metrics_service.get_summary_metrics(run)
 
         viralDatasets = self.metrics_service.get_viral_datasets(run.samples)
         familyDatasets = self.metrics_service.get_family_datasets(run.samples)
