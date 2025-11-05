@@ -6,7 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 export function useSample(sample: Sample) {
   return useQuery({
     queryKey: queryKeys.getMetaGenomic(sample),
-    refetchInterval: 30000,
+    refetchInterval: 10000,
     queryFn: async () => {
       const response = await api.get(
         `v1/metagenomics/${sample.runId}/${sample.id}/result`,

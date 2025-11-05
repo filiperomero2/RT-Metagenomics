@@ -31,6 +31,7 @@ export function SampleVisualizer({
       toggle={!isComparing ? handleToggle : undefined}
       className="h-[83dvh] data-[fullscreen='true']:h-full"
       isLoading={isPending}
+      stateIndicator={data ? "success" : "warning"}
       title={
         isComparing ? (
           <h1>{sample.name}</h1>

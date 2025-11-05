@@ -9,7 +9,7 @@ export default function Home() {
   const links = [{ href: "/meta", label: "Meta", icon: ChartPie }];
 
   return (
-    <div className="flex h-[calc(100vh-65px)] items-center justify-center gap-8">
+    <div className="text-primary flex h-[calc(100vh-65px)] items-center justify-center gap-8">
       {links.map((link) => (
         <motion.div
           whileHover={{ scale: 1.05 }}

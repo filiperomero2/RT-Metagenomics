@@ -2,24 +2,31 @@ import { useFocusedRun } from "@/hooks/use-focused-run";
 import { useMetrics } from "@/hooks/use-metrics";
 import { cn } from "@/utils/cn";
 import { Progress } from "@heroui/react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Accordion } from "../custom-accordion";
-import { LoadingFull } from "../state-components/loading-full";
 
 export function MetricsTable() {
   const focused = useFocusedRun();
   const { data, isPending } = useMetrics();
-  const [show, setShow] = useState(true);
+  const [show, setShow] = useState(false);
+  const firstRender = useRef(true)
+
+  useEffect(() => {
+    if (firstRender.current && data?.sampleMetrics) {
+      setShow(!!data?.sampleMetrics);
+      firstRender.current = false;
+    }
+  }, [data])
 
   return (
     <Accordion
       fitContent
       title="Metrics"
       show={show}
+      stateIndicator={data ? "success" : "warning"}
       toggle={() => setShow(!show)}
       isLoading={isPending}
     >
-      {isPending && <LoadingFull />}
       {data?.sampleMetrics && (
         <div className="grid grid-cols-2 gap-0.5 p-1 text-sm [--line-size:4px]">
           {focused?.samples.map((sample, sampleIndex) => {

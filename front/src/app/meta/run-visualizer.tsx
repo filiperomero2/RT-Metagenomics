@@ -52,13 +52,13 @@ export function RunVisualizer() {
               <span className="flex justify-between font-semibold">
                 lastAnalysisTime:
                 <span className="font-normal">
-                  {summary?.lastAnalysisTime.toFixed(2)}
+                  {(summary?.lastAnalysisTime ?? 0).toFixed(2)}s
                 </span>
               </span>
               <span className="flex justify-between font-semibold">
                 meanTimeOfAnalysis:
                 <span className="font-normal">
-                  {summary?.meanTimeOfAnalysis.toFixed(2)}
+                  {(summary?.meanTimeOfAnalysis ?? 0).toFixed(2)}s
                 </span>
               </span>
             </div>
@@ -79,12 +79,13 @@ export function RunVisualizer() {
                 <span>
                   Identified Reads:
                   <span className="ml-1 font-normal">
-                    {summary?.nTotalIdentifiedReads} of {summary?.nTotalReads}
+                    {summary?.nTotalIdentifiedReads ?? "0"} of{" "}
+                    {summary?.nTotalReads ?? "0"}
                   </span>
                 </span>
               }
-              value={summary?.nTotalIdentifiedReads}
-              maxValue={summary?.nTotalReads}
+              value={summary?.nTotalIdentifiedReads ?? 0}
+              maxValue={summary?.nTotalReads ?? 1}
             />
           </div>
 
