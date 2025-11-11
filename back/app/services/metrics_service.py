@@ -222,65 +222,6 @@ class MetricsService:
             return []
             
         return pathologies
-
-    def get_viral_datasets(self, samples: List["Sample"]):
-        data = []
-        
-        data.append({
-            "dataSetTitle": "Viral",
-            "data": [self._get_random_number() for _ in samples]
-        })
-        
-        data.append({
-            "dataSetTitle": "Non-viral",
-            "data": [self._get_random_number() for _ in samples]
-        })
-        
-        return data
-
-    def get_family_datasets(self, samples: List["Sample"]):
-        data = []
-
-        data.append({
-            "dataSetTitle": "Coronaviridae",
-            "data": [self._get_random_number() for _ in samples]
-        })
-        
-        data.append({
-            "dataSetTitle": "Pneumoviridae",
-            "data": [self._get_random_number() for _ in samples]
-        })
-        
-        data.append({
-            "dataSetTitle": "Ornithoviridae",
-            "data": [self._get_random_number() for _ in samples]
-        })
-        
-        data.append({
-            "dataSetTitle": "Baculoviridae",
-            "data": [self._get_random_number() for _ in samples]
-        })
-        
-        data.append({
-            "dataSetTitle": "Poxviridae",
-            "data": [self._get_random_number() for _ in samples]
-        })
-        
-        data.append({
-            "dataSetTitle": "Retroviridae",
-            "data": [self._get_random_number() for _ in samples]
-        })
-        
-        data.append({
-            "dataSetTitle": "Steitoviridae",
-            "data": [self._get_random_number() for _ in samples]
-        })
-        
-        return data
-
-
-    def _get_random_number(self): 
-        return random.randint(0, 100)
            
     def _count_report_padding(self, string: str) -> int:
         """

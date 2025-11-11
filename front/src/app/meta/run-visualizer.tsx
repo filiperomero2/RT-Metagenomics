@@ -13,6 +13,7 @@ import {
 import { DownloadIcon, XIcon } from "lucide-react";
 import { RunMetrics } from "./run-metrics";
 import { SampleVisualizer } from "./sample-visualizer";
+import { api } from "@/lib/axios";
 
 const progressColorMap = {
   pending: "warning",
@@ -88,7 +89,7 @@ export function RunVisualizer() {
             />
             <Button
               as="a"
-              href={`http://localhost:8000/v1/metagenomics/${focused.id}/export`}
+              href={`${api.defaults.baseURL}v1/metagenomics/${focused.id}/export`}
               download
               variant="solid"
               isIconOnly

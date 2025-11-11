@@ -33,6 +33,8 @@ export function MetricsTable() {
             const metrics = data?.sampleMetrics[sample.name];
             const isOdd = sampleIndex % 2 === 0;
 
+            if (!metrics) return null
+            
             return (
               <div
                 key={sample.id}
@@ -61,7 +63,7 @@ export function MetricsTable() {
                     maxValue={metrics?.nSequences ?? 1}
                   />
                 </div>
-                <div className="m-3 mb-4 flex flex-col gap-2 [&:hover_>:not(:hover)]:scale-98 [&:hover_>:not(:hover)]:blur-[2px] [&:hover_>:not(:hover)]:grayscale">
+                <div className="m-3 mb-4 flex flex-col gap-2 [&:hover_>:not(:hover)]:scale-98 [&:hover_>:not(:hover)]:grayscale">
                   {metrics?.pathologies?.map((pathology) => (
                     <div
                       key={pathology.name}
