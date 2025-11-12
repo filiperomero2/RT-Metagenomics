@@ -1,6 +1,6 @@
 import { Accordion } from "@/components/custom-accordion";
 import { useFocusedRun } from "@/hooks/use-focused-run";
-import { infernoColorGenerator } from "@/utils/color-generator";
+import { infernoColorGenerator, magmaColorGenerator, plasmaColorGenerator, viridisColorGenerator } from "@/utils/color-generator";
 import { Tooltip as TooltipHero } from "@heroui/react";
 import interpolate from "color-interpolate";
 import { ChartNoAxesColumnIncreasing } from "lucide-react";
@@ -8,9 +8,9 @@ import { useEffect, useState } from "react";
 import { ChartProps } from "./types";
 
 const colors = [
-  infernoColorGenerator(1),
-  infernoColorGenerator(0.5),
-  infernoColorGenerator(0),
+  viridisColorGenerator(1),
+  viridisColorGenerator(0.5),
+  viridisColorGenerator(0.1),
 ];
 const colorScale = interpolate(colors);
 
