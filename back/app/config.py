@@ -1,6 +1,12 @@
 import os
+from pathlib import Path
 from typing import Optional
 from dataclasses import dataclass
+from dotenv import load_dotenv
+
+# Load .env file from the back directory (parent of app/)
+env_path = Path(__file__).parent.parent / '.env'
+load_dotenv(dotenv_path=env_path)
 
 @dataclass
 class DatabaseConfig:
@@ -69,8 +75,8 @@ def load_config() -> AppConfig:
     api_config = APIConfig()
     logging_config = LoggingConfig()
     
-    output_dir = os.getenv("OUTPUT_DIR", "/home/hiagomm/code/RT-Metagenomics/back/output")
-    input_dir = os.getenv("INPUT_DIR", "/home/hiagomm/code/RT-Metagenomics/back/input")
+    output_dir = os.getenv("OUTPUT_DIR", "/tmp/rtmeta/output")
+    input_dir = os.getenv("INPUT_DIR", "/tmp/rtmeta/input")
     
     # Database configuration
     database_config.url = os.getenv("DATABASE_URL", database_config.url)
