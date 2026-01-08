@@ -1,4 +1,3 @@
-import { cn } from "@/utils/cn";
 import { Button, Skeleton } from "@heroui/react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -9,6 +8,7 @@ import {
   Minimize,
 } from "lucide-react";
 import { useEffect, useId, useState } from "react";
+import { cn } from "@/utils/cn";
 import { ShowComponent } from "./show-components";
 import { LoadingFull } from "./state-components/loading-full";
 
@@ -47,7 +47,7 @@ export function Accordion({
     document.addEventListener("fullscreenchange", (e) => {
       setFullScreen(document.fullscreenElement?.id === uniqueId);
     });
-    return () => document.removeEventListener("fullscreenchange", () => {});
+    return () => document.removeEventListener("fullscreenchange", () => { });
   }, []);
 
   const handleFullScreen = () => {

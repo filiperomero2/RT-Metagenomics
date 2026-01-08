@@ -16,9 +16,10 @@ import {
   DrawerFooter,
   DrawerHeader,
   SelectItem,
+  Tooltip,
 } from "@heroui/react";
 import { useMutation } from "@tanstack/react-query";
-import { FormProvider, useFieldArray, useForm } from "react-hook-form";
+import { FormProvider, useFieldArray, useForm, useWatch } from "react-hook-form";
 import { useLocalStorage } from "usehooks-ts";
 
 import { queryKeys } from "@/utils/query-keys-factory";
@@ -28,6 +29,7 @@ import { z } from "zod";
 import { Autocomplete } from "@/components/form/autocomplete";
 import { useModal } from "@/hooks/use-modal";
 import { Cog, Database, Dna, Plus, X } from "lucide-react";
+import { cn } from "@/utils/cn";
 
 const schema = z.object({
   runName: z.string().min(5, { message: "Run Name is required" }),
@@ -53,6 +55,7 @@ const schema = z.object({
       z.object({
         name: z.string().min(1, "").regex(/^[a-zA-Z_-]+$/, "Only letters, underscores, and hyphens are allowed"),
         barcode: z.string().min(1, ""),
+        isNegativeControl: z.boolean().default(false),
       }),
     )
     .min(1, { message: "At least one sample is required" }),
@@ -102,7 +105,7 @@ export function NewRunForm() {
       kronaDatabase: storedForm?.kronaDatabase ?? "",
       samples: Array.from({ length: 3 })
         .fill(0)
-        .map((_, i) => ({ name: "", barcode: "" })),
+        .map((_, i) => ({ name: "", barcode: "", isNegativeControl: false })),
     },
     resolver: zodResolver(schema),
   });
@@ -219,45 +222,12 @@ export function NewRunForm() {
                     >
                       <div className="grid gap-2 pb-2">
                         {samplesArrayField.fields.map((field, index) => (
-                          <div
+                          <Sample
                             key={field.id}
-                            className="flex items-start justify-center gap-2 p-1"
-                          >
-                            <Input
-                              name={`samples.${index}.name`}
-                              label={`Sample ${index + 1}`}
-                              className="pb-0"
-                            />
-                            <Autocomplete
-                              name={`samples.${index}.barcode`}
-                              label={`Barcode`}
-                              className="flex-1/4 pb-0"
-                              defaultItems={barcodes}
-                            >
-                              {(item) => (
-                                <AutocompleteItem key={item.key}>
-                                  {item.label}
-                                </AutocompleteItem>
-                              )}
-                            </Autocomplete>
-                            {samplesArrayField.fields.length > 1 && (
-                              <Button
-                                variant="flat"
-                                isIconOnly
-                                size="lg"
-                                aria-label="Remove Sample"
-                                type="button"
-                                className="flex items-center justify-center"
-                                onPress={() => samplesArrayField.remove(index)}
-                              >
-                                <X
-                                  size={20}
-                                  className="text-danger"
-                                  type="button"
-                                />
-                              </Button>
-                            )}
-                          </div>
+                            index={index}
+                            canDelete={samplesArrayField.fields.length > 1}
+                            deleteSample={() => samplesArrayField.remove(index)}
+                          />
                         ))}
                       </div>
                       <Button
@@ -304,4 +274,59 @@ export function NewRunForm() {
       </Drawer>
     </>
   );
+}
+
+function Sample({ index, canDelete, deleteSample }: { index: number; canDelete: boolean; deleteSample: () => void }) {
+  const isNegative = useWatch({ name: `samples.${index}.isNegativeControl` });
+  const color = "default";
+
+  return <div className={cn("flex items-start justify-center gap-2 p-1", isNegative && "ring ring-secondary/60 rounded-lg bg-secondary/15")}>
+    <Tooltip content="Negative Control" showArrow placement="left">
+      <div className="h-full">
+        <CheckBox
+          color="secondary"
+          name={`samples.${index}.isNegativeControl`}
+          className="mb-0 h-full w-fit px-3"
+        />
+      </div>
+    </Tooltip>
+    <Input
+      color={color}
+      name={`samples.${index}.name`}
+      label={`Sample ${index + 1}`}
+      className="pb-0"
+    />
+    <Autocomplete
+      color={color}
+      name={`samples.${index}.barcode`}
+      label={`Barcode`}
+      className="flex-1/4 pb-0"
+      defaultItems={barcodes}
+    >
+      {(item) => (
+        <AutocompleteItem key={item.key}>
+          {item.label}
+        </AutocompleteItem>
+      )}
+    </Autocomplete>
+
+    {canDelete && (
+      <Button
+        color="default"
+        variant="solid"
+        isIconOnly
+        size="lg"
+        aria-label="Remove Sample"
+        type="button"
+        className="flex items-center justify-center rounded-lg bg-default-100"
+        onPress={deleteSample}
+      >
+        <X
+          size={20}
+          className="text-danger-500"
+          type="button"
+        />
+      </Button>
+    )}
+  </div>
 }

@@ -8,5 +8,8 @@ export const useFocusedRun = () => {
 };
 
 export const setFocusedRun = (meta: MetaGenomicRun | undefined) => {
-  store.setState(() => meta);
+  store.setState(() => (meta ? {
+    ...meta,
+    samples: meta?.samples.map((sample, index) => ({ ...sample, isNegativeControl: index === 0 })) ?? []
+  } : meta));
 };

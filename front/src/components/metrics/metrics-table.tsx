@@ -34,19 +34,20 @@ export function MetricsTable() {
             const isOdd = sampleIndex % 2 === 0;
 
             if (!metrics) return null
-            
+
             return (
               <div
                 key={sample.id}
                 className={cn(
-                  "border-primary-900/60 flex flex-col overflow-clip border-2",
+                  "border-current/60 bg-current/4 flex flex-col overflow-clip border-2",
                   sampleIndex < 2 &&
-                    (isOdd ? "rounded-tl-lg" : "rounded-tr-lg"),
+                  (isOdd ? "rounded-tl-lg" : "rounded-tr-lg"),
                   sampleIndex > focused.samples.length - 3 &&
-                    (isOdd ? "rounded-bl-lg" : "rounded-br-lg"),
+                  (isOdd ? "rounded-bl-lg" : "rounded-br-lg"),
+                  sample.isNegativeControl ? "text-secondary" : "text-primary"
                 )}
               >
-                <div className="bg-primary-900/10 dark:text-content2-foreground text-primary-900 border-primary-900/60 gap-1 border-b-2 p-0.5 text-center">
+                <div className="bg-current/10 text-current border-current/60 gap-1 border-b-2 p-0.5 text-center">
                   <p className="dark:text-content2-foreground pt-1 pb-2 text-2xl font-bold uppercase">
                     --- {sample.name} ---
                   </p>
@@ -55,8 +56,8 @@ export function MetricsTable() {
                     size="lg"
                     classNames={{
                       track: "rounded-none",
-                      labelWrapper: "px-1",
-                      indicator: "bg-primary-900 rounded-none",
+                      labelWrapper: "px-1 dark:text-content2-foreground",
+                      indicator: "bg-current rounded-none",
                     }}
                     label={`Identified Sequences: ${metrics?.nIdentifiedSequences ?? 0} of ${metrics?.nSequences ?? 0}`}
                     value={metrics?.nIdentifiedSequences ?? 0}
@@ -69,13 +70,14 @@ export function MetricsTable() {
                       key={pathology.name}
                       className="grid cursor-pointer grid-cols-[1.5fr_auto_3fr] items-center justify-center transition"
                     >
-                      <div className="dark:bg-primary-900/15 bg-content1 border-primary-900/60 flex flex-col justify-center rounded-md border-3 p-1.5 py-2">
-                        <p className="font-semibold">{pathology.name}</p>
+                      <div className="dark:bg-current/15 bg-content1   border-current/60 flex flex-col justify-center rounded-md border-3 p-1.5 py-2">
+                        <p className="font-semibold text-content1-foreground ">{pathology.name}</p>
                         <Progress
                           showValueLabel
                           size="sm"
                           classNames={{
-                            indicator: "bg-primary-900/60",
+                            indicator: "bg-current/60",
+                            labelWrapper: "text-content1-foreground",
                             label: "text-xs",
                             value: "text-xs",
                           }}
@@ -84,7 +86,7 @@ export function MetricsTable() {
                           maxValue={metrics.nSequences}
                         />
                       </div>
-                      <div className="bg-primary-900/60 h-(--line-size) w-4 self-center" />
+                      <div className="bg-current/60 h-(--line-size) w-4 self-center" />
                       <div className="flex h-full flex-col">
                         {pathology.pathogens.map((pathogen, pathogenIndex) => (
                           <div
@@ -96,25 +98,25 @@ export function MetricsTable() {
                                 "flex h-full items-center",
                                 pathogenIndex === 0 && "items-end",
                                 pathogenIndex ===
-                                  pathology.pathogens.length - 1 &&
-                                  "items-start",
+                                pathology.pathogens.length - 1 &&
+                                "items-start",
                               )}
                             >
                               {pathology.pathogens.length > 1 && (
                                 <div
                                   className={cn(
-                                    "bg-primary-900/60 h-full w-(--line-size)",
+                                    "bg-current/60 h-full w-(--line-size)",
                                     (pathogenIndex === 0 ||
                                       pathogenIndex ===
-                                        pathology.pathogens.length - 1) &&
-                                      "h-[calc(50%+var(--line-size)/2)]",
+                                      pathology.pathogens.length - 1) &&
+                                    "h-[calc(50%+var(--line-size)/2)]",
                                   )}
                                 />
                               )}
-                              <div className="bg-primary-900/60 h-(--line-size) w-3 self-center" />
+                              <div className="bg-current/60 h-(--line-size) w-3 self-center" />
                             </div>
-                            <div className="dark:bg-primary-900/15 border-primary-900/60 text-content1-foreground bg-content1 my-0.5 flex w-full flex-col gap-1 rounded-md border-3 p-1.5 py-2">
-                              <p className="font-semibold">
+                            <div className="dark:bg-current/15 border-current/60 bg-content1 my-0.5 flex w-full flex-col gap-1 rounded-md border-3 p-1.5 py-2">
+                              <p className="font-semibold text-content1-foreground">
                                 {pathogen.pathogen}
                               </p>
 
@@ -122,7 +124,8 @@ export function MetricsTable() {
                                 showValueLabel
                                 size="sm"
                                 classNames={{
-                                  indicator: "bg-primary-900/60",
+                                  indicator: "bg-current/60",
+                                  labelWrapper: "text-content1-foreground",
                                   label: "text-xs",
                                   value: "text-xs",
                                 }}

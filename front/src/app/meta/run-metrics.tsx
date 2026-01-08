@@ -10,8 +10,6 @@ export function RunMetrics() {
   const familyDataSets = useMemo(() => generateFamilyDataSets(data?.sampleMetrics), [data?.sampleMetrics]);
   const viralDataSets = useMemo(() => generateViralDataSets(data?.sampleMetrics), [data?.sampleMetrics]);
 
-  console.log('familyDataSets', familyDataSets);
-
   return (
     <>
       <MetricsTable />
