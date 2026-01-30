@@ -9,6 +9,8 @@ from usecases.create_metagenomic_usecase import CreateMetagenomicsRunUseCase
 from usecases.list_metagenomic_usecase import ListMetagenomicsUseCase
 from usecases.get_metagenomics_result_usecase import GetMetagenomicsResultUseCase
 from usecases.export_result_usecase import ExportResultUseCase
+from usecases.start_metagenomic_usecase import StartMetagenomicsUseCase
+from usecases.stop_metagenomic_usecase import StopMetagenomicsUseCase
 from repositories.metagenomics_run_repository import MetagenomicsRunRepository
 from infra.database.db import get_session
 
@@ -84,6 +86,18 @@ def get_export_result_usecase(
     """Get ExportResultUseCase instance."""
     return ExportResultUseCase(export_result_service, repository)
 
+def get_start_metagenomics_usecase(
+    repository: Annotated[MetagenomicsRunRepository, Depends(get_metagenomics_run_repository)]
+) -> StartMetagenomicsUseCase:
+    """Get StartMetagenomicsUseCase instance."""
+    return StartMetagenomicsUseCase(repository)
+
+def get_stop_metagenomics_usecase(
+    repository: Annotated[MetagenomicsRunRepository, Depends(get_metagenomics_run_repository)]
+) -> StopMetagenomicsUseCase:
+    """Get StopMetagenomicsUseCase instance."""
+    return StopMetagenomicsUseCase(repository)
+
 # Type aliases for cleaner imports
 CreateMetagenomicsUseCaseDependency = Annotated[CreateMetagenomicsRunUseCase, Depends(get_create_metagenomics_usecase)]
 ListMetagenomicsUseCaseDependency = Annotated[ListMetagenomicsUseCase, Depends(get_list_metagenomics_usecase)]
@@ -93,3 +107,5 @@ ExportResultServiceDependency = Annotated[ExportResultService, Depends(get_expor
 MetagenomicsRepositoryDependency = Annotated[MetagenomicsRunRepository, Depends(get_metagenomics_run_repository)] 
 GetMetagenomicsMetricsUseCaseDependency = Annotated[GetMetagenomicsMetricsUseCase, Depends(get_get_metagenomics_metrics_usecase)]
 ExportResultUseCaseDependency = Annotated[ExportResultUseCase, Depends(get_export_result_usecase)]
+StartMetagenomicsUseCaseDependency = Annotated[StartMetagenomicsUseCase, Depends(get_start_metagenomics_usecase)]
+StopMetagenomicsUseCaseDependency = Annotated[StopMetagenomicsUseCase, Depends(get_stop_metagenomics_usecase)]

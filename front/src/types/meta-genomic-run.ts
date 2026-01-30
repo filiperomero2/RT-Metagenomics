@@ -5,6 +5,7 @@ export interface MetaGenomicRun {
   iteration: number;
   errorMessage: string;
   executionHash: string;
+  executionHashTime: Date;
   createdAt: Date;
   updatedAt: Date;
   samples: Sample[];

@@ -9,7 +9,9 @@ from infra.dependencies import (
     ListMetagenomicsUseCaseDependency,
     GetMetagenomicsResultUseCaseDependency,
     GetMetagenomicsMetricsUseCaseDependency,
-    ExportResultUseCaseDependency
+    ExportResultUseCaseDependency,
+    StartMetagenomicsUseCaseDependency,
+    StopMetagenomicsUseCaseDependency
 )
 
 router = APIRouter(prefix='/v1')
@@ -111,6 +113,27 @@ async def export_metagenomics_result(run_id: int, usecase: ExportResultUseCaseDe
         }
     )
 
+@router.post("/metagenomics/{run_id}/start")
+async def start_metagenomics(run_id: int, usecase: StartMetagenomicsUseCaseDependency):
+    """
+    Start analysis of a specific metagenomics run.
+    
+    Args:
+        run_id: The ID of the metagenomics run
+    """
+    run = usecase.execute(run_id)
+    return run.dict()
+
+@router.post("/metagenomics/{run_id}/stop")
+async def stop_metagenomics(run_id: int, usecase: StopMetagenomicsUseCaseDependency):
+    """
+    Start analysis of a specific metagenomics run.
+    
+    Args:
+        run_id: The ID of the metagenomics run
+    """
+    run = usecase.execute(run_id)
+    return run.dict()
 
 @router.get("/health")
 async def health_check():

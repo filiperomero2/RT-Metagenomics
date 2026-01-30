@@ -1,6 +1,7 @@
 import logging
 import time
 import os
+import datetime
 
 from entities.run import Run
 from entities.enum import RunState
@@ -33,15 +34,17 @@ class ViralUnityService:
                     continue
                 try:
                     task_hash = self.file_hash_calculator.get_hash_of_task(next_task)
+                    task_hash_time = datetime.datetime.now()
                     if task_hash == next_task.executionHash:
-                        logger.debug(f"Task {next_task.id} already processed, marking as COMPLETED.")
-                        next_task.state = RunState.COMPLETED
-                        self.repository.save_run(next_task)
+                        logger.debug(f"No change since last check for Task {next_task.id}. Re-queueing...")
+                        next_task.state = RunState.PENDING
+                        self.repository.save_run(next_task) # Forces update of the next_scheduled_run_at
                         continue
                     params = self.prepare_metagenomics_params(next_task)
                     next_task.state = RunState.RUNNING
                     next_task.iteration += 1
                     next_task.executionHash = task_hash
+                    next_task.executionHashTime = task_hash_time
                     self.repository.save_run(next_task)
                     
                     before = time.time()

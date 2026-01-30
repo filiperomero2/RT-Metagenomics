@@ -82,6 +82,7 @@ class MetricsService:
             "meanTimeOfAnalysis": run.totalElapsedTimeOfAnalysisExecutionSeconds/run.iteration if run.iteration > 0 else 0.0,
             "lastAnalysisTime": run.lastElapsedTimeOfAnalysisExecutionSeconds,
             "iteration": run.iteration,
+            "executionHashTime": run.executionHashTime,
         }   
         
         return summary_metrics

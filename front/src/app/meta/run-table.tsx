@@ -20,7 +20,7 @@ import {
   TableRow,
   Tooltip,
 } from "@heroui/react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Info } from "lucide-react";
 import { useState } from "react";
 
@@ -35,8 +35,20 @@ export function RunTable() {
     refetchInterval: shouldRefetch ? 2000 : 0,
     queryFn: async () => {
       const { data } = await api.get<MetaGenomicRun[]>("/v1/metagenomics");
-      setShouldRefetch(data.some((item) => loadingStates.includes(item.state)));
+      // setShouldRefetch(data.some((item) => loadingStates.includes(item.state)));
       return data;
+    },
+  });
+
+  const { mutate: startMetagenomics } = useMutation({
+    mutationFn: async (runId: number) => {
+      await api.post(`/v1/metagenomics/${runId}/start`);
+    },
+  });
+
+  const { mutate: stopMetagenomics } = useMutation({
+    mutationFn: async (runId: number) => {
+      await api.post(`/v1/metagenomics/${runId}/stop`);
     },
   });
 
@@ -54,6 +66,7 @@ export function RunTable() {
         <TableColumn width="2.5%">Status</TableColumn>
         <TableColumn>Data Type</TableColumn>
         <TableColumn>Run Name</TableColumn>
+        <TableColumn>Actions</TableColumn>
         <TableColumn>Iteractions</TableColumn>
         <TableColumn>
           <Tooltip content="Number of classified sequencies" showArrow>
@@ -83,6 +96,14 @@ export function RunTable() {
             </TableCell>
             <TableCell>{run.parameters.dataType}</TableCell>
             <TableCell className="w-full">{run.name}</TableCell>
+            <TableCell>
+              <Button variant="light" size="sm" isIconOnly onPress={() => startMetagenomics(run.id)}>
+                Start
+              </Button>
+              <Button variant="light" size="sm" isIconOnly onPress={() => stopMetagenomics(run.id)}>
+                Stop
+              </Button>
+            </TableCell>
             <TableCell>{run.iteration}</TableCell>
             <TableCell>{run.metrics.nTotalIdentifiedReads}</TableCell>
             <TableCell>{run.metrics.nTotalReads}</TableCell>
@@ -98,6 +119,7 @@ export function RunTable() {
                     <p className="text-medium m-auto pb-3 font-bold">
                       PARAMETERS
                     </p>
+                    <ParameterItem label="Last change:" value={new Date(run.executionHashTime)?.toLocaleString()} />
                     {Object.entries(run.parameters).map(([key, value]) => (
                       <ParameterItem key={key} label={key} value={value} />
                     ))}

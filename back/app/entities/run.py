@@ -15,6 +15,7 @@ class Run(SQLModel, table=True):
     state: RunState = Field(default=RunState.PENDING)
     errorMessage: str | None = Field(default=None)
     executionHash: str | None = Field(default=None)
+    executionHashTime: datetime.datetime | None = Field(default=None)
     iteration: int = Field(default=0)
     totalElapsedTimeOfAnalysisExecutionSeconds: float = Field(default=0)
     lastElapsedTimeOfAnalysisExecutionSeconds: float = Field(default=0)
@@ -34,6 +35,7 @@ class Run(SQLModel, table=True):
             "iteration": self.iteration,
             "errorMessage": self.errorMessage,
             "executionHash": self.executionHash,
+            "executionHashTime": self.executionHashTime,
             "createdAt": self.createdAt,
             "updatedAt": self.updatedAt,
             "samples": [sample.dict() for sample in self.samples],
