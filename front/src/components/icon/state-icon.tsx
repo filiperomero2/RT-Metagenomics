@@ -5,12 +5,13 @@ import {
   Ban,
   CircleCheck,
   CircleEllipsis,
-  CircleX
+  CircleX,
+  Square
 } from "lucide-react";
 import { ReactNode } from "react";
 
 const iconColors: Record<MetaGenomicRun["state"], string> = {
-  canceled: "text-danger bg-danger/15",
+  cancelled: "text-danger bg-danger/15",
   completed: "text-success bg-success/15",
   failed: "text-danger bg-danger/15",
   pending: "text-warning bg-warning/15",
@@ -18,7 +19,7 @@ const iconColors: Record<MetaGenomicRun["state"], string> = {
 };
 
 const stateToIcon: Record<MetaGenomicRun["state"], ReactNode> = {
-  canceled: <Ban size={24} />,
+  cancelled: <Square size={24} />,
   completed: <CircleCheck size={24} />,
   failed: <CircleX size={24} />,
   pending: <CircleEllipsis size={24} />,
