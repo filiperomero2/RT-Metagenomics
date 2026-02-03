@@ -84,7 +84,7 @@ export function RunVisualizer() {
                   </span>
                 </span>
               }
-              value={summary?.nTotalIdentifiedReads ?? 0}
+              value={summary?.nTotalIdentifiedReads ?? 1}
               maxValue={summary?.nTotalReads ?? 1}
             />
             <Button
