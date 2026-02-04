@@ -5,9 +5,9 @@ export function generateFamilyDataSets(sampleMetrics?: Metrics["sampleMetrics"])
   const keys = Object.keys(sampleMetrics);
   const familyDataSets: Record<string, number[]> = {};
 
-  keys.forEach((sampleKey) => {
-    const pathologies = sampleMetrics[sampleKey].pathologies;
-    pathologies.forEach((pathology) => {
+  keys?.forEach((sampleKey) => {
+    const pathologies = sampleMetrics[sampleKey]?.pathologies;
+    pathologies?.forEach((pathology) => {
       const familyName = pathology.name;
       const nReads = pathology.nReads;
 
@@ -30,10 +30,10 @@ export function generateViralDataSets(sampleMetrics?: Metrics["sampleMetrics"]) 
   const keys = Object.keys(sampleMetrics);
   const viralDataSets: Record<string, number[]> = {};
 
-  keys.forEach((sampleKey) => {
+  keys?.forEach((sampleKey) => {
     const metrics = sampleMetrics[sampleKey];
-    const viral = metrics.nIdentifiedSequences;
-    const nonViral = metrics.nSequences -  metrics.nIdentifiedSequences;
+    const viral = metrics?.nIdentifiedSequences;
+    const nonViral = metrics?.nSequences -  metrics?.nIdentifiedSequences;
     
     if (!viralDataSets["Viral"]) {
       viralDataSets["Viral"] = Array(keys.length).fill(0);

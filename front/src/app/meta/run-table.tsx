@@ -9,6 +9,7 @@ import { MetaGenomicRun } from "@/types/meta-genomic-run";
 import { queryKeys } from "@/utils/query-keys-factory";
 import {
   Button,
+  ButtonGroup,
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -21,7 +22,7 @@ import {
   Tooltip,
 } from "@heroui/react";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Info } from "lucide-react";
+import { Info, PlayIcon, SquareIcon } from "lucide-react";
 import { useState } from "react";
 
 const loadingStates = ["running", "pending"];
@@ -66,7 +67,6 @@ export function RunTable() {
         <TableColumn width="2.5%">Status</TableColumn>
         <TableColumn>Data Type</TableColumn>
         <TableColumn>Run Name</TableColumn>
-        <TableColumn>Actions</TableColumn>
         <TableColumn>Iteractions</TableColumn>
         <TableColumn>
           <Tooltip content="Number of classified sequencies" showArrow>
@@ -79,6 +79,7 @@ export function RunTable() {
           </Tooltip>
         </TableColumn>
         <TableColumn>Parameters</TableColumn>
+        <TableColumn className="text-center">Actions</TableColumn>
       </TableHeader>
       <TableBody
         emptyContent={"No rows to display."}
@@ -96,18 +97,11 @@ export function RunTable() {
             </TableCell>
             <TableCell>{run.parameters.dataType}</TableCell>
             <TableCell className="w-full">{run.name}</TableCell>
-            <TableCell>
-              <Button variant="light" size="sm" isIconOnly onPress={() => startMetagenomics(run.id)}>
-                Start
-              </Button>
-              <Button variant="light" size="sm" isIconOnly onPress={() => stopMetagenomics(run.id)}>
-                Stop
-              </Button>
-            </TableCell>
+
             <TableCell>{run.iteration}</TableCell>
             <TableCell>{run.metrics.nTotalIdentifiedReads}</TableCell>
             <TableCell>{run.metrics.nTotalReads}</TableCell>
-            <TableCell className="flex justify-center">
+            <TableCell className="text-center">
               <Popover placement="left" showArrow={true} color="default">
                 <PopoverTrigger>
                   <Button variant="light" size="sm" isIconOnly>
@@ -119,13 +113,34 @@ export function RunTable() {
                     <p className="text-medium m-auto pb-3 font-bold">
                       PARAMETERS
                     </p>
-                    <ParameterItem label="Last change:" value={new Date(run.executionHashTime)?.toLocaleString()} />
+                    <ParameterItem
+                      label="Last change:"
+                      value={new Date(run.executionHashTime)?.toLocaleString()}
+                    />
                     {Object.entries(run.parameters).map(([key, value]) => (
                       <ParameterItem key={key} label={key} value={value} />
                     ))}
                   </div>
                 </PopoverContent>
               </Popover>
+            </TableCell>
+            <TableCell>
+              <ButtonGroup variant="ghost">
+                <Button
+                  size="sm"
+                  isIconOnly
+                  onPress={() => stopMetagenomics(run.id)}
+                >
+                  <SquareIcon size={18} />
+                </Button>
+                <Button
+                  size="sm"
+                  isIconOnly
+                  onPress={() => startMetagenomics(run.id)}
+                >
+                  <PlayIcon size={18} />
+                </Button>
+              </ButtonGroup>
             </TableCell>
           </TableRow>
         ))}

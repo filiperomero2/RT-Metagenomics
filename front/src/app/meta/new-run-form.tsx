@@ -289,7 +289,7 @@ function Sample({ index, canDelete, deleteSample }: { index: number; canDelete: 
   const color = "default";
 
   return <div className={cn("flex items-start justify-center gap-2 p-1", isNegative && "ring ring-secondary/60 rounded-lg bg-secondary/15")}>
-    <Tooltip content="Negative Control" showArrow placement="left">
+    {/* <Tooltip content="Negative Control" showArrow placement="left">
       <div className="h-full">
         <CheckBox
           color="secondary"
@@ -297,7 +297,7 @@ function Sample({ index, canDelete, deleteSample }: { index: number; canDelete: 
           className="mb-0 h-full w-fit px-3"
         />
       </div>
-    </Tooltip>
+    </Tooltip> */}
     <Input
       color={color}
       name={`samples.${index}.name`}

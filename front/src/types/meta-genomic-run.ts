@@ -1,7 +1,7 @@
 export interface MetaGenomicRun {
   id: number;
   name: string;
-  state: "pending" | "running" | "completed" | "failed" | "canceled";
+  state: "pending" | "running" | "completed" | "failed" | "cancelled";
   iteration: number;
   errorMessage: string;
   executionHash: string;

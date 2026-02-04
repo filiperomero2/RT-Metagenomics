@@ -20,7 +20,7 @@ const progressColorMap = {
   running: "primary",
   completed: "success",
   failed: "danger",
-  canceled: "danger",
+  cancelled: "warning",
 } as const;
 
 export function RunVisualizer() {
@@ -67,7 +67,7 @@ export function RunVisualizer() {
               className="bg-content2-foreground/20 mx-3"
             />
             <Progress
-              showValueLabel
+              showValueLabel={!!summary?.nTotalReads}
               size="sm"
               color={progressColorMap[focused.state] ?? "default"}
               classNames={{
@@ -84,7 +84,7 @@ export function RunVisualizer() {
                   </span>
                 </span>
               }
-              value={summary?.nTotalIdentifiedReads ?? 0}
+              value={summary?.nTotalIdentifiedReads ?? 1}
               maxValue={summary?.nTotalReads ?? 1}
             />
             <Button

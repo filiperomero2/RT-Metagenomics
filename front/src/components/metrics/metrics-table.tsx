@@ -9,23 +9,28 @@ export function MetricsTable() {
   const focused = useFocusedRun();
   const { data, isPending } = useMetrics();
   const [show, setShow] = useState(false);
-  const firstRender = useRef(true)
+  const firstRender = useRef(true);
+
+  const hasValues = Object.values(data?.sampleMetrics || {}).filter(
+    Boolean,
+  ).length > 0;
 
   useEffect(() => {
-    if (firstRender.current && data?.sampleMetrics) {
+    if (firstRender.current && hasValues) {
       setShow(!!data?.sampleMetrics);
       firstRender.current = false;
     }
-  }, [data])
+  }, [data]);
 
   return (
     <Accordion
       fitContent
+      className={cn((!hasValues || isPending) && "h-[83dvh]")}
       title="Metrics"
       show={show}
-      stateIndicator={data ? "success" : "warning"}
+      stateIndicator={hasValues ? "success" : "warning"}
       toggle={() => setShow(!show)}
-      isLoading={isPending}
+      isLoading={!hasValues || isPending}
     >
       {data?.sampleMetrics && (
         <div className="grid grid-cols-2 gap-0.5 p-1 text-sm [--line-size:4px]">
@@ -33,21 +38,21 @@ export function MetricsTable() {
             const metrics = data?.sampleMetrics[sample.name];
             const isOdd = sampleIndex % 2 === 0;
 
-            if (!metrics) return null
+            if (!metrics) return null;
 
             return (
               <div
                 key={sample.id}
                 className={cn(
-                  "border-current/60 bg-current/4 flex flex-col overflow-clip border-2",
+                  "flex flex-col overflow-clip border-2 border-current/60 bg-current/4",
                   sampleIndex < 2 &&
-                  (isOdd ? "rounded-tl-lg" : "rounded-tr-lg"),
+                    (isOdd ? "rounded-tl-lg" : "rounded-tr-lg"),
                   sampleIndex > focused.samples.length - 3 &&
-                  (isOdd ? "rounded-bl-lg" : "rounded-br-lg"),
-                  sample.isNegativeControl ? "text-secondary" : "text-primary"
+                    (isOdd ? "rounded-bl-lg" : "rounded-br-lg"),
+                  sample.isNegativeControl ? "text-secondary" : "text-primary",
                 )}
               >
-                <div className="bg-current/10 text-current border-current/60 gap-1 border-b-2 p-0.5 text-center">
+                <div className="gap-1 border-b-2 border-current/60 bg-current/10 p-0.5 text-center text-current">
                   <p className="dark:text-content2-foreground pt-1 pb-2 text-2xl font-bold uppercase">
                     --- {sample.name} ---
                   </p>
@@ -70,8 +75,10 @@ export function MetricsTable() {
                       key={pathology.name}
                       className="grid cursor-pointer grid-cols-[1.5fr_auto_3fr] items-center justify-center transition"
                     >
-                      <div className="dark:bg-current/15 bg-content1   border-current/60 flex flex-col justify-center rounded-md border-3 p-1.5 py-2">
-                        <p className="font-semibold text-content1-foreground ">{pathology.name}</p>
+                      <div className="bg-content1 flex flex-col justify-center rounded-md border-3 border-current/60 p-1.5 py-2 dark:bg-current/15">
+                        <p className="text-content1-foreground font-semibold">
+                          {pathology.name}
+                        </p>
                         <Progress
                           showValueLabel
                           size="sm"
@@ -86,7 +93,7 @@ export function MetricsTable() {
                           maxValue={metrics.nSequences}
                         />
                       </div>
-                      <div className="bg-current/60 h-(--line-size) w-4 self-center" />
+                      <div className="h-(--line-size) w-4 self-center bg-current/60" />
                       <div className="flex h-full flex-col">
                         {pathology.pathogens.map((pathogen, pathogenIndex) => (
                           <div
@@ -98,25 +105,25 @@ export function MetricsTable() {
                                 "flex h-full items-center",
                                 pathogenIndex === 0 && "items-end",
                                 pathogenIndex ===
-                                pathology.pathogens.length - 1 &&
-                                "items-start",
+                                  pathology.pathogens.length - 1 &&
+                                  "items-start",
                               )}
                             >
                               {pathology.pathogens.length > 1 && (
                                 <div
                                   className={cn(
-                                    "bg-current/60 h-full w-(--line-size)",
+                                    "h-full w-(--line-size) bg-current/60",
                                     (pathogenIndex === 0 ||
                                       pathogenIndex ===
-                                      pathology.pathogens.length - 1) &&
-                                    "h-[calc(50%+var(--line-size)/2)]",
+                                        pathology.pathogens.length - 1) &&
+                                      "h-[calc(50%+var(--line-size)/2)]",
                                   )}
                                 />
                               )}
-                              <div className="bg-current/60 h-(--line-size) w-3 self-center" />
+                              <div className="h-(--line-size) w-3 self-center bg-current/60" />
                             </div>
-                            <div className="dark:bg-current/15 border-current/60 bg-content1 my-0.5 flex w-full flex-col gap-1 rounded-md border-3 p-1.5 py-2">
-                              <p className="font-semibold text-content1-foreground">
+                            <div className="bg-content1 my-0.5 flex w-full flex-col gap-1 rounded-md border-3 border-current/60 p-1.5 py-2 dark:bg-current/15">
+                              <p className="text-content1-foreground font-semibold">
                                 {pathogen.pathogen}
                               </p>
 
