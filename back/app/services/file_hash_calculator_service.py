@@ -7,8 +7,8 @@ from config import config
 class FileHashCalculatorService:
     def get_hash_of_task(self, task: RunParameters) -> str:
         sample_hash = ""
-        # Get hash of all files in config.input_dir/task.name and then get the hash of this hash
-        input_dir = os.path.join(config.input_dir, task.name)
+        # Get hash of all files in task.path and then get the hash of this hash
+        input_dir = task.path
         for file in self.list_files_recursively(input_dir):
             with open(file, 'rb') as f:
                 sample_hash += hashlib.sha256(f.read()).hexdigest()

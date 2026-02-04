@@ -40,10 +40,7 @@ docker run -d \
   --name rt-metagenomics \
   -p 3000:3000 \
   -p 8000:8000 \
-  -v /path/to/your/input/data:/app/rt-meta/input \
-  -v /path/to/your/output/directory:/app/rt-meta/output \
-  -v /path/to/your/kraken2db:/app/rt-meta/db/kraken2 \
-  -v /path/to/your/kronadb:/app/rt-meta/db/krona \
+  -v /:/ \
   rt-meta:latest
 ```
 
@@ -51,72 +48,21 @@ docker run -d \
 
 ### Essential Volume Mappings
 
-The application requires access to your host machine's data directories. Here's what you need to map:
+The application requires access to your host machine's data directories. Here is hwo ti works:
 
-#### 1. Input Data Directory
 ```bash
--v /path/to/your/input/data:/app/rt-meta/input
+-v /:/
 ```
-- **Purpose**: Contains your metagenomic sequencing files (FASTQ, FASTA, etc.)
-- **Host path**: Replace `/path/to/your/input/data` with the actual path to your data
-- **Container path**: `/app/rt-meta/input` (fixed, but can change through environment variable)
+- **Purpose**: Give docker environment acces to your files. You dont need to map your root, but keep in mind that the paths will be relative to this mapping.
+- **Host path**: Replace the `/` before the `:` with the actual root path you want to map.
+- **Container path**: `/` you normally will keep this unchanged.
 
-#### 2. Output Directory (Optional)
-```bash
--v /path/to/your/output/directory:/app/rt-meta/output
-```
-- **Purpose**: Stores analysis results, processed files, and logs
-- **Host path**: Replace `/path/to/your/output/directory` with your desired output location
-- **Container path**: `/app/rt-meta/output` (fixed, but can change through environment variable)
-- **Use case**: Only needed if you wanna to access the output files later on
-
-#### 3. Kraken2 Database Directory
-```bash
--v /path/to/your/kraken2db:/app/rt-meta/db/kraken2
-```
-- **Purpose**: Configure the path to kraken2 database
-- **Host path**: Replace `/path/to/your/kraken2db` with the path to your local kraken2 database
-- **Container path**: You can choose any path, will be asked when running a metagenomics analysis
-
-#### 4. Krona Database Directory
-```bash
--v /path/to/your/kronadb:/app/rt-meta/db/kronadb
-```
-- **Purpose**: Configure the path to krona database
-- **Host path**: Replace `/path/to/your/kronadb` with the path to your local krona database
-- **Container path**: You can choose any path, will be asked when running a metagenomics analysis
-
-### Example Volume Mapping Scenarios
-
-#### Scenario 1: Local Development
-```bash
-docker run -p 3000:3000 -p 8000:8000 \
-  -v $(pwd)/data/input:/app/back/input \
-  -v $(pwd)/data/output:/app/back/output \
-  rt-meta:latest
-```
-
-#### Scenario 2: Production with External Storage
-```bash
-docker run -d \
-  --name rt-metagenomics \
-  -p 3000:3000 \
-  -v /mnt/nas/metagenomics/input:/app/back/input \
-  -v /mnt/nas/metagenomics/output:/app/back/output \
-  -v /mnt/nas/metagenomics/kraken2:/app/rt-meta/db/kraken2db \
-  -v /mnt/nas/metagenomics/krona:/app/rt-meta/db/kronadb \
-  rt-meta:latest
-```
 
 ## 🔧 Environment Variables
 
 You can customize the application behavior using environment variables:
 
 ```bash
-# Data directories
--e INPUT_DIR=/app/back/input
--e OUTPUT_DIR=/app/back/output
-
 # Service settings
 -e POLLING_INTERVAL=1
 -e MAX_RETRIES=3

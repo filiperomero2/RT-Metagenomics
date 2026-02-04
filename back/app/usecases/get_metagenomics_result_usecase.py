@@ -13,7 +13,7 @@ class GetMetagenomicsResultUseCase:
         run = self.repository.get_run(run_id)
         sample = next(x for x in run.samples if x.id == sample_id)
         if sample is not None:
-            file_path = f"{config.output_dir}/{run.id}_{run.name}/metagenomics/taxonomic_assignments/reports/sample-{sample.name}.output.krona.html"
+            file_path = f"{run.parameters.path}/../output/{run.id}_{run.parameters.name}/metagenomics/taxonomic_assignments/reports/sample-{sample.name}.output.krona.html"
             
             # Check if file exists
             if not os.path.exists(file_path):

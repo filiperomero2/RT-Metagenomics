@@ -49,11 +49,11 @@ class MetricsService:
         """Initialize the MetricsService."""
         pass
     
-    def get_sample_file_path_from_sample_name(self, run_id: str, run_name: str, sample_name: str) -> str:
-        return f"{config.output_dir}/{run_id}_{run_name}/metagenomics/taxonomic_assignments/results/sample-{sample_name}.output.krona.txt"
+    def get_sample_file_path_from_sample_name(self, run: Run, sample_name: str) -> str:
+        return f"{run.parameters.path}/../output/{run.id}_{run.name}/metagenomics/taxonomic_assignments/results/sample-{sample_name}.output.krona.txt"
         
-    def get_sample_report_file_path_from_sample_name(self, run_id: str, run_name: str, sample_name: str) -> str:
-        return f"{config.output_dir}/{run_id}_{run_name}/metagenomics/taxonomic_assignments/results/sample-{sample_name}.report.txt"
+    def get_sample_report_file_path_from_sample_name(self, run: Run, sample_name: str) -> str:
+        return f"{run.parameters.path}/../output/{run.id}_{run.name}/metagenomics/taxonomic_assignments/results/sample-{sample_name}.report.txt"
 
     def get_summary_metrics(self, run: Run) -> Dict[str, Any]:
         """
@@ -66,7 +66,7 @@ class MetricsService:
         Returns:
             List of summary metrics dictionaries or None if file doesn't exist
         """
-        samples = [self.get_sample_file_path_from_sample_name(str(run.id), run.name, sample.name) for sample in run.samples]
+        samples = [self.get_sample_file_path_from_sample_name(run, sample.name) for sample in run.samples]
         sample_summary_metric = {}
         for sample_file_path in samples:
             sample_summary_metric[sample_file_path] = self._process_sequence_metrics(sample_file_path)
@@ -103,20 +103,19 @@ class MetricsService:
         sample_name = filename.split(".")[0]
         return sample_name.replace(self.SAMPLE_PREFIX, "")
                 
-    def get_sample_metrics(self, run_id: str, run_name: str, sample_name: str) -> Optional[Dict[str, SampleMetrics]]:
+    def get_sample_metrics(self, run: Run, sample_name: str) -> Optional[Dict[str, SampleMetrics]]:
         """
         Get comprehensive metrics for a specific sample.
-        
+
         Args:
-            run_id: The run identifier
-            run_name: The run name
+            run: The run entity
             sample_name: The sample name
-            
+
         Returns:
             Dictionary containing sample metrics or None if files don't exist
         """
-        sample_file_path = self.get_sample_file_path_from_sample_name(run_id, run_name, sample_name)
-        report_file_path = self.get_sample_report_file_path_from_sample_name(run_id, run_name, sample_name)
+        sample_file_path = self.get_sample_file_path_from_sample_name(run, sample_name)
+        report_file_path = self.get_sample_report_file_path_from_sample_name(run, sample_name)
 
         if not os.path.exists(sample_file_path):
             logger.warning(f"Sample file not found: {sample_file_path}")

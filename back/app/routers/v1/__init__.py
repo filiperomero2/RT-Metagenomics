@@ -34,6 +34,7 @@ async def start_metagenomics(
         dataType=metagenomics_run.dataType,
         samples=[CreateMetagenomicsSampleInput(name=sample.name, barcode=sample.barcode) for sample in metagenomics_run.samples],
         runName=metagenomics_run.runName,
+        path=metagenomics_run.path,
         trim=metagenomics_run.trim,
         threads=metagenomics_run.threads,
         threadsTotal=metagenomics_run.threadsTotal,

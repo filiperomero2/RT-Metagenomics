@@ -26,6 +26,7 @@ class CreateMetagenomicsRunInput:
         dataType: DataType,
         samples: List[CreateMetagenomicsSampleInput],
         runName: str,
+        path: str,
         trim: int,
         threads: int,
         threadsTotal: int,
@@ -38,6 +39,7 @@ class CreateMetagenomicsRunInput:
         self.dataType = dataType
         self.samples = samples
         self.runName = runName
+        self.path = path
         self.trim = trim
         self.threads = threads
         self.threadsTotal = threadsTotal
@@ -67,6 +69,7 @@ class CreateMetagenomicsRunUseCase:
             name=metagenomics_parameters.runName,
             state=RunState.PENDING,
             parameters=RunParameters(
+                path=metagenomics_parameters.path,
                 dataType=metagenomics_parameters.dataType,
                 trim=metagenomics_parameters.trim,
                 threads=metagenomics_parameters.threads,

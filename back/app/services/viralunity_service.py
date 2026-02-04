@@ -33,7 +33,7 @@ class ViralUnityService:
                     time.sleep(config.service.polling_interval)
                     continue
                 try:
-                    task_hash = self.file_hash_calculator.get_hash_of_task(next_task)
+                    task_hash = self.file_hash_calculator.get_hash_of_task(next_task.parameters)
                     task_hash_time = datetime.datetime.now()
                     if task_hash == next_task.executionHash:
                         logger.debug(f"No change since last check for Task {next_task.id}. Re-queueing...")
@@ -71,7 +71,7 @@ class ViralUnityService:
     def prepare_metagenomics_params(self, run: Run) -> dict:
         samples = {}
         for sample in run.samples:
-            folder_name = config.input_dir + "/" + run.name + "/fastq_pass/" + sample.sampleLib
+            folder_name = run.parameters.path + "/" + sample.sampleLib
             if (os.path.exists(folder_name)):
                 samples[sample.name] = [folder_name + "/*"]
             else:
@@ -81,13 +81,13 @@ class ViralUnityService:
             "data_type": run.parameters.dataType.value,
             "samples": samples,
             "sample_sheet": None,
-            "config_file": config.output_dir + "/" + str(run.id)+ "_" + run.name + "/config.yaml",
+            "config_file": run.parameters.path + "/../config.yaml",
             "run_name": f"{run.parameters.id}_{run.name}",
             "kraken2_database": run.parameters.kraken2Database,
             "krona_database": run.parameters.kronaDatabase,
             "threads": run.parameters.threads,
             "threads_total": run.parameters.threadsTotal,
-            "output": config.output_dir,
+            "output": run.parameters.path + "/../output",
             "remove_human_reads": run.parameters.removeHumanReads,
             "remove_unclassified_reads": run.parameters.removeUnclassifiedReads,
             "create_config_only": False,

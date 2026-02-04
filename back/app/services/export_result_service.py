@@ -36,7 +36,7 @@ def zip_folder(folder_path: str, zip_filename: str, output_dir: Optional[str] = 
     
     # Determine output directory
     if output_dir is None:
-        output_dir = config.output_dir
+        raise ValueError("Output directory is required")
     
     # Ensure output directory exists
     os.makedirs(output_dir, exist_ok=True)
@@ -84,7 +84,7 @@ class ExportResultService:
             FileNotFoundError: If the folder doesn't exist
             ValueError: If the run doesn't exist
         """
-        folder_path = os.path.join(config.output_dir, f"{run.id}_{run.name}")
+        folder_path = os.path.join(run.parameters.path + "/../output", f"{run.id}_{run.parameters.name}")
         
         if not os.path.exists(folder_path):
             raise FileNotFoundError(f"Folder not found: {folder_path}")
@@ -147,7 +147,7 @@ class ExportResultService:
             FileNotFoundError: If the file doesn't exist
             ValueError: If the run or sample doesn't exist
         """
-        folder_path = os.path.join(config.output_dir, f"{run.id}_{run.name}")
+        folder_path = os.path.join(run.parameters.path + "/../output", f"{run.id}_{run.parameters.name}")
         
         # Determine filename
         filename = run.id+"_"+run.name+"_it_"+run.iteration + ".zip"

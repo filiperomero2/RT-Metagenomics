@@ -61,8 +61,6 @@ class AppConfig:
     service: ServiceConfig
     api: APIConfig
     logging: LoggingConfig
-    output_dir: str
-    input_dir: str
     
     def __post_init__(self):
         pass
@@ -74,9 +72,6 @@ def load_config() -> AppConfig:
     service_config = ServiceConfig()
     api_config = APIConfig()
     logging_config = LoggingConfig()
-    
-    output_dir = os.getenv("OUTPUT_DIR", "/tmp/rtmeta/output")
-    input_dir = os.getenv("INPUT_DIR", "/tmp/rtmeta/input")
     
     # Database configuration
     database_config.url = os.getenv("DATABASE_URL", database_config.url)
@@ -103,8 +98,6 @@ def load_config() -> AppConfig:
         service=service_config,
         api=api_config,
         logging=logging_config,
-        output_dir=output_dir,
-        input_dir=input_dir
     )
 
 # Global configuration instance

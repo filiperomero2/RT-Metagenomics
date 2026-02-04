@@ -32,6 +32,7 @@ import { Cog, Database, Dna, Plus, X } from "lucide-react";
 import { cn } from "@/utils/cn";
 
 const schema = z.object({
+  path: z.string().min(1, { message: "Path is required" }),
   runName: z.string().min(5, { message: "Run Name is required" }),
   dataType: z.enum(["illumina", "nanopore"]),
   threads: z.number().min(1, { message: "Threads must be at least 1" }),
@@ -93,6 +94,7 @@ export function NewRunForm() {
 
   const form = useForm({
     values: {
+      path: "",
       runName: "",
       dataType: storedForm?.dataType ?? "nanopore",
       threads: 1,
@@ -138,6 +140,12 @@ export function NewRunForm() {
             <form onSubmit={form.handleSubmit(handleSubmit)} className="flex-1">
               <DrawerHeader>New Metagenomics</DrawerHeader>
               <DrawerBody className="grid min-h-[85%] w-full grid-cols-3 content-start gap-x-3 gap-y-1">
+                <Input
+                  name="path"
+                  type="text"
+                  label="Path"
+                  className="col-span-2"
+                />
                 <Input
                   name="runName"
                   type="text"

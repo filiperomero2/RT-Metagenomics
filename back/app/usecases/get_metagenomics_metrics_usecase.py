@@ -20,7 +20,7 @@ class GetMetagenomicsMetricsUseCase:
         
         sample_metrics = {}
         for sample in run.samples:            
-            sample_metrics[sample.name] = self.metrics_service.get_sample_metrics(str(run.id), run.name, sample.name)             
+            sample_metrics[sample.name] = self.metrics_service.get_sample_metrics(run, sample.name)             
         
         summary_metrics = self.metrics_service.get_summary_metrics(run)
             
