@@ -65,8 +65,6 @@ You can customize the application behavior using environment variables:
 ```bash
 # Service settings
 -e POLLING_INTERVAL=1
--e MAX_RETRIES=3
--e TASK_TIMEOUT=3600
 ```
 
 ## 🌐 Accessing the Application
