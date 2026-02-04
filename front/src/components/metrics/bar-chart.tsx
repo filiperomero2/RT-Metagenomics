@@ -37,14 +37,16 @@ export function BarChart({ title, dataSets, legend, isLoading }: ChartProps) {
     data: dts.data.map((v) => (log ? Number(Math.log10(v).toFixed(2)) : v)),
   }));
 
+  const hasValues = (dataSets?.map(item => item.data).flat().filter(Boolean).length ?? 0) > 0;
+
   return (
     <Accordion
       show={show}
       toggle={() => setShow(!show)}
       title={title}
       className="h-[83dvh] data-[fullscreen='true']:h-full"
-      stateIndicator={dataSets ? "success" : "warning"}
-      isLoading={isLoading}
+      stateIndicator={hasValues ? "success" : "warning"}
+      isLoading={!hasValues || isLoading}
       actions={[
         {
           label: "Log10",

@@ -1,10 +1,12 @@
 import { Accordion } from "@/components/custom-accordion";
 import { useFocusedRun } from "@/hooks/use-focused-run";
-import { infernoColorGenerator, magmaColorGenerator, plasmaColorGenerator, viridisColorGenerator } from "@/utils/color-generator";
+import {
+  viridisColorGenerator
+} from "@/utils/color-generator";
 import { Tooltip as TooltipHero } from "@heroui/react";
 import interpolate from "color-interpolate";
 import { ChartNoAxesColumnIncreasing } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ChartProps } from "./types";
 
 const colors = [
@@ -32,6 +34,11 @@ export function HeatMapChart({ title, dataSets, isLoading }: ChartProps) {
     const ratio = (value - lowerNumber) / (higherNumber - lowerNumber);
     return colorScale(ratio);
   }
+  const hasValues =
+    (dataSets
+      ?.map((item) => item.data)
+      .flat()
+      .filter(Boolean).length ?? 0) > 0;
 
   return (
     <Accordion
@@ -39,8 +46,8 @@ export function HeatMapChart({ title, dataSets, isLoading }: ChartProps) {
       toggle={() => setShow(!show)}
       title={title}
       className="h-full"
-      isLoading={isLoading}
-      stateIndicator={dataSets ? "success" : "warning"}
+      isLoading={!hasValues || isLoading}
+      stateIndicator={hasValues ? "success" : "warning"}
       actions={[
         {
           label: "Log10",
