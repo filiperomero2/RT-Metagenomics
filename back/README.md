@@ -84,8 +84,6 @@ DATABASE_ECHO=false
 
 # Service Configuration
 POLLING_INTERVAL=1
-MAX_RETRIES=3
-TASK_TIMEOUT=3600
 DEFAULT_MINIMUM_READ_LENGTH=50
 
 # API Configuration
@@ -135,8 +133,6 @@ The application uses a centralized configuration system with the following secti
 
 ### Service Configuration
 - `POLLING_INTERVAL`: Background service polling interval (seconds)
-- `MAX_RETRIES`: Maximum retry attempts for failed tasks
-- `TASK_TIMEOUT`: Task execution timeout (seconds)
 - `DEFAULT_MINIMUM_READ_LENGTH`: Default minimum read length
 
 ### API Configuration

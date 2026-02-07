@@ -3,10 +3,8 @@ import os
 import zipfile
 import io
 from typing import Optional, Generator, Tuple
-from entities.run_parameters import RunParameters
-from repositories.metagenomics_run_repository import MetagenomicsRunRepository
+from services.paths_service import PathsService
 from entities.run import Run
-from config import config
 
 logger = logging.getLogger('uvicorn.error')
 
@@ -63,6 +61,8 @@ class ExportResultService:
     Service responsible for exporting metagenomics result files.
     """
     
+    def __init__(self, paths_service: PathsService):
+        self.paths_service = paths_service
     
     def export_stream(
         self,
@@ -84,7 +84,7 @@ class ExportResultService:
             FileNotFoundError: If the folder doesn't exist
             ValueError: If the run doesn't exist
         """
-        folder_path = os.path.join(run.parameters.path + "/../output", f"{run.id}_{run.parameters.name}")
+        folder_path = self.paths_service.get_output_path(run)
         
         if not os.path.exists(folder_path):
             raise FileNotFoundError(f"Folder not found: {folder_path}")
@@ -147,7 +147,7 @@ class ExportResultService:
             FileNotFoundError: If the file doesn't exist
             ValueError: If the run or sample doesn't exist
         """
-        folder_path = os.path.join(run.parameters.path + "/../output", f"{run.id}_{run.parameters.name}")
+        folder_path = self.paths_service.get_output_path(run)
         
         # Determine filename
         filename = run.id+"_"+run.name+"_it_"+run.iteration + ".zip"

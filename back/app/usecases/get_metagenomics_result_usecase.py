@@ -1,4 +1,5 @@
 import logging
+from services.paths_service import PathsService
 from repositories.metagenomics_run_repository import MetagenomicsRunRepository
 from config import config
 import os
@@ -6,14 +7,15 @@ import os
 logger = logging.getLogger('uvicorn.error')
 
 class GetMetagenomicsResultUseCase:
-    def __init__(self, repository: MetagenomicsRunRepository):
+    def __init__(self, repository: MetagenomicsRunRepository, paths_service: PathsService):
         self.repository = repository
+        self.paths_service = paths_service
 
     def execute(self, run_id: int, sample_id: str):
         run = self.repository.get_run(run_id)
         sample = next(x for x in run.samples if x.id == sample_id)
         if sample is not None:
-            file_path = f"{run.parameters.path}/../output/{run.id}_{run.parameters.name}/metagenomics/taxonomic_assignments/reports/sample-{sample.name}.output.krona.html"
+            file_path = f"{self.paths_service.get_krona_path(run)}/reports/sample-{sample.name}.output.krona.html"
             
             # Check if file exists
             if not os.path.exists(file_path):

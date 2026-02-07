@@ -76,8 +76,8 @@ def load_config() -> AppConfig:
     database_config.echo = os.getenv("DATABASE_ECHO", "false").lower() == "true"
     
     # Service configuration
-    service_config.polling_interval = int(os.getenv("POLLING_INTERVAL", service_config.polling_interval))
-    service_config.iteration_interval = int(os.getenv("ITERATION_INTERVAL", service_config.iteration_interval))
+    service_config.polling_interval = float(os.getenv("POLLING_INTERVAL", service_config.polling_interval))
+    service_config.iteration_interval = float(os.getenv("ITERATION_INTERVAL", service_config.iteration_interval))
     service_config.default_minimum_read_length = int(os.getenv("DEFAULT_MINIMUM_READ_LENGTH", service_config.default_minimum_read_length))
     
     # API configuration

@@ -3,6 +3,7 @@ import os
 import csv
 import random
 from typing import List, Dict, Optional, Any, TypedDict
+from services.paths_service import PathsService
 from entities.run import Run
 from config import config
 
@@ -39,21 +40,20 @@ class SampleMetrics(TypedDict):
 
 class MetricsService:
     """Service for processing metagenomics metrics and sample data."""
+    def __init__(self, paths_service: PathsService):
+        """Initialize the MetricsService."""
+        self.paths_service = paths_service
     
     # Constants for better maintainability
     TAXONOMIC_CATEGORIES = ["U", "R", "D", "K", "P", "C", "O", "F", "G", "S"]
     FAMILY_CATEGORY = "F"
     SAMPLE_PREFIX = "sample-"
     
-    def __init__(self):
-        """Initialize the MetricsService."""
-        pass
-    
     def get_sample_file_path_from_sample_name(self, run: Run, sample_name: str) -> str:
-        return f"{run.parameters.path}/../output/{run.id}_{run.name}/metagenomics/taxonomic_assignments/results/sample-{sample_name}.output.krona.txt"
+        return f"{self.paths_service.get_krona_path(run)}/results/sample-{sample_name}.output.krona.txt"
         
     def get_sample_report_file_path_from_sample_name(self, run: Run, sample_name: str) -> str:
-        return f"{run.parameters.path}/../output/{run.id}_{run.name}/metagenomics/taxonomic_assignments/results/sample-{sample_name}.report.txt"
+        return f"{self.paths_service.get_krona_path(run )}/results/sample-{sample_name}.report.txt"
 
     def get_summary_metrics(self, run: Run) -> Dict[str, Any]:
         """
@@ -97,7 +97,7 @@ class MetricsService:
         Returns:
             Extracted sample name (e.g., 'dengue' from 'sample-dengue.report.txt')
         """
-        # Example: /tmp/rtmeta/output/6_teste_1/metagenomics/taxonomic_assignments/results/sample-dengue.report.txt
+        # Example: [...]/metagenomics/taxonomic_assignments/results/sample-dengue.report.txt
         # Expected return: dengue
         filename = file_name.split("/")[-1]
         sample_name = filename.split(".")[0]
@@ -159,6 +159,9 @@ class MetricsService:
                     "nIdentifiedSequences": n_identified_sequences,
                     "percentageOfIdentifiedSequences": percentage_identified
                 }
+        except FileNotFoundError:
+            logger.debug(f"File not found for {sample_file_path}")
+            return None
         except (IOError, IndexError, ValueError) as e:
             logger.error(f"Error processing sequence metrics from {sample_file_path}: {e}")
             return None

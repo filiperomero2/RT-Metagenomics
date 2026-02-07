@@ -3,6 +3,7 @@ import time
 import os
 import datetime
 
+from services.paths_service import PathsService
 from entities.run import Run
 from entities.enum import RunState
 from entities.run_parameters import RunParameters
@@ -18,10 +19,12 @@ class ViralUnityService:
     def __init__(
             self,
             repository: MetagenomicsRunRepository,
-            file_hash_calculator: FileHashCalculatorService
+            file_hash_calculator: FileHashCalculatorService,
+            paths_service: PathsService
         ):
         self.repository = repository
         self.file_hash_calculator = file_hash_calculator
+        self.paths_service = paths_service
 
     def main(self):
         logger.info("Starting ViralUnityService main thread...")
@@ -77,17 +80,18 @@ class ViralUnityService:
             else:
                 logger.warning(f"Folder {folder_name} does not exist yet, skipping sample {sample.name} for this iteration")
         
+        base_output_path = self.paths_service.get_output_path(run)
         return {
             "data_type": run.parameters.dataType.value,
             "samples": samples,
             "sample_sheet": None,
-            "config_file": run.parameters.path + "/../config.yaml",
+            "config_file": self.paths_service.get_config_path(run),
             "run_name": f"{run.parameters.id}_{run.name}",
             "kraken2_database": run.parameters.kraken2Database,
             "krona_database": run.parameters.kronaDatabase,
             "threads": run.parameters.threads,
             "threads_total": run.parameters.threadsTotal,
-            "output": run.parameters.path + "/../output",
+            "output": base_output_path,
             "remove_human_reads": run.parameters.removeHumanReads,
             "remove_unclassified_reads": run.parameters.removeUnclassifiedReads,
             "create_config_only": False,

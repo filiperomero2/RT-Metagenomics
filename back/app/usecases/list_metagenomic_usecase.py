@@ -12,9 +12,9 @@ class RunResult(dict):
         self["metrics"] = metrics
 
 class ListMetagenomicsUseCase:
-    def __init__(self, repository: MetagenomicsRunRepository):
+    def __init__(self, repository: MetagenomicsRunRepository, metrics_service: MetricsService):
         self.repository = repository
-        self.metrics_service = MetricsService()
+        self.metrics_service = metrics_service
 
     def execute(self) -> List[RunResult]:
         results = self.repository.get_all_runs()

@@ -15,5 +15,6 @@ class StartMetagenomicsUseCase:
             logger.error(f"Run with ID {run_id} not found.")
             return None
         run.state = RunState.PENDING
+        run.executionHash = None
         run = self.repository.save_run(run)
         return run

@@ -7,7 +7,7 @@ from routers import router as api_router
 from exceptions import MetagenomicsError, handle_metagenomics_exception
 from config import config
 from infra.database.db import create_db_and_tables, get_session
-from infra.dependencies import get_file_hash_calculator, get_metagenomics_run_repository
+from infra.dependencies import get_file_hash_calculator, get_metagenomics_run_repository, get_paths_service
 from services.viralunity_service import ViralUnityService
 import threading
 import logging
@@ -27,7 +27,8 @@ async def lifespan(app: FastAPI):
     db_session = next(get_session())
     repository = get_metagenomics_run_repository(db_session)
     file_hash_calculator = get_file_hash_calculator()
-    viralunity_service = ViralUnityService(repository, file_hash_calculator)
+    paths_service = get_paths_service()
+    viralunity_service = ViralUnityService(repository, file_hash_calculator, paths_service)
     thread = threading.Thread(target=viralunity_service.main, daemon=True)
     thread.start()
     

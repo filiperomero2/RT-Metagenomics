@@ -7,9 +7,9 @@ import os
 logger = logging.getLogger('uvicorn.error')
 
 class GetMetagenomicsMetricsUseCase:
-    def __init__(self, repository: MetagenomicsRunRepository):
+    def __init__(self, repository: MetagenomicsRunRepository, metrics_service: MetricsService):
         self.repository = repository
-        self.metrics_service = MetricsService()
+        self.metrics_service = metrics_service
 
     def execute(self, run_id: int):
         run = self.repository.get_run(run_id)
