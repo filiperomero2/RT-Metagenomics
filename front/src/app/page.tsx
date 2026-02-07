@@ -1,18 +1,15 @@
 "use client";
 
-import { BookText, ChartPie } from "lucide-react";
+import { ChartPie } from "lucide-react";
 
 import { motion } from "framer-motion";
 import Link from "next/link";
 
 export default function Home() {
-  const links = [
-    { href: "/meta", label: "Meta v1", icon: ChartPie },
-    // { href: "/about", label: "About", icon: BookText },
-  ];
+  const links = [{ href: "/meta", label: "Meta", icon: ChartPie }];
 
   return (
-    <div className="h-[calc(100vh-65px)] flex  items-center justify-center gap-8">
+    <div className="text-primary flex h-[calc(100vh-65px)] items-center justify-center gap-8">
       {links.map((link) => (
         <motion.div
           whileHover={{ scale: 1.05 }}
@@ -22,7 +19,7 @@ export default function Home() {
           <Link
             key={link.href}
             href={link.href}
-            className="flex flex-col gap-2 justify-center items-center bg-content1 ring-primary ring-2 h-96 px-12 rounded-xl shadow-2xl text-6xl text-primary dark:text-content1-foreground"
+            className="bg-content1 ring-primary text-primary dark:text-content1-foreground flex h-96 flex-col items-center justify-center gap-2 rounded-xl px-12 text-6xl shadow-2xl ring-2"
           >
             <link.icon size={100} />
             <p>{link.label}</p>

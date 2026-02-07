@@ -2,11 +2,16 @@ from fastapi import APIRouter
 from fastapi.responses import FileResponse, StreamingResponse
 from dto.health_check_response import HealthCheckResponse
 from usecases.create_metagenomic_usecase import CreateMetagenomicsRunInput, CreateMetagenomicsSampleInput
+
 from dto import CreateMetagenomicsRunRequest
 from infra.dependencies import (
     CreateMetagenomicsUseCaseDependency,
     ListMetagenomicsUseCaseDependency,
-    GetMetagenomicsResultUseCaseDependency
+    GetMetagenomicsResultUseCaseDependency,
+    GetMetagenomicsMetricsUseCaseDependency,
+    ExportResultUseCaseDependency,
+    StartMetagenomicsUseCaseDependency,
+    StopMetagenomicsUseCaseDependency
 )
 
 router = APIRouter(prefix='/v1')
@@ -29,6 +34,7 @@ async def start_metagenomics(
         dataType=metagenomics_run.dataType,
         samples=[CreateMetagenomicsSampleInput(name=sample.name, barcode=sample.barcode) for sample in metagenomics_run.samples],
         runName=metagenomics_run.runName,
+        path=metagenomics_run.path,
         trim=metagenomics_run.trim,
         threads=metagenomics_run.threads,
         threadsTotal=metagenomics_run.threadsTotal,
@@ -53,7 +59,7 @@ async def get_metagenomics(usecase: ListMetagenomicsUseCaseDependency):
     
     # Convert to response model - return the raw data for now
     # since the frontend expects a simple array
-    return [run.dict() for run in runs_data]
+    return runs_data
 
 @router.get("/metagenomics/{run_id}/{sample_id}/result")
 async def get_metagenomics_result(run_id: int, sample_id: int, usecase: GetMetagenomicsResultUseCaseDependency):
@@ -72,6 +78,63 @@ async def get_metagenomics_result(run_id: int, sample_id: int, usecase: GetMetag
         media_type=result["content_type"],
         filename=result["filename"]
     )
+
+@router.get("/metagenomics/{run_id}/metrics")
+async def get_metagenomics_metrics(run_id: int, usecase: GetMetagenomicsMetricsUseCaseDependency):
+    """
+    Get the metrics of a specific metagenomics run.
+    
+    Args:
+        run_id: The ID of the metagenomics run
+    """
+    metrics = usecase.execute(run_id)
+    return metrics
+
+@router.get("/metagenomics/{run_id}/export")
+async def export_metagenomics_result(run_id: int, usecase: ExportResultUseCaseDependency):
+    """
+    Export and download the results of a metagenomics run as a ZIP file.
+    The ZIP is streamed directly without saving to disk for better performance.
+    
+    Args:
+        run_id: The ID of the metagenomics run
+        
+    Returns:
+        StreamingResponse: ZIP file containing all result files for the run
+        
+    Raises:
+        HTTPException: If the run is not found or files don't exist
+    """
+    zip_generator, content_type, filename = usecase.execute_stream(run_id)
+    return StreamingResponse(
+        content=zip_generator,
+        media_type=content_type,
+        headers={
+            "Content-Disposition": f"attachment; filename={filename}"
+        }
+    )
+
+@router.post("/metagenomics/{run_id}/start")
+async def start_metagenomics(run_id: int, usecase: StartMetagenomicsUseCaseDependency):
+    """
+    Start analysis of a specific metagenomics run.
+    
+    Args:
+        run_id: The ID of the metagenomics run
+    """
+    run = usecase.execute(run_id)
+    return run.dict()
+
+@router.post("/metagenomics/{run_id}/stop")
+async def stop_metagenomics(run_id: int, usecase: StopMetagenomicsUseCaseDependency):
+    """
+    Start analysis of a specific metagenomics run.
+    
+    Args:
+        run_id: The ID of the metagenomics run
+    """
+    run = usecase.execute(run_id)
+    return run.dict()
 
 @router.get("/health")
 async def health_check():

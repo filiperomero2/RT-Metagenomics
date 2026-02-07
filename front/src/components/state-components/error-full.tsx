@@ -5,8 +5,8 @@ export function ErrorFull({
   ...props
 }: LucideProps & { label?: string }) {
   return (
-    <div className="flex items-center justify-center h-full">
-      <div className="flex flex-col items-center justify-center gap-2 text-danger-300">
+    <div className="flex h-full items-center justify-center">
+      <div className="text-danger-300 flex flex-col items-center justify-center gap-2">
         <CircleX size={50} {...props} />
         {label && <h1>{label}</h1>}
       </div>

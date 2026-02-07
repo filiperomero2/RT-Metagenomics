@@ -1,22 +1,22 @@
 "use client";
 
-import { MetaComparator } from "./comparator";
-import { MetaForm } from "./form";
-import { MetaTable } from "./table";
-import { MetaVisualization } from "./visualization";
+import { SampleComparator } from "./sample-comparator";
+import { NewRunForm } from "./new-run-form";
+import { RunTable } from "./run-table";
+import { RunVisualizer } from "./run-visualizer";
 
 export default function Meta() {
   return (
     <div className="h-[calc(100vh-65px)] p-4">
-      <MetaVisualization />
-      <MetaComparator />
+      <RunVisualizer />
+      <SampleComparator />
 
-      <div className="bg-content1 p-4 py-6 rounded-2xl shadow-md">
-        <div className="w-full flex justify-between items-center gap-3 mb-4 text-3xl font-bold text-foreground-800 pb-6">
+      <div className="bg-content1 rounded-2xl p-4 py-6 shadow-md">
+        <div className="text-foreground-800 mb-4 flex w-full items-center justify-between gap-3 pb-6 text-3xl font-bold">
           <h1>All Metagenomics</h1>
-          <MetaForm />
+          <NewRunForm />
         </div>
-        <MetaTable />
+        <RunTable />
       </div>
     </div>
   );

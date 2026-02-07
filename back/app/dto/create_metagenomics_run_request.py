@@ -10,6 +10,7 @@ class CreateMetagenomicsRunRequest(BaseModel):
     dataType: DataType
     samples: List[CreateMetagenomicsSampleRequest]
     runName: str
+    path: str
     trim: int
     threads: int
     threadsTotal: int

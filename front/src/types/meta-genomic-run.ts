@@ -1,14 +1,21 @@
 export interface MetaGenomicRun {
   id: number;
   name: string;
-  state: "pending" | "running" | "completed" | "failed" | "canceled";
+  state: "pending" | "running" | "completed" | "failed" | "cancelled";
   iteration: number;
   errorMessage: string;
   executionHash: string;
+  executionHashTime: Date;
   createdAt: Date;
   updatedAt: Date;
   samples: Sample[];
   parameters: Parameters;
+  metrics: RunMetrics
+}
+
+export interface RunMetrics {
+  nTotalReads: number;
+  nTotalIdentifiedReads: number;
 }
 
 export interface Parameters {
@@ -27,4 +34,5 @@ export interface Sample {
   id: number;
   name: string;
   runId: number;
+  isNegativeControl?: boolean;
 }

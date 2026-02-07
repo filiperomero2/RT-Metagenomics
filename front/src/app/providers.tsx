@@ -15,10 +15,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
           enableSystem={false}
           enableColorScheme={false}
           attribute="class"
-          defaultTheme="rt-meta-dark"
-          themes={["rt-meta-dark", "rt-meta-light"]}
+          defaultTheme="dark"
+          themes={["dark", "light"]}
         >
-          <ToastProvider placement="top-right"/>
+          <ToastProvider placement="top-right" />
           {children}
         </NextThemesProvider>
       </HeroUIProvider>

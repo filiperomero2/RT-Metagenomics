@@ -1,6 +1,12 @@
 import os
+from pathlib import Path
 from typing import Optional
 from dataclasses import dataclass
+from dotenv import load_dotenv
+
+# Load .env file from the back directory (parent of app/)
+env_path = Path(__file__).parent.parent / '.env'
+load_dotenv(dotenv_path=env_path)
 
 @dataclass
 class DatabaseConfig:
@@ -11,8 +17,7 @@ class DatabaseConfig:
 class ServiceConfig:
     # Background service settings
     polling_interval: int = 1  # seconds
-    max_retries: int = 3
-    task_timeout: int = 3600  # 1 hour in seconds
+    iteration_interval: int = 1  # 1 minute
     
     # File processing settings
     default_minimum_read_length: int = 50
@@ -54,8 +59,6 @@ class AppConfig:
     service: ServiceConfig
     api: APIConfig
     logging: LoggingConfig
-    output_dir: str
-    input_dir: str
     
     def __post_init__(self):
         pass
@@ -68,17 +71,13 @@ def load_config() -> AppConfig:
     api_config = APIConfig()
     logging_config = LoggingConfig()
     
-    output_dir = os.getenv("OUTPUT_DIR", "/app/rt-meta/output")
-    input_dir = os.getenv("INPUT_DIR", "/app/rt-meta/input")
-    
     # Database configuration
     database_config.url = os.getenv("DATABASE_URL", database_config.url)
     database_config.echo = os.getenv("DATABASE_ECHO", "false").lower() == "true"
     
     # Service configuration
-    service_config.polling_interval = int(os.getenv("POLLING_INTERVAL", service_config.polling_interval))
-    service_config.max_retries = int(os.getenv("MAX_RETRIES", service_config.max_retries))
-    service_config.task_timeout = int(os.getenv("TASK_TIMEOUT", service_config.task_timeout))
+    service_config.polling_interval = float(os.getenv("POLLING_INTERVAL", service_config.polling_interval))
+    service_config.iteration_interval = float(os.getenv("ITERATION_INTERVAL", service_config.iteration_interval))
     service_config.default_minimum_read_length = int(os.getenv("DEFAULT_MINIMUM_READ_LENGTH", service_config.default_minimum_read_length))
     
     # API configuration
@@ -95,8 +94,6 @@ def load_config() -> AppConfig:
         service=service_config,
         api=api_config,
         logging=logging_config,
-        output_dir=output_dir,
-        input_dir=input_dir
     )
 
 # Global configuration instance

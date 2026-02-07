@@ -1,6 +1,9 @@
 import logging
 import time
+import os
+import datetime
 
+from services.paths_service import PathsService
 from entities.run import Run
 from entities.enum import RunState
 from entities.run_parameters import RunParameters
@@ -16,10 +19,12 @@ class ViralUnityService:
     def __init__(
             self,
             repository: MetagenomicsRunRepository,
-            file_hash_calculator: FileHashCalculatorService
+            file_hash_calculator: FileHashCalculatorService,
+            paths_service: PathsService
         ):
         self.repository = repository
         self.file_hash_calculator = file_hash_calculator
+        self.paths_service = paths_service
 
     def main(self):
         logger.info("Starting ViralUnityService main thread...")
@@ -31,18 +36,26 @@ class ViralUnityService:
                     time.sleep(config.service.polling_interval)
                     continue
                 try:
-                    task_hash = self.file_hash_calculator.get_hash_of_task(next_task)
+                    task_hash = self.file_hash_calculator.get_hash_of_task(next_task.parameters)
+                    task_hash_time = datetime.datetime.now()
                     if task_hash == next_task.executionHash:
-                        logger.debug(f"Task {next_task.id} already processed, marking as COMPLETED.")
-                        next_task.state = RunState.COMPLETED
-                        self.repository.save_run(next_task)
+                        logger.debug(f"No change since last check for Task {next_task.id}. Re-queueing...")
+                        next_task.state = RunState.PENDING
+                        self.repository.save_run(next_task) # Forces update of the next_scheduled_run_at
                         continue
                     params = self.prepare_metagenomics_params(next_task)
                     next_task.state = RunState.RUNNING
                     next_task.iteration += 1
                     next_task.executionHash = task_hash
+                    next_task.executionHashTime = task_hash_time
                     self.repository.save_run(next_task)
+                    
+                    before = time.time()
                     result = vu_metagenomics(params)
+                    after = time.time()
+                    next_task.lastElapsedTimeOfAnalysisExecutionSeconds = after - before
+                    next_task.totalElapsedTimeOfAnalysisExecutionSeconds += next_task.lastElapsedTimeOfAnalysisExecutionSeconds
+                    
                     logger.debug(f"Metagenomics run completed with result: {result}")
                     if(result == 1):
                         next_task.state = RunState.FAILED
@@ -61,19 +74,24 @@ class ViralUnityService:
     def prepare_metagenomics_params(self, run: Run) -> dict:
         samples = {}
         for sample in run.samples:
-            samples[sample.name] = [config.input_dir + "/" + run.name + "/fastq_pass/" + sample.sampleLib + "/*"]
+            folder_name = run.parameters.path + "/" + sample.sampleLib
+            if (os.path.exists(folder_name)):
+                samples[sample.name] = [folder_name + "/*"]
+            else:
+                logger.warning(f"Folder {folder_name} does not exist yet, skipping sample {sample.name} for this iteration")
         
+        base_output_path = self.paths_service.get_output_path(run)
         return {
             "data_type": run.parameters.dataType.value,
             "samples": samples,
             "sample_sheet": None,
-            "config_file": config.output_dir + "/" + str(run.id)+ "_" + run.name + "/config.yaml",
+            "config_file": self.paths_service.get_config_path(run),
             "run_name": f"{run.parameters.id}_{run.name}",
             "kraken2_database": run.parameters.kraken2Database,
             "krona_database": run.parameters.kronaDatabase,
             "threads": run.parameters.threads,
             "threads_total": run.parameters.threadsTotal,
-            "output": config.output_dir,
+            "output": base_output_path,
             "remove_human_reads": run.parameters.removeHumanReads,
             "remove_unclassified_reads": run.parameters.removeUnclassifiedReads,
             "create_config_only": False,

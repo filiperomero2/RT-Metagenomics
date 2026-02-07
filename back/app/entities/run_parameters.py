@@ -10,6 +10,8 @@ class RunParameters(SQLModel, table=True):
     
     id: int | None = Field(default=None, primary_key=True)
     
+    path: str = Field(default=None)
+
     dataType: DataType = Field(default=DataType.NANOPORE)
     trim: int = Field(default=None)
     threads: int = Field(default=None)
@@ -25,6 +27,7 @@ class RunParameters(SQLModel, table=True):
 
     def dict(self):
         return {
+            "path": self.path,
             "dataType": self.dataType.value,
             "trim": self.trim,
             "threads": self.threads,

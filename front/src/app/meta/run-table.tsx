@@ -9,6 +9,7 @@ import { MetaGenomicRun } from "@/types/meta-genomic-run";
 import { queryKeys } from "@/utils/query-keys-factory";
 import {
   Button,
+  ButtonGroup,
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -20,13 +21,13 @@ import {
   TableRow,
   Tooltip,
 } from "@heroui/react";
-import { useQuery } from "@tanstack/react-query";
-import { Info } from "lucide-react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { Info, PlayIcon, SquareIcon } from "lucide-react";
 import { useState } from "react";
 
 const loadingStates = ["running", "pending"];
 
-export function MetaTable() {
+export function RunTable() {
   const focused = useFocusedRun();
   const [shouldRefetch, setShouldRefetch] = useState(true);
 
@@ -35,13 +36,24 @@ export function MetaTable() {
     refetchInterval: shouldRefetch ? 2000 : 0,
     queryFn: async () => {
       const { data } = await api.get<MetaGenomicRun[]>("/v1/metagenomics");
-      setShouldRefetch(data.some((item) => loadingStates.includes(item.state)));
+      // setShouldRefetch(data.some((item) => loadingStates.includes(item.state)));
       return data;
     },
   });
 
-  if (isError) return <ErrorFull />;
+  const { mutate: startMetagenomics } = useMutation({
+    mutationFn: async (runId: number) => {
+      await api.post(`/v1/metagenomics/${runId}/start`);
+    },
+  });
 
+  const { mutate: stopMetagenomics } = useMutation({
+    mutationFn: async (runId: number) => {
+      await api.post(`/v1/metagenomics/${runId}/stop`);
+    },
+  });
+
+  if (isError) return <ErrorFull />;
   const reversedData = data ? [...data].toReversed() : [];
 
   return (
@@ -67,6 +79,7 @@ export function MetaTable() {
           </Tooltip>
         </TableColumn>
         <TableColumn>Parameters</TableColumn>
+        <TableColumn className="text-center">Actions</TableColumn>
       </TableHeader>
       <TableBody
         emptyContent={"No rows to display."}
@@ -84,10 +97,11 @@ export function MetaTable() {
             </TableCell>
             <TableCell>{run.parameters.dataType}</TableCell>
             <TableCell className="w-full">{run.name}</TableCell>
+
             <TableCell>{run.iteration}</TableCell>
-            <TableCell>N/A</TableCell>
-            <TableCell>N/A</TableCell>
-            <TableCell className="flex justify-center">
+            <TableCell>{run.metrics.nTotalIdentifiedReads}</TableCell>
+            <TableCell>{run.metrics.nTotalReads}</TableCell>
+            <TableCell className="text-center">
               <Popover placement="left" showArrow={true} color="default">
                 <PopoverTrigger>
                   <Button variant="light" size="sm" isIconOnly>
@@ -95,16 +109,38 @@ export function MetaTable() {
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent>
-                  <div className="px-2 py-2 w-lg flex flex-col gap-2">
-                    <p className="text-medium font-bold m-auto pb-3">
+                  <div className="flex w-lg flex-col gap-2 px-2 py-2">
+                    <p className="text-medium m-auto pb-3 font-bold">
                       PARAMETERS
                     </p>
+                    <ParameterItem
+                      label="Last change:"
+                      value={new Date(run.executionHashTime)?.toLocaleString()}
+                    />
                     {Object.entries(run.parameters).map(([key, value]) => (
                       <ParameterItem key={key} label={key} value={value} />
                     ))}
                   </div>
                 </PopoverContent>
               </Popover>
+            </TableCell>
+            <TableCell>
+              <ButtonGroup variant="ghost">
+                <Button
+                  size="sm"
+                  isIconOnly
+                  onPress={() => stopMetagenomics(run.id)}
+                >
+                  <SquareIcon size={18} />
+                </Button>
+                <Button
+                  size="sm"
+                  isIconOnly
+                  onPress={() => startMetagenomics(run.id)}
+                >
+                  <PlayIcon size={18} />
+                </Button>
+              </ButtonGroup>
             </TableCell>
           </TableRow>
         ))}
@@ -124,7 +160,7 @@ function ParameterItem({
     <div className="flex justify-between gap-2">
       <p className="font-semibold capitalize">{label}</p>
       <Tooltip delay={1000} content={String(value)} placement="bottom-end">
-        <p className="line-clamp-1 text-foreground-400 w-1/2 text-end">
+        <p className="text-foreground-400 line-clamp-1 w-1/2 text-end">
           {String(value)}
         </p>
       </Tooltip>

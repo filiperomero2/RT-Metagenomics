@@ -16,9 +16,10 @@ import {
   DrawerFooter,
   DrawerHeader,
   SelectItem,
+  Tooltip,
 } from "@heroui/react";
 import { useMutation } from "@tanstack/react-query";
-import { FormProvider, useFieldArray, useForm } from "react-hook-form";
+import { FormProvider, useFieldArray, useForm, useWatch } from "react-hook-form";
 import { useLocalStorage } from "usehooks-ts";
 
 import { queryKeys } from "@/utils/query-keys-factory";
@@ -28,8 +29,10 @@ import { z } from "zod";
 import { Autocomplete } from "@/components/form/autocomplete";
 import { useModal } from "@/hooks/use-modal";
 import { Cog, Database, Dna, Plus, X } from "lucide-react";
+import { cn } from "@/utils/cn";
 
 const schema = z.object({
+  path: z.string().min(1, { message: "Path is required" }),
   runName: z.string().min(5, { message: "Run Name is required" }),
   dataType: z.enum(["illumina", "nanopore"]),
   threads: z.number().min(1, { message: "Threads must be at least 1" }),
@@ -51,9 +54,10 @@ const schema = z.object({
   samples: z
     .array(
       z.object({
-        name: z.string().min(1, ""),
+        name: z.string().min(1, "").regex(/^[a-zA-Z_-]+$/, "Only letters, underscores, and hyphens are allowed"),
         barcode: z.string().min(1, ""),
-      })
+        isNegativeControl: z.boolean().default(false),
+      }),
     )
     .min(1, { message: "At least one sample is required" }),
 });
@@ -65,12 +69,12 @@ const barcodes = Array.from({ length: 96 })
     label: `barcode${i + 1 < 10 ? "0" + (i + 1) : i + 1}`,
   }));
 
-export function MetaForm() {
+export function NewRunForm() {
   const { modal, handleOpen, handleClose } = useModal();
   const [storedForm, setStoredForm] = useLocalStorage<MetaGenomic | undefined>(
     "meta-genomic-form",
     undefined,
-    { initializeWithValue: false }
+    { initializeWithValue: false },
   );
 
   const { mutateAsync, isPending } = useMutation({
@@ -90,6 +94,7 @@ export function MetaForm() {
 
   const form = useForm({
     values: {
+      path: "",
       runName: "",
       dataType: storedForm?.dataType ?? "nanopore",
       threads: 1,
@@ -102,7 +107,7 @@ export function MetaForm() {
       kronaDatabase: storedForm?.kronaDatabase ?? "",
       samples: Array.from({ length: 3 })
         .fill(0)
-        .map((_, i) => ({ name: "", barcode: "" })),
+        .map((_, i) => ({ name: "", barcode: "", isNegativeControl: false })),
     },
     resolver: zodResolver(schema),
   });
@@ -134,7 +139,13 @@ export function MetaForm() {
           <FormProvider {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit)} className="flex-1">
               <DrawerHeader>New Metagenomics</DrawerHeader>
-              <DrawerBody className="grid content-start grid-cols-3 gap-x-3 gap-y-1 w-full min-h-[85%]">
+              <DrawerBody className="grid min-h-[85%] w-full grid-cols-3 content-start gap-x-3 gap-y-1">
+                <Input
+                  name="path"
+                  type="text"
+                  label="Path"
+                  className="col-span-2"
+                />
                 <Input
                   name="runName"
                   type="text"
@@ -158,26 +169,26 @@ export function MetaForm() {
                       indicator={<Cog />}
                       title={<p className="flex items-center gap-2">Options</p>}
                     >
-                      <div className="grid grid-cols-2 gap-x-2 @container">
+                      <div className="@container grid grid-cols-2 gap-x-2">
                         <NumberInput
                           name="threads"
                           label="Threads"
-                          className="@md:col-span-1 col-span-2"
+                          className="col-span-2 @md:col-span-1"
                         />
                         <NumberInput
                           name="threadsTotal"
                           label="Threads Total"
-                          className="@md:col-span-1 col-span-2"
+                          className="col-span-2 @md:col-span-1"
                         />
                         <NumberInput
                           name="trim"
                           label="Trim"
-                          className="@md:col-span-1 col-span-2"
+                          className="col-span-2 @md:col-span-1"
                         />
                         <NumberInput
                           name="minimumReadLength"
                           label="Minimum Read Length"
-                          className="@md:col-span-1 col-span-2"
+                          className="col-span-2 @md:col-span-1"
                         />
 
                         <CheckBox
@@ -217,47 +228,14 @@ export function MetaForm() {
                       indicator={<Dna />}
                       title={<p className="flex items-center gap-2">Samples</p>}
                     >
-                      <div className="grid pb-2 gap-2">
+                      <div className="grid gap-2 pb-2">
                         {samplesArrayField.fields.map((field, index) => (
-                          <div
+                          <Sample
                             key={field.id}
-                            className="flex items-start justify-center gap-2 p-1"
-                          >
-                            <Input
-                              name={`samples.${index}.name`}
-                              label={`Sample ${index + 1}`}
-                              className="pb-0"
-                            />
-                            <Autocomplete
-                              name={`samples.${index}.barcode`}
-                              label={`Barcode`}
-                              className="flex-1/4 pb-0"
-                              defaultItems={barcodes}
-                            >
-                              {(item) => (
-                                <AutocompleteItem key={item.key}>
-                                  {item.label}
-                                </AutocompleteItem>
-                              )}
-                            </Autocomplete>
-                            {samplesArrayField.fields.length > 1 && (
-                              <Button
-                                variant="flat"
-                                isIconOnly
-                                size="lg"
-                                aria-label="Remove Sample"
-                                type="button"
-                                className="flex items-center justify-center"
-                                onPress={() => samplesArrayField.remove(index)}
-                              >
-                                <X
-                                  size={20}
-                                  className="text-danger"
-                                  type="button"
-                                />
-                              </Button>
-                            )}
-                          </div>
+                            index={index}
+                            canDelete={samplesArrayField.fields.length > 1}
+                            deleteSample={() => samplesArrayField.remove(index)}
+                          />
                         ))}
                       </div>
                       <Button
@@ -267,7 +245,7 @@ export function MetaForm() {
                         onPress={() =>
                           samplesArrayField.append(
                             { name: "", barcode: "" },
-                            { focusIndex: samplesArrayField.fields.length }
+                            { focusIndex: samplesArrayField.fields.length },
                           )
                         }
                       >
@@ -277,7 +255,7 @@ export function MetaForm() {
                   </Accordion>
                 </div>
               </DrawerBody>
-              <DrawerFooter className="bottom-0 sticky bg-content1 z-10 shadow-2xl rounded-t-3xl">
+              <DrawerFooter className="bg-content1 sticky bottom-0 z-10 rounded-t-3xl shadow-2xl">
                 <Button
                   variant="light"
                   color="danger"
@@ -304,4 +282,59 @@ export function MetaForm() {
       </Drawer>
     </>
   );
+}
+
+function Sample({ index, canDelete, deleteSample }: { index: number; canDelete: boolean; deleteSample: () => void }) {
+  const isNegative = useWatch({ name: `samples.${index}.isNegativeControl` });
+  const color = "default";
+
+  return <div className={cn("flex items-start justify-center gap-2 p-1", isNegative && "ring ring-secondary/60 rounded-lg bg-secondary/15")}>
+    {/* <Tooltip content="Negative Control" showArrow placement="left">
+      <div className="h-full">
+        <CheckBox
+          color="secondary"
+          name={`samples.${index}.isNegativeControl`}
+          className="mb-0 h-full w-fit px-3"
+        />
+      </div>
+    </Tooltip> */}
+    <Input
+      color={color}
+      name={`samples.${index}.name`}
+      label={`Sample ${index + 1}`}
+      className="pb-0"
+    />
+    <Autocomplete
+      color={color}
+      name={`samples.${index}.barcode`}
+      label={`Barcode`}
+      className="flex-1/4 pb-0"
+      defaultItems={barcodes}
+    >
+      {(item) => (
+        <AutocompleteItem key={item.key}>
+          {item.label}
+        </AutocompleteItem>
+      )}
+    </Autocomplete>
+
+    {canDelete && (
+      <Button
+        color="default"
+        variant="solid"
+        isIconOnly
+        size="lg"
+        aria-label="Remove Sample"
+        type="button"
+        className="flex items-center justify-center rounded-lg bg-default-100"
+        onPress={deleteSample}
+      >
+        <X
+          size={20}
+          className="text-danger-500"
+          type="button"
+        />
+      </Button>
+    )}
+  </div>
 }

@@ -15,9 +15,13 @@ class Run(SQLModel, table=True):
     state: RunState = Field(default=RunState.PENDING)
     errorMessage: str | None = Field(default=None)
     executionHash: str | None = Field(default=None)
-    iteration: int = Field(default=1)
+    executionHashTime: datetime.datetime | None = Field(default=None)
+    iteration: int = Field(default=0)
+    totalElapsedTimeOfAnalysisExecutionSeconds: float = Field(default=0)
+    lastElapsedTimeOfAnalysisExecutionSeconds: float = Field(default=0)
     createdAt: datetime.datetime | None = Field(default=datetime.datetime.now())
     updatedAt: datetime.datetime | None = Field(default=datetime.datetime.now())
+    next_scheduled_run_at: datetime.datetime | None = Field(default=datetime.datetime.now())
     
     # Relationships
     samples: List["Sample"] = Relationship(back_populates="run")
@@ -31,6 +35,7 @@ class Run(SQLModel, table=True):
             "iteration": self.iteration,
             "errorMessage": self.errorMessage,
             "executionHash": self.executionHash,
+            "executionHashTime": self.executionHashTime,
             "createdAt": self.createdAt,
             "updatedAt": self.updatedAt,
             "samples": [sample.dict() for sample in self.samples],

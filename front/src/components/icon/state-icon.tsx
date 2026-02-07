@@ -1,17 +1,17 @@
 import { MetaGenomicRun } from "@/types/meta-genomic-run";
 import { cn } from "@/utils/cn";
-import { ReactNode } from "react";
+import { Spinner } from "@heroui/react";
 import {
   Ban,
   CircleCheck,
   CircleEllipsis,
   CircleX,
-  Trash2,
+  Square
 } from "lucide-react";
-import { Spinner } from "@heroui/react";
+import { ReactNode } from "react";
 
 const iconColors: Record<MetaGenomicRun["state"], string> = {
-  canceled: "text-danger bg-danger/15",
+  cancelled: "text-danger bg-danger/15",
   completed: "text-success bg-success/15",
   failed: "text-danger bg-danger/15",
   pending: "text-warning bg-warning/15",
@@ -19,7 +19,7 @@ const iconColors: Record<MetaGenomicRun["state"], string> = {
 };
 
 const stateToIcon: Record<MetaGenomicRun["state"], ReactNode> = {
-  canceled: <Ban size={24} />,
+  cancelled: <Square size={24} />,
   completed: <CircleCheck size={24} />,
   failed: <CircleX size={24} />,
   pending: <CircleEllipsis size={24} />,
@@ -36,7 +36,7 @@ export const IconState = ({ className, state }: IconWrapperProps) => (
     className={cn(
       className,
       iconColors[state],
-      "flex items-center rounded-small justify-center w-fit h-fit p-1 "
+      "rounded-small flex h-fit w-fit items-center justify-center p-1",
     )}
   >
     {stateToIcon[state]}

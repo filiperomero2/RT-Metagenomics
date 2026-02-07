@@ -43,6 +43,11 @@ git clone --recurse-submodules <repository-url>
 cd back
 ```
 
+**Important**: Make sure to use `--recurse-submodules` flag to clone the viralunity submodule, or if you've already cloned without it, run:
+```bash
+git submodule update --init --recursive
+```
+
 ### 2. Create Virtual Environment
 ```bash
 conda create -n rt-meta python=3.11
@@ -50,9 +55,23 @@ conda activate rt-meta
 ```
 
 ### 3. Install Dependencies
+
+#### 3.1. Install Main Dependencies
 ```bash
 conda env update -n rt-meta --file environment.yml && conda clean -a -y
+```
+
+#### 3.2. Install ViralUnity Submodule Dependencies
+```bash
 conda env update -n rt-meta --file app/viralunity/environment.yml && conda clean -a -y
+```
+
+#### 3.3. Install ViralUnity Package in Editable Mode
+**Important**: The viralunity submodule must be installed as an editable package for the application to work correctly:
+```bash
+cd app/viralunity
+pip install -e .
+cd ../..
 ```
 
 ### 4. Environment Configuration
@@ -65,8 +84,6 @@ DATABASE_ECHO=false
 
 # Service Configuration
 POLLING_INTERVAL=1
-MAX_RETRIES=3
-TASK_TIMEOUT=3600
 DEFAULT_MINIMUM_READ_LENGTH=50
 
 # API Configuration
@@ -83,6 +100,11 @@ LOG_FILE_PATH=logs/app.log
 
 ### Running the Application
 
+Make sure you have:
+1. Activated the conda environment: `conda activate rt-meta`
+2. Completed all setup steps, including installing the viralunity submodule
+3. Created and configured your `.env` file (see step 4 above)
+
 #### Development Mode
 ```bash
 cd app
@@ -94,6 +116,8 @@ uvicorn main:app --host 0.0.0.0 --port 8000 --reload --log-level debug
 cd app
 uvicorn main:app --host 0.0.0.0 --port 8000
 ```
+
+**Note**: The application must be run from the `app` directory as `main.py` is located there.
 
 ### API Documentation
 - **Swagger UI**: `http://127.0.0.1:8000/docs`
@@ -109,8 +133,6 @@ The application uses a centralized configuration system with the following secti
 
 ### Service Configuration
 - `POLLING_INTERVAL`: Background service polling interval (seconds)
-- `MAX_RETRIES`: Maximum retry attempts for failed tasks
-- `TASK_TIMEOUT`: Task execution timeout (seconds)
 - `DEFAULT_MINIMUM_READ_LENGTH`: Default minimum read length
 
 ### API Configuration

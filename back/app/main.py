@@ -6,19 +6,51 @@ from services.file_hash_calculator_service import FileHashCalculatorService
 from routers import router as api_router
 from exceptions import MetagenomicsError, handle_metagenomics_exception
 from config import config
-from infra.database.db import create_db_and_tables
-from infra.dependencies import get_file_hash_calculator
+from infra.database.db import create_db_and_tables, get_session
+from infra.dependencies import get_file_hash_calculator, get_metagenomics_run_repository, get_paths_service
 from services.viralunity_service import ViralUnityService
+import threading
+import logging
+
+# Initialize logger
+logger = logging.getLogger(__name__)
 
 # Initialize database
 create_db_and_tables()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    logger.info("Starting up...")
+    
+    # Start background service
+    db_session = next(get_session())
+    repository = get_metagenomics_run_repository(db_session)
+    file_hash_calculator = get_file_hash_calculator()
+    paths_service = get_paths_service()
+    viralunity_service = ViralUnityService(repository, file_hash_calculator, paths_service)
+    thread = threading.Thread(target=viralunity_service.main, daemon=True)
+    thread.start()
+    
+    yield
+    
+    # Shutdown
+    logger.info("Shutting down...")
+    # Stop viralunity service
+    
+    # Set to pending all runs not finished and not errored
+    
+    db_session = next(get_session())
+    db_session.close()
+    logger.info("Database session closed")
 
 app = FastAPI(
     title=config.api.title,
     version=config.api.version,
     description=config.api.description,
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
+    lifespan=lifespan
 )
 
 app.add_middleware(
@@ -54,16 +86,3 @@ app.include_router(api_router)
 @app.get("/health")
 def read_root():
     return 'UP'
-
-# Start background service
-import threading
-from infra.dependencies import get_metagenomics_run_repository, get_file_hash_calculator
-from infra.database.db import get_session
-
-# Create a database session for the background service
-db_session = next(get_session())
-repository = get_metagenomics_run_repository(db_session)
-file_hash_calculator = get_file_hash_calculator()
-viralunity_service = ViralUnityService(repository, file_hash_calculator)
-thread = threading.Thread(target=viralunity_service.main, daemon=True)
-thread.start()
