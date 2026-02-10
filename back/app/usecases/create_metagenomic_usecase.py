@@ -7,7 +7,7 @@ from entities.sample import Sample
 from entities.run_parameters import RunParameters
 from repositories.metagenomics_run_repository import MetagenomicsRunRepository
 from services.viralunity_service import ViralUnityService
-from exceptions import TaskExecutionError
+from exceptions import ParameterValidationError, TaskExecutionError
 
 logger = logging.getLogger("uvicorn.error")
 
@@ -35,6 +35,13 @@ class CreateMetagenomicsRunInput:
         minimumReadLength: int,
         kraken2Database: str,
         kronaDatabase: str,
+        # Parameters for the diamond pipeline
+        diamondDatabase: str,
+        diamond: bool,
+        denovoAssembly: bool,
+        taxdump: str,
+        assemblySummary: str,
+        taxidToFamily: str,
     ):
         self.dataType = dataType
         self.samples = samples
@@ -48,9 +55,15 @@ class CreateMetagenomicsRunInput:
         self.minimumReadLength = minimumReadLength
         self.kraken2Database = kraken2Database
         self.kronaDatabase = kronaDatabase
-        
+        # Parameters for the diamond pipeline
+        self.diamondDatabase = diamondDatabase
+        self.diamond = diamond
+        self.denovoAssembly = denovoAssembly
+        self.taxdump = taxdump
+        self.assemblySummary = assemblySummary
+        self.taxidToFamily = taxidToFamily
     def __repr__(self):
-        return f"CreateMetagenomicsRunInput(dataType={self.dataType}, samples={self.samples}, runName={self.runName}, trim={self.trim}, threads={self.threads}, threadsTotal={self.threadsTotal}, removeHumanReads={self.removeHumanReads}, removeUnclassifiedReads={self.removeUnclassifiedReads}, minimumReadLength={self.minimumReadLength}, kraken2Database={self.kraken2Database}, kronaDatabase={self.kronaDatabase})"
+        return f"CreateMetagenomicsRunInput(dataType={self.dataType}, samples={self.samples}, runName={self.runName}, trim={self.trim}, threads={self.threads}, threadsTotal={self.threadsTotal}, removeHumanReads={self.removeHumanReads}, removeUnclassifiedReads={self.removeUnclassifiedReads}, minimumReadLength={self.minimumReadLength}, kraken2Database={self.kraken2Database}, kronaDatabase={self.kronaDatabase}, diamondDatabase={self.diamondDatabase}, diamond={self.diamond}, denovoAssembly={self.denovoAssembly}, taxdump={self.taxdump}, assemblySummary={self.assemblySummary}, taxidToFamily={self.taxidToFamily})"
 
 
 class CreateMetagenomicsRunUseCase:
@@ -64,6 +77,8 @@ class CreateMetagenomicsRunUseCase:
         logger.debug(
             f"Starting metagenomics with parameters: {metagenomics_parameters}"
         )
+
+        self.validate_metagenomics_parameters(metagenomics_parameters)
 
         run = Run(
             name=metagenomics_parameters.runName,
@@ -79,6 +94,13 @@ class CreateMetagenomicsRunUseCase:
                 minimumReadLength=metagenomics_parameters.minimumReadLength,
                 kraken2Database=metagenomics_parameters.kraken2Database,
                 kronaDatabase=metagenomics_parameters.kronaDatabase,
+                # Parameters for the diamond pipeline
+                diamondDatabase=metagenomics_parameters.diamondDatabase,
+                diamond=metagenomics_parameters.diamond,
+                denovoAssembly=metagenomics_parameters.denovoAssembly,
+                taxdump=metagenomics_parameters.taxdump,
+                assemblySummary=metagenomics_parameters.assemblySummary,
+                taxidToFamily=metagenomics_parameters.taxidToFamily,
             ),
             samples=[
                 Sample(name=sample.name, sampleLib=sample.barcode)
@@ -97,3 +119,13 @@ class CreateMetagenomicsRunUseCase:
             raise TaskExecutionError(
                 f"Failed to start metagenomics: {e}", "TASK_START_FAILED"
             )
+
+    def validate_metagenomics_parameters(self, metagenomics_parameters: CreateMetagenomicsRunInput):
+        #If diamond is enabled, validate the diamond parameters
+        if metagenomics_parameters.diamond:
+            if metagenomics_parameters.diamondDatabase is None:
+                raise ParameterValidationError(f"Diamond database is required")
+            if metagenomics_parameters.taxdump is None:
+                raise ParameterValidationError(f"Taxdump is required")
+            if metagenomics_parameters.assemblySummary is None:
+                raise ParameterValidationError(f"Assembly summary is required")
