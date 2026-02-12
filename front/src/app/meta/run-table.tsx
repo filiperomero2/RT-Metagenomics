@@ -36,7 +36,7 @@ export function RunTable() {
     refetchInterval: shouldRefetch ? 2000 : 0,
     queryFn: async () => {
       const { data } = await api.get<MetaGenomicRun[]>("/v1/metagenomics");
-      // setShouldRefetch(data.some((item) => loadingStates.includes(item.state)));
+      setShouldRefetch(data.some((item) => loadingStates.includes(item.state)));
       return data;
     },
   });

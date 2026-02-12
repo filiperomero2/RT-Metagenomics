@@ -1,13 +1,7 @@
 import { MetaGenomicRun } from "@/types/meta-genomic-run";
 import { cn } from "@/utils/cn";
 import { Spinner } from "@heroui/react";
-import {
-  Ban,
-  CircleCheck,
-  CircleEllipsis,
-  CircleX,
-  Square
-} from "lucide-react";
+import { CircleCheck, CircleEllipsis, CircleX, Square } from "lucide-react";
 import { ReactNode } from "react";
 
 const iconColors: Record<MetaGenomicRun["state"], string> = {

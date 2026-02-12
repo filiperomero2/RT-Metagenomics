@@ -13,7 +13,7 @@ import {
   Tooltip,
 } from "chart.js";
 import { ChartNoAxesColumnIncreasing } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Bar } from "react-chartjs-2";
 import { ChartProps } from "./types";
 
@@ -37,7 +37,11 @@ export function BarChart({ title, dataSets, legend, isLoading }: ChartProps) {
     data: dts.data.map((v) => (log ? Number(Math.log10(v).toFixed(2)) : v)),
   }));
 
-  const hasValues = (dataSets?.map(item => item.data).flat().filter(Boolean).length ?? 0) > 0;
+  const hasValues =
+    (dataSets
+      ?.map((item) => item.data)
+      .flat()
+      .filter(Boolean).length ?? 0) > 0;
 
   return (
     <Accordion
