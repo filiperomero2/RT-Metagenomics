@@ -1,23 +1,15 @@
 "use client";
 
 import {
-  Button,
-  Dropdown,
-  DropdownItem,
-  DropdownMenu,
-  DropdownTrigger,
   Link,
   Navbar,
   NavbarBrand,
   NavbarContent,
   NavbarItem,
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
 } from "@heroui/react";
 import { usePathname } from "next/navigation";
 import { ThemeSwitcher } from "../state-components/theme-switcher";
-import { Settings } from "lucide-react";
+import { ChartPie, Info, Settings } from "lucide-react";
 
 export function Header() {
   const path = usePathname();
@@ -34,36 +26,36 @@ export function Header() {
         </NavbarBrand>
 
         <NavbarItem isActive={path === "/meta"}>
-          <Link color="foreground" href="/meta">
+          <Link
+            color="foreground"
+            href="/meta"
+            className="flex items-center gap-2"
+          >
+            <ChartPie size={18} />
             Meta
           </Link>
         </NavbarItem>
         <NavbarItem isActive={path === "/about"}>
-          <Link color="foreground" href="/about">
+          <Link
+            color="foreground"
+            href="/about"
+            className="flex items-center gap-2"
+          >
+            <Info size={18} />
             About
           </Link>
         </NavbarItem>
-
-        <Dropdown placement="bottom-end" showArrow>
-          <NavbarItem>
-            <DropdownTrigger>
-              <Button
-                disableRipple
-                className="bg-transparent p-0 data-[hover=true]:bg-transparent"
-                radius="sm"
-                variant="light"
-                isIconOnly
-              >
-                <Settings />
-              </Button>
-            </DropdownTrigger>
-          </NavbarItem>
-          <DropdownMenu aria-label="Settings" className="px-4 py-3">
-            <DropdownItem key={"theme-switcher"} isReadOnly>
-              <ThemeSwitcher />
-            </DropdownItem>
-          </DropdownMenu>
-        </Dropdown>
+        <NavbarItem isActive={path === "/settings"}>
+          <Link
+            color="foreground"
+            href="/settings"
+            className="flex items-center gap-2"
+          >
+            <Settings size={18} />
+            Settings
+          </Link>
+        </NavbarItem>
+        <ThemeSwitcher />
       </NavbarContent>
     </Navbar>
   );

@@ -26,8 +26,6 @@ export const ThemeSwitcher = () => {
       onValueChange={toggle}
       startContent={<SunIcon />}
       endContent={<MoonIcon />}
-    >
-      Toggle theme
-    </Switch>
+    />
   );
 };

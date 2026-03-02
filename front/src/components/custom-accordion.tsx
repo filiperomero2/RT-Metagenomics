@@ -1,14 +1,8 @@
+import { cn } from "@/utils/cn";
 import { Button, Skeleton } from "@heroui/react";
 import { AnimatePresence, motion } from "framer-motion";
-import {
-  CheckCircleIcon,
-  CheckIcon,
-  ChevronRight,
-  Maximize,
-  Minimize,
-} from "lucide-react";
+import { ChevronRight, Maximize, Minimize } from "lucide-react";
 import { useEffect, useId, useState } from "react";
-import { cn } from "@/utils/cn";
 import { ShowComponent } from "./show-components";
 import { LoadingFull } from "./state-components/loading-full";
 
@@ -44,10 +38,10 @@ export function Accordion({
   const [isFullScreen, setFullScreen] = useState(false);
 
   useEffect(() => {
-    document.addEventListener("fullscreenchange", (e) => {
+    document.addEventListener("fullscreenchange", () => {
       setFullScreen(document.fullscreenElement?.id === uniqueId);
     });
-    return () => document.removeEventListener("fullscreenchange", () => { });
+    return () => document.removeEventListener("fullscreenchange", () => {});
   }, []);
 
   const handleFullScreen = () => {
@@ -66,7 +60,7 @@ export function Accordion({
     >
       <div
         className={cn(
-          "bg-content2/60 text-content2-foreground sticky top-0 z-10 mx-auto flex w-full  items-center justify-between gap-2 overflow-clip rounded-xl px-4 py-1.5 shadow backdrop-blur-2xl",
+          "bg-content2/60 text-content2-foreground sticky top-0 z-10 mx-auto flex w-full items-center justify-between gap-2 overflow-clip rounded-xl px-4 py-1.5 shadow backdrop-blur-2xl",
           isFullScreen && "rounded-t-none",
           {
             "border-warning border-l-2": stateIndicator === "warning",
@@ -76,7 +70,6 @@ export function Accordion({
         )}
       >
         <div className="z-10 flex w-full items-center">
-
           {toggle && !isFullScreen && (
             <motion.div animate={{ rotateZ: show ? 90 : 0 }}>
               <Button isIconOnly variant="light" onPress={toggle}>
@@ -85,9 +78,7 @@ export function Accordion({
             </motion.div>
           )}
 
-          <div className="flex flex-1 items-center">
-            {title}
-          </div>
+          <div className="flex flex-1 items-center">{title}</div>
 
           <div className="relative flex items-center gap-1">
             {actions?.map((action) => (

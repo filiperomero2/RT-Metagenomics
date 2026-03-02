@@ -16,10 +16,14 @@ import {
   DrawerFooter,
   DrawerHeader,
   SelectItem,
-  Tooltip,
 } from "@heroui/react";
 import { useMutation } from "@tanstack/react-query";
-import { FormProvider, useFieldArray, useForm, useWatch } from "react-hook-form";
+import {
+  FormProvider,
+  useFieldArray,
+  useForm,
+  useWatch,
+} from "react-hook-form";
 import { useLocalStorage } from "usehooks-ts";
 
 import { queryKeys } from "@/utils/query-keys-factory";
@@ -27,9 +31,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
 import { Autocomplete } from "@/components/form/autocomplete";
+import {
+  META_GENOMIC_FORM_STORAGE_KEY,
+  SETTINGS_STORAGE_KEY,
+} from "@/constants/local-storage";
 import { useModal } from "@/hooks/use-modal";
-import { Cog, Database, Dna, Plus, X } from "lucide-react";
 import { cn } from "@/utils/cn";
+import { Cog, Database, Dna, Info, Plus, X } from "lucide-react";
+import Link from "next/link";
+import { SettingsData } from "../settings/page";
 
 const schema = z.object({
   path: z.string().min(1, { message: "Path is required" }),
@@ -54,7 +64,13 @@ const schema = z.object({
   samples: z
     .array(
       z.object({
-        name: z.string().min(1, "").regex(/^[a-zA-Z_-]+$/, "Only letters, underscores, and hyphens are allowed"),
+        name: z
+          .string()
+          .min(1, "")
+          .regex(
+            /^[a-zA-Z_-]+$/,
+            "Only letters, underscores, and hyphens are allowed",
+          ),
         barcode: z.string().min(1, ""),
         isNegativeControl: z.boolean().default(false),
       }),
@@ -72,9 +88,16 @@ const barcodes = Array.from({ length: 96 })
 export function NewRunForm() {
   const { modal, handleOpen, handleClose } = useModal();
   const [storedForm, setStoredForm] = useLocalStorage<MetaGenomic | undefined>(
-    "meta-genomic-form",
+    META_GENOMIC_FORM_STORAGE_KEY,
     undefined,
     { initializeWithValue: false },
+  );
+  const [globalSettings] = useLocalStorage<SettingsData | undefined>(
+    SETTINGS_STORAGE_KEY,
+    undefined,
+    {
+      initializeWithValue: false,
+    },
   );
 
   const { mutateAsync, isPending } = useMutation({
@@ -103,8 +126,10 @@ export function NewRunForm() {
       removeHumanReads: false,
       removeUnclassifiedReads: false,
       minimumReadLength: 50,
-      kraken2Database: storedForm?.kraken2Database ?? "",
-      kronaDatabase: storedForm?.kronaDatabase ?? "",
+      kraken2Database:
+        globalSettings?.databases?.kraken2 ?? storedForm?.kraken2Database ?? "",
+      kronaDatabase:
+        globalSettings?.databases?.krona ?? storedForm?.kronaDatabase ?? "",
       samples: Array.from({ length: 3 })
         .fill(0)
         .map((_, i) => ({ name: "", barcode: "", isNegativeControl: false })),
@@ -144,13 +169,15 @@ export function NewRunForm() {
                   name="path"
                   type="text"
                   label="Path"
-                  className="col-span-2"
+                  className="col-span-3"
+                  placeholder="/path/to/data"
                 />
                 <Input
                   name="runName"
                   type="text"
                   label="Run Name"
                   className="col-span-2"
+                  placeholder="Name of the run"
                 />
                 <Select name="dataType" label="Data Type">
                   <SelectItem key="illumina">Illumina</SelectItem>
@@ -210,16 +237,33 @@ export function NewRunForm() {
                         <p className="flex items-center gap-2">Databases</p>
                       }
                     >
-                      <Input
-                        name="kraken2Database"
-                        label="Kraken2 Database"
-                        className="col-span-2"
-                      />
-                      <Input
-                        name="kronaDatabase"
-                        label="Krona Database"
-                        className="col-span-2"
-                      />
+                      <div className="flex flex-col">
+                        <Input
+                          name="kraken2Database"
+                          label="Kraken2 Database"
+                          className="col-span-2"
+                          isReadOnly
+                        />
+                        <Input
+                          name="kronaDatabase"
+                          label="Krona Database"
+                          className="col-span-2"
+                          isReadOnly
+                        />
+                        <div className="bg-primary-50 text-primary-700 flex items-center gap-2 rounded-lg p-3 text-sm">
+                          <Info size={18} className="shrink-0" />
+                          <p>
+                            To change database paths, go to the{" "}
+                            <Link
+                              href="/settings"
+                              className="font-bold underline underline-offset-2"
+                            >
+                              Settings
+                            </Link>{" "}
+                            page.
+                          </p>
+                        </div>
+                      </div>
                     </AccordionItem>
 
                     <AccordionItem
@@ -284,12 +328,26 @@ export function NewRunForm() {
   );
 }
 
-function Sample({ index, canDelete, deleteSample }: { index: number; canDelete: boolean; deleteSample: () => void }) {
+function Sample({
+  index,
+  canDelete,
+  deleteSample,
+}: {
+  index: number;
+  canDelete: boolean;
+  deleteSample: () => void;
+}) {
   const isNegative = useWatch({ name: `samples.${index}.isNegativeControl` });
   const color = "default";
 
-  return <div className={cn("flex items-start justify-center gap-2 p-1", isNegative && "ring ring-secondary/60 rounded-lg bg-secondary/15")}>
-    {/* <Tooltip content="Negative Control" showArrow placement="left">
+  return (
+    <div
+      className={cn(
+        "flex items-start justify-center gap-2 p-1",
+        isNegative && "ring-secondary/60 bg-secondary/15 rounded-lg ring",
+      )}
+    >
+      {/* <Tooltip content="Negative Control" showArrow placement="left">
       <div className="h-full">
         <CheckBox
           color="secondary"
@@ -298,43 +356,38 @@ function Sample({ index, canDelete, deleteSample }: { index: number; canDelete: 
         />
       </div>
     </Tooltip> */}
-    <Input
-      color={color}
-      name={`samples.${index}.name`}
-      label={`Sample ${index + 1}`}
-      className="pb-0"
-    />
-    <Autocomplete
-      color={color}
-      name={`samples.${index}.barcode`}
-      label={`Barcode`}
-      className="flex-1/4 pb-0"
-      defaultItems={barcodes}
-    >
-      {(item) => (
-        <AutocompleteItem key={item.key}>
-          {item.label}
-        </AutocompleteItem>
-      )}
-    </Autocomplete>
-
-    {canDelete && (
-      <Button
-        color="default"
-        variant="solid"
-        isIconOnly
-        size="lg"
-        aria-label="Remove Sample"
-        type="button"
-        className="flex items-center justify-center rounded-lg bg-default-100"
-        onPress={deleteSample}
+      <Input
+        color={color}
+        name={`samples.${index}.name`}
+        label={`Sample ${index + 1}`}
+        className="pb-0"
+      />
+      <Autocomplete
+        color={color}
+        name={`samples.${index}.barcode`}
+        label={`Barcode`}
+        className="flex-1/4 pb-0"
+        defaultItems={barcodes}
       >
-        <X
-          size={20}
-          className="text-danger-500"
+        {(item) => (
+          <AutocompleteItem key={item.key}>{item.label}</AutocompleteItem>
+        )}
+      </Autocomplete>
+
+      {canDelete && (
+        <Button
+          color="default"
+          variant="solid"
+          isIconOnly
+          size="lg"
+          aria-label="Remove Sample"
           type="button"
-        />
-      </Button>
-    )}
-  </div>
+          className="bg-default-100 flex items-center justify-center rounded-lg"
+          onPress={deleteSample}
+        >
+          <X size={20} className="text-danger-500" type="button" />
+        </Button>
+      )}
+    </div>
+  );
 }
