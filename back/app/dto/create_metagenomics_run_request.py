@@ -19,3 +19,8 @@ class CreateMetagenomicsRunRequest(BaseModel):
     minimumReadLength: int
     kraken2Database: str
     kronaDatabase: str
+    diamondDatabase: str
+    diamond: bool
+    taxdump: str
+    assemblySummary: str
+    taxidToFamily: str

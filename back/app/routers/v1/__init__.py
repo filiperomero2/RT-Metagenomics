@@ -44,9 +44,9 @@ async def start_metagenomics(
         kraken2Database=metagenomics_run.kraken2Database,
         kronaDatabase=metagenomics_run.kronaDatabase,
         # Parameters for the diamond pipeline
-        diamondDatabase=metagenomics_run.diamond_database,
+        diamondDatabase=metagenomics_run.diamondDatabase,
         diamond=metagenomics_run.diamond,
-        denovoAssembly=metagenomics_run.denovoAssembly,
+        denovoAssembly=False,
         taxdump=metagenomics_run.taxdump,
         assemblySummary=metagenomics_run.assemblySummary,
         taxidToFamily=metagenomics_run.taxidToFamily,

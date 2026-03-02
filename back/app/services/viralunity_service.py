@@ -97,4 +97,11 @@ class ViralUnityService:
             "create_config_only": False,
             "minimum_read_length": config.service.default_minimum_read_length,
             "trim": run.parameters.trim,
+            # Parameters for the diamond pipeline
+            "diamond_database": run.parameters.diamondDatabase,
+            "diamond": run.parameters.diamond,
+            "denovo_assembly": run.parameters.denovoAssembly,
+            "taxdump": run.parameters.taxdump,
+            "assembly_summary": run.parameters.assemblySummary,
+            "taxid_to_family": run.parameters.taxidToFamily,
         }
