@@ -22,12 +22,12 @@ class RunParameters(SQLModel, table=True):
     removeUnclassifiedReads: bool = Field(default=None)
     minimumReadLength: int = Field(default=None)
     # Parameters for the diamond pipeline
-    diamondDatabase: str = Field(default=None)
-    diamond: bool = Field(default=None)
+    diamondDatabase: str | None = Field(default=None)
+    diamond: bool | None = Field(default=None)
     denovoAssembly: bool = Field(default=None)
-    taxdump: str = Field(default=None)
-    assemblySummary: str = Field(default=None)
-    taxidToFamily: str = Field(default=None)
+    taxdump: str | None = Field(default=None)
+    assemblySummary: str | None = Field(default=None)
+    taxidToFamily: str | None = Field(default=None)
 
     # Relationships
     run: "Run" = Relationship(back_populates="parameters")

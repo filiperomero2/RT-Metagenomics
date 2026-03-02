@@ -19,8 +19,9 @@ class CreateMetagenomicsRunRequest(BaseModel):
     minimumReadLength: int
     kraken2Database: str
     kronaDatabase: str
-    diamondDatabase: str
-    diamond: bool
-    taxdump: str
-    assemblySummary: str
-    taxidToFamily: str
+    # Parameters for the diamond pipeline
+    diamondDatabase: str | None = None
+    diamond: bool | None = None
+    taxdump: str | None = None
+    assemblySummary: str | None = None
+    taxidToFamily: str | None = None
