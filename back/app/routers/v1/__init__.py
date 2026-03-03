@@ -1,4 +1,5 @@
-from fastapi import APIRouter
+from typing import Annotated, Optional
+from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import FileResponse, StreamingResponse
 from dto.health_check_response import HealthCheckResponse
 from usecases.create_metagenomic_usecase import CreateMetagenomicsRunInput, CreateMetagenomicsSampleInput
@@ -11,10 +12,62 @@ from infra.dependencies import (
     GetMetagenomicsMetricsUseCaseDependency,
     ExportResultUseCaseDependency,
     StartMetagenomicsUseCaseDependency,
-    StopMetagenomicsUseCaseDependency
+    StopMetagenomicsUseCaseDependency,
+    UpdateKraken2DbUseCaseDependency,
+    UpdateKronaDbUseCaseDependency
 )
+from config import config
 
 router = APIRouter(prefix='/v1')
+
+
+@router.post("/databases/kraken2/install", response_model=dict)
+async def install_kraken2_database(
+    usecase: UpdateKraken2DbUseCaseDependency
+):
+    return await install_kraken2_database(config.kraken2.default_download_url, usecase)
+
+@router.post("/databases/kraken2/install", response_model=dict)
+async def install_kraken2_database(
+    url: str,
+    usecase: UpdateKraken2DbUseCaseDependency
+):
+    """
+    Download and install the viral Kraken2 database FROM URL and return 200 if successful.
+    """
+    try:
+        result = usecase.execute(url)
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "error": "Kraken2InstallError",
+                "message": str(exc),
+            },
+        ) from exc
+
+    return {"status": "success"}
+
+
+@router.post("/databases/krona/update", response_model=dict)
+async def update_krona_database(usecase: UpdateKronaDbUseCaseDependency):
+    """
+    Update the Krona taxonomy database using 'ktUpdateTaxonomy.sh' and
+    return 200 if successful.
+    """
+    try:
+        result = usecase.execute()
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "error": "KronaUpdateError",
+                "message": str(exc),
+            },
+        ) from exc
+
+    return {"status": "success"}
+
 
 @router.post("/metagenomics/run", response_model=dict)
 async def start_metagenomics(

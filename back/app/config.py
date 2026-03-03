@@ -27,6 +27,15 @@ class ServiceConfig:
     hash_algorithm: str = "sha256"
 
 @dataclass
+class KronaConfig:
+    default_path: str = "./krona_database/taxonomy"
+
+@dataclass
+class Kraken2Config:
+    default_path: str = "./kraken2_database/viral"
+    default_download_url: str = "https://genome-idx.s3.amazonaws.com/kraken/k2_standard_20250301.tar.gz"
+
+@dataclass
 class APIConfig:
     # CORS settings
     allow_origins: list = None
@@ -59,6 +68,8 @@ class AppConfig:
     service: ServiceConfig
     api: APIConfig
     logging: LoggingConfig
+    krona: KronaConfig
+    kraken2: Kraken2Config
     
     def __post_init__(self):
         pass
@@ -67,6 +78,8 @@ def load_config() -> AppConfig:
     """Load configuration from environment variables and defaults."""
     # Create default configs
     database_config = DatabaseConfig()
+    krona_config = KronaConfig()
+    kraken2_config = Kraken2Config()
     service_config = ServiceConfig()
     api_config = APIConfig()
     logging_config = LoggingConfig()
@@ -74,6 +87,13 @@ def load_config() -> AppConfig:
     # Database configuration
     database_config.url = os.getenv("DATABASE_URL", database_config.url)
     database_config.echo = os.getenv("DATABASE_ECHO", "false").lower() == "true"
+
+    # Krona configuration
+    krona_config.default_path = os.getenv("KRONA_DATABASE_PATH", krona_config.default_path)
+
+    # Kraken2 configuration
+    kraken2_config.default_path = os.getenv("KRAKEN2_DATABASE_PATH", kraken2_config.default_path)
+    kraken2_config.default_download_url = os.getenv("DEFAULT_KRAKEN2_DATABASE_DOWNLOAD_URL", kraken2_config.default_download_url)
     
     # Service configuration
     service_config.polling_interval = float(os.getenv("POLLING_INTERVAL", service_config.polling_interval))
@@ -94,6 +114,8 @@ def load_config() -> AppConfig:
         service=service_config,
         api=api_config,
         logging=logging_config,
+        krona=krona_config,
+        kraken2=kraken2_config,
     )
 
 # Global configuration instance
