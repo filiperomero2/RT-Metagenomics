@@ -1,4 +1,3 @@
-"use client";
 import { CheckBox } from "@/components/form/checkbox";
 import { Input } from "@/components/form/input";
 import { NumberInput } from "@/components/form/number-input";
@@ -37,9 +36,9 @@ import {
 } from "@/constants/local-storage";
 import { useModal } from "@/hooks/use-modal";
 import { cn } from "@/utils/cn";
-import { Cog, Database, Dna, Info, Plus, X } from "lucide-react";
-import Link from "next/link";
-import { SettingsData } from "../settings/page";
+import { Cog, Database, Dna, File, Info, Plus, X } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { SettingsData } from "@/routes/settings";
 
 const schema = z.object({
   path: z.string().min(1, { message: "Path is required" }),
@@ -171,6 +170,63 @@ export function NewRunForm() {
                   label="Path"
                   className="col-span-3"
                   placeholder="/path/to/data"
+                  endContent={
+                    <Button
+                      isIconOnly
+                      size="sm"
+                      onPress={async () => {
+                        try {
+                          let path: string | undefined;
+
+                          // Try native Neutralino dialog with timeout
+                          // (hangs on WSL, so we cap at 500ms)
+                          try {
+                            const result = await Promise.race([
+                              Neutralino.os.showFolderDialog(
+                                "Select Data Folder",
+                              ),
+                              new Promise<undefined>((_, reject) =>
+                                setTimeout(
+                                  () => reject(new Error("timeout")),
+                                  500,
+                                ),
+                              ),
+                            ]);
+                            if (result) path = result;
+                          } catch {
+                            // native dialog unavailable or timed out
+                          }
+
+                          // Fallback for WSL/Linux: use zenity
+                          if (!path) {
+                            try {
+                              const result = await Neutralino.os.execCommand(
+                                "zenity --file-selection --directory --title='Select Data Folder' 2>/dev/null",
+                              );
+                              if (
+                                result.exitCode === 0 &&
+                                result.stdOut.trim()
+                              ) {
+                                path = result.stdOut.trim();
+                              }
+                            } catch {
+                              // zenity not available
+                            }
+                          }
+
+                          if (path) {
+                            form.setValue("path", path, {
+                              shouldValidate: true,
+                            });
+                          }
+                        } catch {
+                          // Neutralino unavailable
+                        }
+                      }}
+                    >
+                      <File size={16} />
+                    </Button>
+                  }
                 />
                 <Input
                   name="runName"
@@ -255,7 +311,7 @@ export function NewRunForm() {
                           <p>
                             To change database paths, go to the{" "}
                             <Link
-                              href="/settings"
+                              to="/settings"
                               className="font-bold underline underline-offset-2"
                             >
                               Settings

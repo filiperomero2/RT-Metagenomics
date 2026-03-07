@@ -459,8 +459,6 @@ declare global {
 		/** An array of custom methods */
 		NL_CMETHODS: string[];
 	}
-	/** Neutralino global object for custom methods **/
-	const Neutralino: any;
 }
 
 declare namespace custom {

@@ -1,4 +1,10 @@
-export default function AboutPage() {
+import { createFileRoute } from "@tanstack/react-router";
+
+export const Route = createFileRoute("/about")({
+  component: AboutPage,
+});
+
+function AboutPage() {
   return (
     <div className="from-background to-content1 flex h-[calc(100vh-65px)] flex-col items-center justify-center bg-gradient-to-b p-8">
       <div className="bg-content1 mx-auto max-w-4xl space-y-6 rounded-lg p-8 shadow-lg">

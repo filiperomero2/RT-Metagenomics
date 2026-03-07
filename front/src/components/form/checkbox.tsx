@@ -1,5 +1,3 @@
-"use client";
-
 import { cn } from "@/utils/cn";
 import { type CheckboxProps, Checkbox as CheckBoxUI } from "@heroui/react";
 import { useController } from "react-hook-form";

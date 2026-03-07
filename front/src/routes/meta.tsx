@@ -1,11 +1,14 @@
-"use client";
+import { createFileRoute } from "@tanstack/react-router";
+import { SampleComparator } from "@/components/meta/sample-comparator";
+import { NewRunForm } from "@/components/meta/new-run-form";
+import { RunTable } from "@/components/meta/run-table";
+import { RunVisualizer } from "@/components/meta/run-visualizer";
 
-import { SampleComparator } from "./sample-comparator";
-import { NewRunForm } from "./new-run-form";
-import { RunTable } from "./run-table";
-import { RunVisualizer } from "./run-visualizer";
+export const Route = createFileRoute("/meta")({
+  component: Meta,
+});
 
-export default function Meta() {
+function Meta() {
   return (
     <div className="h-[calc(100vh-65px)] p-4">
       <RunVisualizer />

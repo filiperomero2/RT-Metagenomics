@@ -1,5 +1,4 @@
-"use client";
-
+import { createFileRoute } from "@tanstack/react-router";
 import { useEffect } from "react";
 import {
   Card,
@@ -48,7 +47,6 @@ const DEFAULT_SETTINGS: SettingsData = {
 };
 
 function loadSettings(): SettingsData {
-  if (typeof window === "undefined") return DEFAULT_SETTINGS;
   try {
     const stored = localStorage.getItem(SETTINGS_STORAGE_KEY);
     if (stored) {
@@ -76,7 +74,11 @@ function saveSettings(settings: SettingsData) {
   localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
 }
 
-export default function SettingsPage() {
+export const Route = createFileRoute("/settings")({
+  component: SettingsPage,
+});
+
+function SettingsPage() {
   const methods = useForm<SettingsData>({
     defaultValues: DEFAULT_SETTINGS,
   });

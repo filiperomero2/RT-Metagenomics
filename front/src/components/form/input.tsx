@@ -1,5 +1,3 @@
-"use client";
-
 import { cn } from "@/utils/cn";
 import { type InputProps, Input as InputUI } from "@heroui/react";
 import { useController } from "react-hook-form";

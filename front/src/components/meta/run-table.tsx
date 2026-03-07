@@ -1,4 +1,4 @@
-"use client";
+
 
 import { IconState } from "@/components/icon/state-icon";
 import { ErrorFull } from "@/components/state-components/error-full";

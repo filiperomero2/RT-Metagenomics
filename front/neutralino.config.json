@@ -6,13 +6,16 @@
   "documentRoot": "/resources/",
   "url": "/",
   "enableServer": true,
-  "enableNativeAPI": false,
+  "enableNativeAPI": true,
   "tokenSecurity": "none",
   "logging": {
     "enabled": true,
     "writeToLogFile": true
   },
-  "nativeAllowList": [],
+  "nativeAllowList": [
+    "os.showFolderDialog",
+    "os.execCommand"
+  ],
   "globalVariables": {},
   "modes": {
     "window": {
@@ -23,7 +26,8 @@
       "minHeight": 600,
       "center": true,
       "enableInspector": true
-    }
+    },
+    "browser": {}
   },
   "cli": {
     "binaryName": "rt-metagenomics",
