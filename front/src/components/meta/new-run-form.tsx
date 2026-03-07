@@ -176,51 +176,17 @@ export function NewRunForm() {
                       size="sm"
                       onPress={async () => {
                         try {
-                          let path: string | undefined;
-
-                          // Try native Neutralino dialog with timeout
-                          // (hangs on WSL, so we cap at 500ms)
-                          try {
-                            const result = await Promise.race([
-                              Neutralino.os.showFolderDialog(
-                                "Select Data Folder",
-                              ),
-                              new Promise<undefined>((_, reject) =>
-                                setTimeout(
-                                  () => reject(new Error("timeout")),
-                                  500,
-                                ),
-                              ),
-                            ]);
-                            if (result) path = result;
-                          } catch {
-                            // native dialog unavailable or timed out
-                          }
-
-                          // Fallback for WSL/Linux: use zenity
-                          if (!path) {
-                            try {
-                              const result = await Neutralino.os.execCommand(
-                                "zenity --file-selection --directory --title='Select Data Folder' 2>/dev/null",
-                              );
-                              if (
-                                result.exitCode === 0 &&
-                                result.stdOut.trim()
-                              ) {
-                                path = result.stdOut.trim();
-                              }
-                            } catch {
-                              // zenity not available
-                            }
-                          }
-
+                          const path =
+                            await Neutralino.os.showFolderDialog(
+                              "Select Data Folder",
+                            );
                           if (path) {
                             form.setValue("path", path, {
                               shouldValidate: true,
                             });
                           }
                         } catch {
-                          // Neutralino unavailable
+                          // dialog cancelled or Neutralino unavailable
                         }
                       }}
                     >
