@@ -20,6 +20,11 @@
 # production
 /build
 
+# neutralino
+/dist/
+/resources/__neutralino_globals.js
+/bin/
+
 # misc
 .DS_Store
 *.pem

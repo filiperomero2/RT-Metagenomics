@@ -1,0 +1,35 @@
+{
+  "applicationId": "dev.rtmetagenomics.app",
+  "version": "0.1.0",
+  "defaultMode": "window",
+  "port": 0,
+  "documentRoot": "/resources/",
+  "url": "/",
+  "enableServer": true,
+  "enableNativeAPI": false,
+  "tokenSecurity": "none",
+  "logging": {
+    "enabled": true,
+    "writeToLogFile": true
+  },
+  "nativeAllowList": [],
+  "globalVariables": {},
+  "modes": {
+    "window": {
+      "title": "RT-Metagenomics",
+      "width": 1280,
+      "height": 800,
+      "minWidth": 800,
+      "minHeight": 600,
+      "center": true,
+      "enableInspector": true
+    }
+  },
+  "cli": {
+    "binaryName": "rt-metagenomics",
+    "resourcesPath": "/resources/",
+    "clientLibrary": "/resources/__neutralino_globals.js",
+    "binaryVersion": "6.5.0",
+    "clientVersion": "6.5.0"
+  }
+}

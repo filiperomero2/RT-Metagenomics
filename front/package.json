@@ -9,7 +9,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "prettier": "prettier src --write"
+    "prettier": "prettier src --write",
+    "desktop:dev": "concurrently \"next dev\" \"sleep 3 && neu run -- --url=http://localhost:3000\"",
+    "desktop:build": "next build && cp -r out/* resources/ && neu build",
+    "desktop:start": "next build && cp -r out/* resources/ && neu run",
+    "desktop:package": "next build && cp -r out/* resources/ && neu build --release"
   },
   "dependencies": {
     "@heroui/react": "2.8.2",
@@ -39,6 +43,7 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@neutralinojs/neu": "^11.2.0",
     "@eslint/eslintrc": "^3.3.1",
     "@types/node": "^20.19.9",
     "@types/react": "^19.1.9",
