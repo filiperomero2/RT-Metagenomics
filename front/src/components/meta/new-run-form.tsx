@@ -170,29 +170,7 @@ export function NewRunForm() {
                   label="Path"
                   className="col-span-3"
                   placeholder="/path/to/data"
-                  endContent={
-                    <Button
-                      isIconOnly
-                      size="sm"
-                      onPress={async () => {
-                        try {
-                          const path =
-                            await Neutralino.os.showFolderDialog(
-                              "Select Data Folder",
-                            );
-                          if (path) {
-                            form.setValue("path", path, {
-                              shouldValidate: true,
-                            });
-                          }
-                        } catch {
-                          // dialog cancelled or Neutralino unavailable
-                        }
-                      }}
-                    >
-                      <File size={16} />
-                    </Button>
-                  }
+                  isFolderSelector
                 />
                 <Input
                   name="runName"

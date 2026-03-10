@@ -13,13 +13,18 @@
     "writeToLogFile": true
   },
   "nativeAllowList": [
+    "app.exit",
     "os.showFolderDialog",
-    "os.execCommand"
+    "os.execCommand",
+    "os.spawnProcess",
+    "os.getSpawnedProcesses",
+    "os.updateSpawnedProcess"
   ],
   "globalVariables": {},
   "modes": {
     "window": {
       "title": "RT-Metagenomics",
+      "icon": "resources/logo.png",
       "width": 1280,
       "height": 800,
       "minWidth": 800,

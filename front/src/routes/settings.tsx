@@ -9,12 +9,20 @@ import {
   Accordion,
   AccordionItem,
 } from "@heroui/react";
-import { Save, RotateCcw, Database, Settings2, Timer } from "lucide-react";
+import {
+  Save,
+  RotateCcw,
+  Database,
+  Settings2,
+  Timer,
+  Palette,
+} from "lucide-react";
 import { motion } from "framer-motion";
 import { useForm, FormProvider } from "react-hook-form";
 import { Input } from "@/components/form/input";
 import { NumberInput } from "@/components/form/number-input";
 import { SETTINGS_STORAGE_KEY } from "@/constants/local-storage";
+import { ThemeSwitcher } from "@/components/state-components/theme-switcher";
 
 interface DatabasePaths {
   krona: string;
@@ -152,26 +160,41 @@ function SettingsPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <Card shadow="sm">
-            <CardHeader className="flex items-center gap-3 px-6 pt-5 pb-0">
-              <Timer className="text-primary" size={20} />
-              <h2 className="text-foreground-800 text-xl font-semibold">
-                Intervals
-              </h2>
-            </CardHeader>
-            <CardBody className="px-6 py-5">
-              <NumberInput
-                name="polling_interval"
-                label="Polling Interval (seconds)"
-                description="How often the system checks for new data."
-              />
-              <NumberInput
-                name="iteration_interval"
-                label="Iteration Interval (seconds)"
-                description="Time between processing iterations."
-              />
-            </CardBody>
-          </Card>
+          <div className="space-y-4">
+            <Card shadow="sm">
+              <CardHeader className="flex items-center gap-3 px-6 pt-5 pb-0">
+                <Palette className="text-primary" size={20} />
+                <h2 className="text-foreground-800 text-xl font-semibold">
+                  Appearance
+                </h2>
+              </CardHeader>
+              <CardBody className="flex flex-row items-center justify-between px-6 py-5">
+                <span className="text-foreground-700 text-sm">Dark Mode</span>
+                <ThemeSwitcher />
+              </CardBody>
+            </Card>
+
+            <Card shadow="sm">
+              <CardHeader className="flex items-center gap-3 px-6 pt-5 pb-0">
+                <Timer className="text-primary" size={20} />
+                <h2 className="text-foreground-800 text-xl font-semibold">
+                  Intervals
+                </h2>
+              </CardHeader>
+              <CardBody className="px-6 py-5">
+                <NumberInput
+                  name="polling_interval"
+                  label="Polling Interval (seconds)"
+                  description="How often the system checks for new data."
+                />
+                <NumberInput
+                  name="iteration_interval"
+                  label="Iteration Interval (seconds)"
+                  description="Time between processing iterations."
+                />
+              </CardBody>
+            </Card>
+          </div>
 
           <Card shadow="sm">
             <CardHeader className="flex items-center gap-3 px-6 pt-5 pb-0">
@@ -199,6 +222,7 @@ function SettingsPage() {
                     name="databases.krona"
                     label="Database Path"
                     placeholder="/path/to/krona/db"
+                    isFolderSelector
                   />
                 </AccordionItem>
 
@@ -216,6 +240,7 @@ function SettingsPage() {
                     name="databases.kraken2"
                     label="Database Path"
                     placeholder="/path/to/kraken2/db"
+                    isFolderSelector
                   />
                 </AccordionItem>
 
@@ -233,16 +258,19 @@ function SettingsPage() {
                     name="databases.diamond.taxdump"
                     label="Taxdump Path"
                     placeholder="/path/to/diamond/taxdump"
+                    isFolderSelector
                   />
                   <Input
                     name="databases.diamond.assembly-summary"
                     label="Assembly Summary Path"
                     placeholder="/path/to/diamond/assembly-summary"
+                    isFolderSelector
                   />
                   <Input
                     name="databases.diamond.taxid-to-family"
                     label="Taxid to Family Path"
                     placeholder="/path/to/diamond/taxid-to-family"
+                    isFolderSelector
                   />
                 </AccordionItem>
               </Accordion>

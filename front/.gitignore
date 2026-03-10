@@ -13,7 +13,7 @@
 /build
 
 # neutralino
-/resources/__neutralino_globals.js
+/resources/**
 /bin/
 
 # tanstack router

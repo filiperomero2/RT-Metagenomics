@@ -10,7 +10,6 @@
     "lint": "eslint .",
     "prettier": "prettier src --write",
     "desktop:dev": "concurrently \"vite\" \"neu run -- --url=http://localhost:5173\"",
-    "desktop:dev:browser": "concurrently \"vite\" \"neu run --mode=browser -- --url=http://localhost:5173\"",
     "desktop:build": "tsc -b && vite build && cp -r dist/* resources/ && neu build",
     "desktop:start": "tsc -b && vite build && cp -r dist/* resources/ && neu run",
     "desktop:package": "tsc -b && vite build && cp -r dist/* resources/ && neu build --release"
@@ -42,7 +41,7 @@
   "devDependencies": {
     "@neutralinojs/neu": "^11.2.0",
     "@tailwindcss/vite": "^4.1.11",
-    "@tanstack/router-plugin": "^1.120.3",
+    "@tanstack/router-vite-plugin": "^1.166.6",
     "@types/react": "^19.1.9",
     "@types/react-dom": "^19.1.7",
     "@vitejs/plugin-react": "^4.5.2",

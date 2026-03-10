@@ -1,13 +1,7 @@
-import {
-  Link as HeroLink,
-  Navbar,
-  NavbarBrand,
-  NavbarContent,
-  NavbarItem,
-} from "@heroui/react";
+import { Navbar, NavbarBrand, NavbarContent, NavbarItem } from "@heroui/react";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { ThemeSwitcher } from "../state-components/theme-switcher";
 import { ChartPie, Info, Settings } from "lucide-react";
+import { BackendStatusButton } from "./backend-status-button";
 
 export function Header() {
   const path = useRouterState({ select: (s) => s.location.pathname });
@@ -24,19 +18,13 @@ export function Header() {
         </NavbarBrand>
 
         <NavbarItem isActive={path === "/meta"}>
-          <Link
-            to="/meta"
-            className="text-foreground flex items-center gap-2"
-          >
+          <Link to="/meta" className="text-foreground flex items-center gap-2">
             <ChartPie size={18} />
             Meta
           </Link>
         </NavbarItem>
         <NavbarItem isActive={path === "/about"}>
-          <Link
-            to="/about"
-            className="text-foreground flex items-center gap-2"
-          >
+          <Link to="/about" className="text-foreground flex items-center gap-2">
             <Info size={18} />
             About
           </Link>
@@ -50,7 +38,7 @@ export function Header() {
             Settings
           </Link>
         </NavbarItem>
-        <ThemeSwitcher />
+        <BackendStatusButton />
       </NavbarContent>
     </Navbar>
   );

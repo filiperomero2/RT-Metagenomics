@@ -1,7 +1,7 @@
 import { defineConfig, Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
-import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
+import { tanstackRouter } from "@tanstack/router-vite-plugin";
 import path from "path";
 import fs from "fs";
 
@@ -35,7 +35,14 @@ function neutralinoDev(): Plugin {
 }
 
 export default defineConfig({
-  plugins: [TanStackRouterVite(), react(), tailwindcss(), neutralinoDev()],
+  plugins: [
+    tanstackRouter({
+      target: "react",
+    }),
+    react(),
+    tailwindcss(),
+    neutralinoDev(),
+  ],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
