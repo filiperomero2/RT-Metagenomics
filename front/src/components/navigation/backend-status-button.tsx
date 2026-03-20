@@ -62,7 +62,18 @@ export function BackendStatusButton() {
     if (!window.NL_PORT) return;
     appendLog("[system] Stopping backend...");
 
-    // 1. Kill the spawned process via Neutralino
+    // 1. Kill the entire process group by PID (children + parent in one shot)
+    if (backendPid !== null) {
+      try {
+        await Neutralino.os.execCommand(
+          `kill -TERM -${backendPid} 2>/dev/null; kill -9 -${backendPid} 2>/dev/null`,
+        );
+      } catch {
+        /* already gone */
+      }
+    }
+
+    // 2. Kill the spawned process via Neutralino as backup
     if (spawnId !== null) {
       try {
         await Neutralino.os.updateSpawnedProcess(spawnId, "SIGKILL");
@@ -71,17 +82,13 @@ export function BackendStatusButton() {
       }
     }
 
-    // 2. Kill uvicorn and its children by PID (not process group)
-    if (backendPid !== null) {
-      try {
-        // pkill -P kills child processes, then kill the parent
-        await Neutralino.os.execCommand(
-          `pkill -9 -P ${backendPid} 2>/dev/null; kill -9 ${backendPid} 2>/dev/null`,
-        );
-      } catch {
-        /* already gone */
-      }
+    // 3. Fallback: kill anything still listening on port 8000
+    try {
+      await Neutralino.os.execCommand(`fuser -k 8000/tcp 2>/dev/null`);
+    } catch {
+      /* nothing on port or fuser not available */
     }
+
     setSpawnId(null);
     setBackendPid(null);
     setStarting(false);

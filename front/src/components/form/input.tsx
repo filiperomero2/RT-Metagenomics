@@ -30,7 +30,7 @@ export function Input({
                 const path =
                   await Neutralino.os.showFolderDialog("Select Data Folder");
                 if (path) {
-                  field.onChange("path", path, {
+                  field.onChange(path, {
                     shouldValidate: true,
                   });
                 }
