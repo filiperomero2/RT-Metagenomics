@@ -7,7 +7,7 @@ export const Route = createFileRoute("/about")({
 function AboutPage() {
   return (
     <div className="from-background to-content1 flex h-[calc(100vh-2.7rem)] flex-col items-center justify-center bg-gradient-to-b p-8">
-      <div className="bg-content1 mx-auto max-w-4xl space-y-6 rounded-lg p-8 shadow-lg">
+      <div className="bg-content1 mx-auto max-w-4xl space-y-6 rounded-lg p-8 shadow-lg ring ring-primary-200">
         <h1 className="text-primary-500 text-center text-4xl font-extrabold">
           About RT-Metagenomics
         </h1>

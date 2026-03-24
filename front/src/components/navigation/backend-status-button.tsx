@@ -26,7 +26,10 @@ export function BackendStatusButton() {
   const [starting, setStarting] = useState(false);
   const [logs, setLogs] = useLocalStorage<string[]>("logs", []);
   const [spawnId, setSpawnId] = useLocalStorage<number | null>("spawnId", null);
-  const [backendPid, setBackendPid] = useLocalStorage<number | null>("backendPid", null);
+  const [backendPid, setBackendPid] = useLocalStorage<number | null>(
+    "backendPid",
+    null,
+  );
   const logEndRef = useRef<HTMLDivElement>(null);
   const [mirrorToConsole, setMirrorToConsole] = useState(false);
   const mirrorRef = useRef(false);
@@ -142,79 +145,77 @@ export function BackendStatusButton() {
   };
 
   return (
-    <NavbarItem>
-      <Popover placement="bottom" showArrow>
-        <PopoverTrigger>
-          <Button
-            isIconOnly
-            variant="light"
-            size="sm"
-            aria-label="Backend status"
-          >
-            {isLoading || starting ? (
-              <Loader size={18} className="animate-spin text-amber-400" />
-            ) : (
-              <Circle
-                size={18}
-                className={cn(
-                  "fill-success text-success",
-                  !isRunning && "fill-danger text-danger",
-                )}
-              />
-            )}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent>
-          <div className="flex w-[60vw] flex-col gap-2 p-2">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold">{getStatusLabel()}</span>
-              <div className="flex items-center gap-2">
-                <Switch
-                  size="sm"
-                  isSelected={mirrorToConsole}
-                  onValueChange={setMirrorToConsole}
-                  startContent={<Terminal size={14} />}
-                >
-                  <span className="text-xs">Console</span>
-                </Switch>
-                {(isRunning || starting) && window.NL_PORT ? (
-                  <Button
-                    size="sm"
-                    color="danger"
-                    variant="flat"
-                    startContent={<Square size={14} />}
-                    onPress={stopBackend}
-                  >
-                    Stop
-                  </Button>
-                ) : (
-                  <Button
-                    size="sm"
-                    color="success"
-                    variant="flat"
-                    startContent={<Play size={14} />}
-                    onPress={startBackend}
-                  >
-                    Start
-                  </Button>
-                )}
-              </div>
-            </div>
-            <div className="bg-default-100 h-[70vh] overflow-y-auto rounded-md p-2 font-mono text-xs">
-              {logs.length === 0 ? (
-                <span className="text-default-400">No logs yet</span>
-              ) : (
-                logs.map((line, i) => (
-                  <div key={i} className="break-all whitespace-pre-wrap">
-                    {line}
-                  </div>
-                ))
+    <Popover placement="bottom" showArrow>
+      <PopoverTrigger>
+        <Button
+          isIconOnly
+          variant="light"
+          size="sm"
+          aria-label="Backend status"
+        >
+          {isLoading || starting ? (
+            <Loader size={18} className="animate-spin text-amber-400" />
+          ) : (
+            <Circle
+              size={18}
+              className={cn(
+                "fill-success text-success",
+                !isRunning && "fill-danger text-danger",
               )}
-              <div ref={logEndRef} />
+            />
+          )}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent>
+        <div className="flex w-[60vw] flex-col gap-2 p-2">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-semibold">{getStatusLabel()}</span>
+            <div className="flex items-center gap-2">
+              <Switch
+                size="sm"
+                isSelected={mirrorToConsole}
+                onValueChange={setMirrorToConsole}
+                startContent={<Terminal size={14} />}
+              >
+                <span className="text-xs">Console</span>
+              </Switch>
+              {(isRunning || starting) && window.NL_PORT ? (
+                <Button
+                  size="sm"
+                  color="danger"
+                  variant="flat"
+                  startContent={<Square size={14} />}
+                  onPress={stopBackend}
+                >
+                  Stop
+                </Button>
+              ) : (
+                <Button
+                  size="sm"
+                  color="success"
+                  variant="flat"
+                  startContent={<Play size={14} />}
+                  onPress={startBackend}
+                >
+                  Start
+                </Button>
+              )}
             </div>
           </div>
-        </PopoverContent>
-      </Popover>
-    </NavbarItem>
+          <div className="bg-default-100 h-[70vh] overflow-y-auto rounded-md p-2 font-mono text-xs">
+            {logs.length === 0 ? (
+              <span className="text-default-400">No logs yet</span>
+            ) : (
+              logs.map((line, i) => (
+                <div key={i} className="break-all whitespace-pre-wrap">
+                  {line}
+                </div>
+              ))
+            )}
+            <div ref={logEndRef} />
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }
