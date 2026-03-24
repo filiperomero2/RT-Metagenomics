@@ -13,24 +13,27 @@
     "writeToLogFile": true
   },
   "nativeAllowList": [
-    "app.exit",
-    "os.showFolderDialog",
-    "os.execCommand",
-    "os.spawnProcess",
-    "os.getSpawnedProcesses",
-    "os.updateSpawnedProcess"
+    "app.*",
+    "os.*",
+    "filesystem.*",
+    "extensions.*",
+    "events.*",
+    "window.*"
   ],
   "globalVariables": {},
   "modes": {
     "window": {
       "title": "RT-Metagenomics",
-      "icon": "resources/logo.png",
+      "icon": "/resources/logo.png",
+      "transparency": true,
       "width": 1280,
       "height": 800,
       "minWidth": 800,
       "minHeight": 600,
       "center": true,
-      "enableInspector": true
+      "enableInspector": true,
+      "borderless": true,
+      "resizable": true
     },
     "browser": {}
   },
