@@ -1,6 +1,7 @@
 {
   "applicationId": "dev.rtmetagenomics.app",
   "version": "0.1.0",
+  "applicationIcon": "resources/logo.png",
   "defaultMode": "window",
   "port": 0,
   "documentRoot": "/resources/",
@@ -24,12 +25,12 @@
   "modes": {
     "window": {
       "title": "RT-Metagenomics",
-      "icon": "/resources/logo.png",
-      "transparency": false,
+      "icon": "logo.png",
+      "transparency": true,
       "width": 1280,
-      "height": 800,
+      "height": 1000,
       "minWidth": 800,
-      "minHeight": 600,
+      "minHeight": 800,
       "center": true,
       "enableInspector": true,
       "borderless": true,

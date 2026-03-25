@@ -9,10 +9,11 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "prettier": "prettier src --write",
-    "desktop:dev": "concurrently \"vite\" \"neu run -- --url=http://localhost:5173\"",
-    "desktop:build": "tsc -b && vite build && cp -r dist/* resources/ && neu build",
-    "desktop:start": "tsc -b && vite build && cp -r dist/* resources/ && neu run",
-    "desktop:package": "tsc -b && vite build && cp -r dist/* resources/ && neu build --release"
+    "desktop:prepare-resources": "mkdir -p resources && cp public/logo.png resources/logo.png",
+    "desktop:dev": "npm run desktop:prepare-resources && concurrently \"vite\" \"neu run -- --url=http://localhost:5173\"",
+    "desktop:build": "npm run desktop:prepare-resources && tsc -b && vite build && cp -r dist/* resources/ && neu build",
+    "desktop:start": "npm run desktop:prepare-resources && tsc -b && vite build && cp -r dist/* resources/ && neu run",
+    "desktop:package": "npm run desktop:prepare-resources && tsc -b && vite build && cp -r dist/* resources/ && neu build --release"
   },
   "dependencies": {
     "@heroui/react": "2.8.2",

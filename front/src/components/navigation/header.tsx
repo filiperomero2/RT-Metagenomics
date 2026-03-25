@@ -192,7 +192,7 @@ export function Header() {
       id="header"
       maxWidth="full"
       height="2.75rem"
-      className="bg-content1 shadow select-none"
+      className="bg-content1 select-none"
       classNames={{wrapper: "p-1"}}
       onDoubleClick={handleHeaderDoubleClick}
       onMouseDownCapture={handleHeaderMouseDown}
