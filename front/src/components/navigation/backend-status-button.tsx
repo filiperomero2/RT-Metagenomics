@@ -2,7 +2,8 @@ import { useBackendStatus } from "@/hooks/use-backend-status";
 import { cn } from "@/utils/cn";
 import {
   Button,
-  NavbarItem,
+  Card,
+  Label,
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -145,11 +146,11 @@ export function BackendStatusButton() {
   };
 
   return (
-    <Popover placement="bottom" showArrow>
-      <PopoverTrigger>
+    <Popover>
+      <Popover.Trigger>
         <Button
           isIconOnly
-          variant="light"
+          variant="ghost"
           size="sm"
           aria-label="Backend status"
         >
@@ -165,57 +166,56 @@ export function BackendStatusButton() {
             />
           )}
         </Button>
-      </PopoverTrigger>
-      <PopoverContent>
-        <div className="flex w-[60vw] flex-col gap-2 p-2">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-semibold">{getStatusLabel()}</span>
-            <div className="flex items-center gap-2">
-              <Switch
-                size="sm"
-                isSelected={mirrorToConsole}
-                onValueChange={setMirrorToConsole}
-                startContent={<Terminal size={14} />}
-              >
-                <span className="text-xs">Console</span>
-              </Switch>
-              {(isRunning || starting) && window.NL_PORT ? (
-                <Button
+      </Popover.Trigger>
+      <Popover.Content offset={15}>
+        <Popover.Dialog>
+          <Card className="p-0 rounded-none">
+            <Card.Header className="flex-row justify-between">
+              <span className="text-sm font-semibold">{getStatusLabel()}</span>
+              <div className="flex items-center gap-4">
+                <Switch
                   size="sm"
-                  color="danger"
-                  variant="flat"
-                  startContent={<Square size={14} />}
-                  onPress={stopBackend}
+                  isSelected={mirrorToConsole}
+                  onChange={setMirrorToConsole}
                 >
-                  Stop
-                </Button>
-              ) : (
-                <Button
-                  size="sm"
-                  color="success"
-                  variant="flat"
-                  startContent={<Play size={14} />}
-                  onPress={startBackend}
-                >
-                  Start
-                </Button>
-              )}
-            </div>
-          </div>
-          <div className="bg-default-100 h-[70vh] overflow-y-auto rounded-md p-2 font-mono text-xs">
-            {logs.length === 0 ? (
-              <span className="text-default-400">No logs yet</span>
-            ) : (
-              logs.map((line, i) => (
-                <div key={i} className="break-all whitespace-pre-wrap">
-                  {line}
-                </div>
-              ))
-            )}
-            <div ref={logEndRef} />
-          </div>
-        </div>
-      </PopoverContent>
+                  <Switch.Control>
+                    <Switch.Thumb>
+                    </Switch.Thumb>
+                  </Switch.Control>
+                  <Switch.Content>
+                    <Label>Console</Label>
+                  </Switch.Content>
+                </Switch>
+                {(isRunning || starting) && window.NL_PORT ? (
+                  <Button size="sm" variant="danger-soft" onPress={stopBackend}>
+                    <Square size={14} />
+                    Stop
+                  </Button>
+                ) : (
+                  <Button size="sm" onPress={startBackend}>
+                    <Play size={14} />
+                    Start
+                  </Button>
+                )}
+              </div>
+            </Card.Header>
+            <Card.Content>
+              <div className="bg-surface-secondary/50 text-surface-foreground h-[70vh] w-[60vw] overflow-y-auto rounded-md p-2 font-mono text-xs">
+                {logs.length === 0 ? (
+                  <span>No logs yet</span>
+                ) : (
+                  logs.map((line, i) => (
+                    <div key={i} className="break-all whitespace-pre-wrap">
+                      {line}
+                    </div>
+                  ))
+                )}
+                <div ref={logEndRef} />
+              </div>
+            </Card.Content>
+          </Card>
+        </Popover.Dialog>
+      </Popover.Content>
     </Popover>
   );
 }

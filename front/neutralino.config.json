@@ -25,10 +25,10 @@
   "modes": {
     "window": {
       "title": "RT-Metagenomics",
-      "icon": "logo.png",
+      "icon": "/logo.png",
       "transparency": true,
       "width": 1280,
-      "height": 1000,
+      "height": 900,
       "minWidth": 800,
       "minHeight": 800,
       "center": true,

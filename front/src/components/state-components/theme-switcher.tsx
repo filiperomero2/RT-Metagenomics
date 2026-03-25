@@ -1,6 +1,5 @@
-import { Switch } from "@heroui/react";
-import { MoonIcon, SunIcon } from "lucide-react";
 import { useTheme } from "@/theme-provider";
+import { Switch } from "@heroui/react";
 
 export const ThemeSwitcher = () => {
   const { theme, setTheme } = useTheme();
@@ -12,12 +11,15 @@ export const ThemeSwitcher = () => {
   return (
     <Switch
       defaultSelected
-      color="primary"
-      size="sm"
+      size="lg"
       isSelected={theme === "dark"}
-      onValueChange={toggle}
-      startContent={<SunIcon />}
-      endContent={<MoonIcon />}
-    />
+      onChange={toggle}
+      className="w-full"
+    >
+      <Switch.Content className="w-full">Toggle theme</Switch.Content>
+      <Switch.Control>
+        <Switch.Thumb />
+      </Switch.Control>
+    </Switch>
   );
 };

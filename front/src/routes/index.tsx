@@ -10,7 +10,7 @@ function Home() {
   const links = [{ to: "/meta" as const, label: "Meta", icon: ChartPie }];
 
   return (
-    <div className="text-primary flex h-[calc(100vh-65px)] items-center justify-center gap-8">
+    <div className="text-accent flex h-[calc(100vh-65px)] items-center justify-center gap-8">
       {links.map((link) => (
         <motion.div
           whileHover={{ scale: 1.05 }}
@@ -19,7 +19,7 @@ function Home() {
         >
           <Link
             to={link.to}
-            className="bg-content1 ring-primary text-primary dark:text-content1-foreground flex h-96 flex-col items-center justify-center gap-2 rounded-xl px-12 text-6xl shadow-2xl ring-2"
+            className="bg-surface ring-accent text-accent dark:text-surface-foreground flex h-96 flex-col items-center justify-center gap-2 rounded-xl px-12 text-6xl shadow-2xl ring-2"
           >
             <link.icon size={100} />
             <p>{link.label}</p>

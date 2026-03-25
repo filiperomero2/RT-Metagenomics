@@ -29,21 +29,7 @@ function renderApp() {
 }
 
 if (window.NL_PORT) {
-  window.addEventListener(
-    "ready",
-    () => {
-      const focusWindow = () => {
-        void Neutralino.window.focus().catch(() => {
-          // Ignore startup focus races in the desktop shell.
-        });
-      };
-
-      renderApp();
-      window.setTimeout(focusWindow, 0);
-      window.setTimeout(focusWindow, 150);
-    },
-    { once: true },
-  );
+  window.addEventListener("ready", () => renderApp(), { once: true });
 
   Neutralino.init();
 } else {

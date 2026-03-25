@@ -1,4 +1,4 @@
-import { addToast } from "@heroui/react";
+import { toast } from "@heroui/react";
 import { MutationCache, QueryClient, QueryKey } from "@tanstack/react-query";
 
 declare module "@tanstack/react-query" {
@@ -27,18 +27,12 @@ function makeQueryClient() {
     mutationCache: new MutationCache({
       onSuccess: (_data, _variables, _context, mutation) => {
         if (mutation.meta?.successMessage) {
-          addToast({
-            color: "success",
-            ...mutation.meta.successMessage,
-          });
+          toast.success(mutation.meta.successMessage.description);
         }
       },
       onError: (_error, _variables, _context, mutation) => {
         if (mutation.meta?.errorMessage) {
-          addToast({
-            color: "danger",
-            ...mutation.meta.errorMessage,
-          });
+          toast.danger(mutation.meta.errorMessage.description);
         }
       },
       onSettled: (_data, _error, _variables, _context, mutation) => {

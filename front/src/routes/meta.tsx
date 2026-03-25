@@ -11,13 +11,13 @@ export const Route = createFileRoute("/meta")({
 function Meta() {
   return (
     <div className="h-[calc(100vh-65px)] p-4">
-      <RunVisualizer />
-      <SampleComparator />
+      {/* <RunVisualizer />
+      <SampleComparator /> */}
 
       <div className="bg-content1 rounded-2xl p-4 py-6 shadow-md">
         <div className="text-foreground-800 mb-4 flex w-full items-center justify-between gap-3 pb-6 text-3xl font-bold">
           <h1>All Metagenomics</h1>
-          <NewRunForm />
+          {/* <NewRunForm /> */}
         </div>
         <RunTable />
       </div>

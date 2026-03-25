@@ -1,28 +1,20 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useEffect } from "react";
-import {
-  Card,
-  CardBody,
-  CardHeader,
-  Button,
-  addToast,
-  Accordion,
-  AccordionItem,
-} from "@heroui/react";
-import {
-  Save,
-  RotateCcw,
-  Database,
-  Settings2,
-  Timer,
-  Palette,
-} from "lucide-react";
-import { motion } from "framer-motion";
-import { useForm, FormProvider } from "react-hook-form";
 import { Input } from "@/components/form/input";
 import { NumberInput } from "@/components/form/number-input";
-import { SETTINGS_STORAGE_KEY } from "@/constants/local-storage";
 import { ThemeSwitcher } from "@/components/state-components/theme-switcher";
+import { SETTINGS_STORAGE_KEY } from "@/constants/local-storage";
+import { Accordion, Button, Card, toast } from "@heroui/react";
+import { createFileRoute } from "@tanstack/react-router";
+import { motion } from "framer-motion";
+import {
+  Database,
+  Palette,
+  RotateCcw,
+  Save,
+  Settings2,
+  Timer,
+} from "lucide-react";
+import { useEffect } from "react";
+import { FormProvider, useForm } from "react-hook-form";
 
 interface DatabasePaths {
   krona: string;
@@ -105,21 +97,13 @@ function SettingsPage() {
   const onSave = (data: SettingsData) => {
     saveSettings(data);
     reset(data);
-    addToast({
-      title: "Settings saved",
-      description: "Your settings have been saved to local storage.",
-      color: "success",
-    });
+    toast.success("Your settings have been saved to local storage.");
   };
 
   const onReset = () => {
     saveSettings(DEFAULT_SETTINGS);
     reset(DEFAULT_SETTINGS);
-    addToast({
-      title: "Settings reset",
-      description: "All settings have been restored to defaults.",
-      color: "warning",
-    });
+    toast.warning("All settings have been restored to defaults.");
   };
 
   return (
@@ -135,22 +119,12 @@ function SettingsPage() {
             <h1 className="text-foreground text-3xl font-bold">Settings</h1>
           </div>
           <div className="flex gap-2">
-            <Button
-              variant="flat"
-              color="warning"
-              startContent={<RotateCcw size={16} />}
-              onPress={onReset}
-              size="sm"
-            >
+            <Button variant="danger-soft" onPress={onReset} size="sm">
+              <RotateCcw size={16} />
               Reset
             </Button>
-            <Button
-              type="submit"
-              color="primary"
-              startContent={<Save size={16} />}
-              isDisabled={!isDirty}
-              size="sm"
-            >
+            <Button type="submit" isDisabled={!isDirty} size="sm">
+              <Save size={16} />
               Save
             </Button>
           </div>
@@ -160,28 +134,27 @@ function SettingsPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <div className="space-y-4">
-            <Card shadow="sm">
-              <CardHeader className="flex items-center gap-3 px-6 pt-5 pb-0">
-                <Palette className="text-primary" size={20} />
+          <section className="space-y-4">
+            <Card>
+              <Card.Header className="mb-2 flex flex-row items-center justify-between">
                 <h2 className="text-foreground-800 text-xl font-semibold">
                   Appearance
                 </h2>
-              </CardHeader>
-              <CardBody className="flex flex-row items-center justify-between px-6 py-5">
-                <span className="text-foreground-700 text-sm">Dark Mode</span>
+                <Palette className="text-primary" size={20} />
+              </Card.Header>
+              <Card.Content>
                 <ThemeSwitcher />
-              </CardBody>
+              </Card.Content>
             </Card>
 
-            <Card shadow="sm">
-              <CardHeader className="flex items-center gap-3 px-6 pt-5 pb-0">
-                <Timer className="text-primary" size={20} />
+            <Card>
+              <Card.Header className="mb-2 flex flex-row items-center justify-between">
                 <h2 className="text-foreground-800 text-xl font-semibold">
                   Intervals
                 </h2>
-              </CardHeader>
-              <CardBody className="px-6 py-5">
+                <Timer className="text-primary" size={20} />
+              </Card.Header>
+              <Card.Content className="gap-3">
                 <NumberInput
                   name="polling_interval"
                   label="Polling Interval (seconds)"
@@ -192,90 +165,74 @@ function SettingsPage() {
                   label="Iteration Interval (seconds)"
                   description="Time between processing iterations."
                 />
-              </CardBody>
+              </Card.Content>
             </Card>
-          </div>
+          </section>
 
-          <Card shadow="sm">
-            <CardHeader className="flex items-center gap-3 px-6 pt-5 pb-0">
-              <Database className="text-primary" size={20} />
-              <h2 className="text-foreground-800 text-xl font-semibold">
-                Databases
-              </h2>
-            </CardHeader>
-            <CardBody className="px-6 py-5">
-              <Accordion
-                variant="light"
-                selectedKeys={["krona", "kraken2", "diamond"]}
-              >
-                {/* Krona */}
-                <AccordionItem
-                  key="krona"
-                  aria-label="Krona"
-                  title={
-                    <span className="text-foreground-700 font-medium">
-                      Krona
-                    </span>
-                  }
-                >
+          <section className="space-y-4">
+            <Card>
+              <Card.Header className="mb-2 flex flex-row items-center justify-between">
+                <h2 className="text-foreground-800 text-xl font-semibold">
+                  Krona
+                </h2>
+                <Database className="text-primary" size={20} />
+              </Card.Header>
+              <Card.Content>
+                <div className="flex flex-col gap-3">
                   <Input
                     name="databases.krona"
                     label="Database Path"
                     placeholder="/path/to/krona/db"
                     isFolderSelector
                   />
-                </AccordionItem>
-
-                {/* Kraken2 */}
-                <AccordionItem
-                  key="kraken2"
-                  aria-label="Kraken2"
-                  title={
-                    <span className="text-foreground-700 font-medium">
-                      Kraken2
-                    </span>
-                  }
-                >
-                  <Input
-                    name="databases.kraken2"
-                    label="Database Path"
-                    placeholder="/path/to/kraken2/db"
-                    isFolderSelector
-                  />
-                </AccordionItem>
-
-                {/* Diamond */}
-                <AccordionItem
-                  key="diamond"
-                  aria-label="Diamond"
-                  title={
-                    <span className="text-foreground-700 font-medium">
-                      Diamond
-                    </span>
-                  }
-                >
-                  <Input
-                    name="databases.diamond.taxdump"
-                    label="Taxdump Path"
-                    placeholder="/path/to/diamond/taxdump"
-                    isFolderSelector
-                  />
-                  <Input
-                    name="databases.diamond.assembly-summary"
-                    label="Assembly Summary Path"
-                    placeholder="/path/to/diamond/assembly-summary"
-                    isFolderSelector
-                  />
-                  <Input
-                    name="databases.diamond.taxid-to-family"
-                    label="Taxid to Family Path"
-                    placeholder="/path/to/diamond/taxid-to-family"
-                    isFolderSelector
-                  />
-                </AccordionItem>
-              </Accordion>
-            </CardBody>
-          </Card>
+                </div>
+              </Card.Content>
+            </Card>
+            <Card>
+              <Card.Header className="mb-2 flex flex-row items-center justify-between">
+                <h2 className="text-foreground-800 text-xl font-semibold">
+                  Kraken2
+                </h2>
+                <Database className="text-primary" size={20} />
+              </Card.Header>
+              <Card.Content>
+                <Input
+                  name="databases.kraken2"
+                  label="Database Path"
+                  placeholder="/path/to/kraken2/db"
+                  isFolderSelector
+                />
+              </Card.Content>
+            </Card>
+            <Card>
+              <Card.Header className="mb-2 flex flex-row items-center justify-between">
+                <h2 className="text-foreground-800 text-xl font-semibold">
+                  Diamond
+                </h2>
+                <Database className="text-primary" size={20} />
+              </Card.Header>
+              <Card.Content className="gap-3">
+                <Input
+                  name="databases.diamond.taxdump"
+                  label="Taxdump Path"
+                  placeholder="/path/to/diamond/taxdump"
+                  isFolderSelector
+                />
+                <Input
+                  name="databases.diamond.assembly-summary"
+                  label="Assembly Summary Path"
+                  placeholder="/path/to/diamond/assembly-summary"
+                  isFolderSelector
+                />
+                <Input
+                  name="databases.diamond.taxid-to-family"
+                  label="Taxid to Family Path"
+                  placeholder="/path/to/diamond/taxid-to-family"
+                  isFolderSelector
+                />
+              </Card.Content>
+            </Card>
+          </section>
         </motion.div>
       </form>
     </FormProvider>

@@ -1,23 +1,7 @@
-import {
-  Button,
-  ButtonGroup,
-  Navbar,
-  NavbarBrand,
-  NavbarContent,
-  NavbarItem,
-} from "@heroui/react";
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Button, ButtonGroup } from "@heroui/react";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
+import { ChartPie, Copy, Info, Minus, Settings, Square, X } from "lucide-react";
 import { type MouseEvent, useEffect, useRef, useState } from "react";
-import {
-  ChartPie,
-  Copy,
-  Info,
-  Maximize2,
-  Minus,
-  Settings,
-  Square,
-  X,
-} from "lucide-react";
 import { BackendStatusButton } from "./backend-status-button";
 
 const DRAG_EXCLUDE_SELECTOR = [
@@ -43,7 +27,7 @@ function isExcludedTarget(target: EventTarget | null) {
 }
 
 export function Header() {
-  const path = useRouterState({ select: (s) => s.location.pathname });
+  const navigate = useNavigate();
   const [isMaximized, setIsMaximized] = useState(false);
   const pendingDragRef = useRef<{ screenX: number; screenY: number } | null>(
     null,
@@ -188,65 +172,79 @@ export function Header() {
   };
 
   return (
-    <Navbar
+    <nav
       id="header"
-      maxWidth="full"
-      height="2.75rem"
-      className="bg-content1 select-none"
-      classNames={{wrapper: "p-1"}}
+      className="bg-surface flex h-[2.75rem] w-full items-center justify-between p-1 select-none relative"
       onDoubleClick={handleHeaderDoubleClick}
       onMouseDownCapture={handleHeaderMouseDown}
     >
-      <NavbarBrand>
-        <NavbarItem className="flex items-center justify-center">
-          <Button isIconOnly variant="light" as={Link} to="/">
-            <img className="h-8 w-8" src="/logo.webp" />
-          </Button>
-        </NavbarItem>
-      </NavbarBrand>
-      <NavbarContent justify="center" className="gap-0.5">
-        <NavbarItem isActive={path === "/meta"} className="text-xs">
-          <Button variant="light" size="sm" as={Link} to="/meta">
-            <ChartPie size={16} />
-            Metagenomics
-          </Button>
-        </NavbarItem>
-        <NavbarItem isActive={path === "/about"} className="text-xs">
-          <Button variant="light" size="sm" as={Link} to="/about">
-            <Info size={16} />
-            About
-          </Button>
-        </NavbarItem>
-      </NavbarContent>
-      <NavbarContent justify="end">
-        <NavbarItem>
-          <BackendStatusButton />
-        </NavbarItem>
-        <NavbarItem isActive={path === "/settings"} className="text-xs">
-          <Button variant="light" size="sm" isIconOnly as={Link} to="/settings">
-            <Settings size={16} />
-          </Button>
-        </NavbarItem>
+      <div>
+        <Button
+          isIconOnly
+          variant="ghost"
+          onPress={() => navigate({ to: "/" })}
+        >
+          <img className="h-8 w-8" src="/logo.webp" />
+        </Button>
+      </div>
+      <div className="gap-0.5 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex">
+        <Button
+          variant="ghost"
+          size="sm"
+          onPress={() => navigate({ to: "/meta" })}
+        >
+          <ChartPie size={16} />
+          Metagenomics
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onPress={() => navigate({ to: "/about" })}
+        >
+          <Info size={16} />
+          About
+        </Button>
+      </div>
+      <div className="flex">
+        <BackendStatusButton />
+        <Button
+          variant="ghost"
+          size="sm"
+          isIconOnly
+          onPress={() => navigate({ to: "/settings" })}
+        >
+          <Settings size={16} />
+        </Button>
 
         {isDesktopWindow ? (
-          <NavbarItem className="text-xs h-full flex items-center">
-            <ButtonGroup variant="light" isIconOnly radius="none">
-              <Button aria-label="Minimize window" onMouseDown={handleMinimize}>
+          <div className="flex h-full items-center text-xs">
+            <ButtonGroup variant="ghost">
+              <Button
+                aria-label="Minimize window"
+                onMouseDown={handleMinimize}
+                isIconOnly
+                className="rounded-none"
+              >
                 <Minus size={16} />
               </Button>
               <Button
                 aria-label={isMaximized ? "Restore window" : "Maximize window"}
                 onMouseDown={toggleMaximize}
+                className="rounded-none"
               >
                 {isMaximized ? <Copy size={16} /> : <Square size={16} />}
               </Button>
-              <Button aria-label="Close window" onMouseDown={handleClose} color="danger">
+              <Button
+                aria-label="Close window"
+                onMouseDown={handleClose}
+                className="rounded-none hover:bg-danger"
+              >
                 <X size={16} className="text-foreground" />
               </Button>
             </ButtonGroup>
-          </NavbarItem>
+          </div>
         ) : null}
-      </NavbarContent>
-    </Navbar>
+      </div>
+    </nav>
   );
 }

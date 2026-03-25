@@ -150,16 +150,12 @@ export function NewRunForm() {
 
   return (
     <>
-      <Button
-        onPress={handleOpen}
-        color="primary"
-        variant="flat"
-        startContent={<Plus />}
-      >
+      <Button onPress={handleOpen}>
+        <Plus />
         New Metagenomic
       </Button>
-      <Drawer {...modal} size="4xl">
-        <DrawerContent>
+      <Drawer {...modal}>
+        <Drawer.Content>
           <FormProvider {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit)} className="flex-1">
               <DrawerHeader>New Metagenomics</DrawerHeader>
@@ -185,15 +181,11 @@ export function NewRunForm() {
                 </Select>
 
                 <div className="col-span-3 nth-[0]:px-3">
-                  <Accordion
-                    variant="light"
-                    selectionMode="multiple"
-                    defaultExpandedKeys={["Samples"]}
-                  >
-                    <AccordionItem
+                  <Accordion>
+                    <Accordion.Item
                       key="Options"
-                      textValue="Options"
-                      indicator={<Cog />}
+                      // textValue="Options"
+                      // indicator={<Cog />}
                       title={<p className="flex items-center gap-2">Options</p>}
                     >
                       <div className="@container grid grid-cols-2 gap-x-2">
@@ -227,7 +219,7 @@ export function NewRunForm() {
                           label="Remove Human Reads"
                         />
                       </div>
-                    </AccordionItem>
+                    </Accordion.Item>
 
                     <AccordionItem
                       key="Databases"
@@ -242,13 +234,13 @@ export function NewRunForm() {
                           name="kraken2Database"
                           label="Kraken2 Database"
                           className="col-span-2"
-                          isReadOnly
+                          readOnly
                         />
                         <Input
                           name="kronaDatabase"
                           label="Krona Database"
                           className="col-span-2"
-                          isReadOnly
+                          readOnly
                         />
                         <div className="bg-primary-50 text-primary-700 flex items-center gap-2 rounded-lg p-3 text-sm">
                           <Info size={18} className="shrink-0" />
@@ -301,8 +293,7 @@ export function NewRunForm() {
               </DrawerBody>
               <DrawerFooter className="bg-content1 sticky bottom-0 z-10 rounded-t-3xl shadow-2xl">
                 <Button
-                  variant="light"
-                  color="danger"
+                  variant="danger-soft"
                   type="button"
                   size="lg"
                   onPress={handleClose}
@@ -310,19 +301,17 @@ export function NewRunForm() {
                   Close
                 </Button>
                 <Button
-                  variant="flat"
-                  color="primary"
                   type="submit"
                   size="lg"
                   className="px-10"
-                  isLoading={isPending}
+                  isPending={isPending}
                 >
                   Submit
                 </Button>
               </DrawerFooter>
             </form>
           </FormProvider>
-        </DrawerContent>
+        </Drawer.Content>
       </Drawer>
     </>
   );
