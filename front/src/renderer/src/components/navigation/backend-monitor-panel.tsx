@@ -2,7 +2,7 @@ import { useBackendStatus } from "@/hooks/use-backend-status";
 import { cn } from "@/utils/cn";
 import { Button, Card } from "@heroui/react";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowDown, ExternalLink, Pause, Play, Square } from "lucide-react";
+import { ArrowDown, ExternalLink, Play, Square } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { MAX_BACKEND_LOG_LINES } from "../../../../shared/backend-log";
 import type {
@@ -11,6 +11,7 @@ import type {
   BackendProcessEvent,
   BackendState,
 } from "../../../../shared/types/backend";
+import { DetachedWindowHeader } from "./detached-window-header";
 
 type BackendMonitorPanelProps = {
   autoStart?: boolean;
@@ -261,20 +262,11 @@ export function BackendMonitorPanel({
   };
 
   return (
-    <Card className={cn("rounded-none", className)}>
+    <Card className={cn("flex flex-col rounded-none", className)}>
       <Card.Header className="flex-row justify-between gap-4">
         <span className="text-sm font-semibold">{getStatusLabel()}</span>
         <div className="flex items-center gap-3">
-          {detached ? (
-            <Button
-              size="sm"
-              variant="ghost"
-              onPress={() => void window.api.reattachBackendMonitorWindow()}
-            >
-              <ExternalLink size={14} className="rotate-180" />
-              Reattach
-            </Button>
-          ) : (
+          {!detached && (
             <Button
               size="sm"
               variant="ghost"
@@ -315,7 +307,7 @@ export function BackendMonitorPanel({
         </div>
       </Card.Header>
 
-      <Card.Content>
+      <Card.Content className="flex-1 min-h-0">
         <div
           ref={logViewportRef}
           className={cn(
@@ -367,13 +359,16 @@ export function BackendMonitorPanel({
 
 export function DetachedBackendMonitorWindow() {
   return (
-    <div className="bg-surface text-foreground min-h-screen p-4">
-      <BackendMonitorPanel
-        detached
-        autoStart={false}
-        className="border-accent/20 rounded-xl border shadow-lg"
-        logViewportClassName="h-[calc(100vh-7rem)] w-full"
-      />
+    <div className="text-foreground bg-surface min-h-screen font-sans select-none">
+      <DetachedWindowHeader />
+      <div className="border-accent/30 bg-background from-background to-surface/80 h-[calc(100vh-2.75rem)] overflow-hidden rounded-t-2xl border-t bg-gradient-to-b p-4">
+        <BackendMonitorPanel
+          detached
+          autoStart={false}
+          className="border-accent/20 h-full rounded-xl border shadow-lg"
+          logViewportClassName="h-full w-full"
+        />
+      </div>
     </div>
   );
 }

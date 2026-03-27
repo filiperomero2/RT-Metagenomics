@@ -45,12 +45,13 @@ export function openBackendMonitorWindow(parentWindow?: BrowserWindow | null) {
   }
 
   backendMonitorWindow = new BrowserWindow({
-    width: 980,
-    height: 760,
+    width: 760,
+    height: 880,
     minWidth: 700,
     minHeight: 480,
     show: false,
     title: "Backend Monitor",
+    titleBarStyle: "hidden",
     autoHideMenuBar: true,
     roundedCorners: true,
     parent: parentWindow ?? undefined,
@@ -63,6 +64,14 @@ export function openBackendMonitorWindow(parentWindow?: BrowserWindow | null) {
 
   backendMonitorWindow.on("ready-to-show", () => {
     backendMonitorWindow?.show();
+  });
+
+  backendMonitorWindow.on("maximize", () => {
+    backendMonitorWindow?.webContents.send("window:isMaximized", true);
+  });
+
+  backendMonitorWindow.on("unmaximize", () => {
+    backendMonitorWindow?.webContents.send("window:isMaximized", false);
   });
 
   backendMonitorWindow.on("closed", () => {

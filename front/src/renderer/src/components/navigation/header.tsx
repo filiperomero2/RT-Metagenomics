@@ -1,16 +1,11 @@
 import { Button, ButtonGroup } from "@heroui/react";
 import { useNavigate } from "@tanstack/react-router";
-import { ChartPie, Copy, Info, Minus, Settings, Square, X } from "lucide-react";
+import { ChartPie, Info, Settings } from "lucide-react";
+import { WindowControls } from "./window-controls";
 import { BackendStatusButton } from "./backend-status-button";
-import { useEffect, useState } from "react";
 
 export function Header() {
   const navigate = useNavigate();
-  const [isMaximized, setIsMaximized] = useState(false);
-
-  useEffect(() => {
-    window.api.onIsMaximized(setIsMaximized);
-  }, []);
 
   return (
     <nav
@@ -54,32 +49,7 @@ export function Header() {
         >
           <Settings size={16} />
         </Button>
-
-        <div className="flex h-full items-center text-xs">
-          <ButtonGroup variant="ghost">
-            <Button
-              aria-label="Minimize window"
-              onClick={() => window.api.minimizeWindow()}
-              isIconOnly
-              className="rounded-none"
-            >
-              <Minus size={16} />
-            </Button>
-            <Button
-              onClick={() => window.api.maximizeWindow()}
-              className="rounded-none"
-            >
-              {isMaximized ? <Copy size={16} /> : <Square size={16} />}
-            </Button>
-            <Button
-              aria-label="Close window"
-              onClick={() => window.api.closeWindow()}
-              className="hover:bg-danger rounded-none"
-            >
-              <X size={16} className="text-foreground" />
-            </Button>
-          </ButtonGroup>
-        </div>
+        <WindowControls />
       </div>
     </nav>
   );

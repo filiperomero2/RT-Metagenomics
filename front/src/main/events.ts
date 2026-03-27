@@ -28,6 +28,7 @@ export function setupIpcHandlers(mainWindow: BrowserWindow) {
   ipcMain.removeHandler("window:openBackendMonitor");
   ipcMain.removeHandler("window:getBackendMonitorState");
   ipcMain.removeHandler("window:reattachBackendMonitor");
+  ipcMain.removeHandler("window:getIsMaximized");
   ipcMain.handle("window:openBackendMonitor", async () => {
     openBackendMonitorWindow(mainWindow);
   });
@@ -37,24 +38,26 @@ export function setupIpcHandlers(mainWindow: BrowserWindow) {
   ipcMain.handle("window:reattachBackendMonitor", async () => {
     closeBackendMonitorWindow(mainWindow);
   });
+  ipcMain.handle("window:getIsMaximized", async (event) => {
+    return BrowserWindow.fromWebContents(event.sender)?.isMaximized() ?? false;
+  });
 
   // IPC handlers for window controls
-  ipcMain.on("window:minimize", () => {
-    console.log("Minimize window");
-    if (mainWindow) mainWindow.minimize();
+  ipcMain.on("window:minimize", (event) => {
+    BrowserWindow.fromWebContents(event.sender)?.minimize();
   });
-  ipcMain.on("window:maximize", () => {
-    console.log("Maximize/Restore window");
-    if (mainWindow) {
-      if (mainWindow.isMaximized()) {
-        mainWindow.unmaximize();
+  ipcMain.on("window:maximize", (event) => {
+    const targetWindow = BrowserWindow.fromWebContents(event.sender);
+
+    if (targetWindow) {
+      if (targetWindow.isMaximized()) {
+        targetWindow.unmaximize();
       } else {
-        mainWindow.maximize();
+        targetWindow.maximize();
       }
     }
   });
-  ipcMain.on("window:close", () => {
-    console.log("Close window");
-    if (mainWindow) mainWindow.close();
+  ipcMain.on("window:close", (event) => {
+    BrowserWindow.fromWebContents(event.sender)?.close();
   });
 }

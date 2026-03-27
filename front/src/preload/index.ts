@@ -11,6 +11,9 @@ const api = {
   minimizeWindow: () => {
     ipcRenderer.send("window:minimize");
   },
+  getIsMaximized: () => {
+    return ipcRenderer.invoke("window:getIsMaximized") as Promise<boolean>;
+  },
   maximizeWindow: () => {
     ipcRenderer.send("window:maximize");
   },
@@ -27,7 +30,12 @@ const api = {
     return ipcRenderer.invoke("window:getBackendMonitorState") as Promise<boolean>;
   },
   onIsMaximized: (callback: (isMaximized: boolean) => void) => {
-    ipcRenderer.on("window:isMaximized", (_, isMaximized: boolean) => callback(isMaximized));
+    const listener = (_: unknown, isMaximized: boolean) =>
+      callback(isMaximized);
+    ipcRenderer.on("window:isMaximized", listener);
+    return () => {
+      ipcRenderer.off("window:isMaximized", listener);
+    };
   },
   onBackendMonitorWindowState: (callback: (isOpen: boolean) => void) => {
     const listener = (_: unknown, isOpen: boolean) => callback(isOpen);

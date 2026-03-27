@@ -11,12 +11,13 @@ declare global {
     electron: ElectronAPI;
     api: {
       minimizeWindow: () => void;
+      getIsMaximized: () => Promise<boolean>;
       maximizeWindow: () => void;
       closeWindow: () => void;
       openBackendMonitorWindow: () => Promise<void>;
       reattachBackendMonitorWindow: () => Promise<void>;
       getBackendMonitorWindowState: () => Promise<boolean>;
-      onIsMaximized: (callback: (isMaximized: boolean) => void) => void;
+      onIsMaximized: (callback: (isMaximized: boolean) => void) => () => void;
       onBackendMonitorWindowState: (
         callback: (isOpen: boolean) => void,
       ) => () => void;
