@@ -1,12 +1,12 @@
-/// <reference types="vite/client" />
-
 declare global {
   interface Window {
-    electron: ElectronAPI;
     api: {
       minimizeWindow: () => void;
       maximizeWindow: () => void;
       closeWindow: () => void;
+      onIsMaximized: (callback: (isMaximized: boolean) => void) => void;
     };
   }
 }
+
+export {};

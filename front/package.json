@@ -3,19 +3,17 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "main": "./out/main/index.js",
   "scripts": {
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "lint": "eslint .",
     "prettier": "prettier src --write",
-    "start": "vite build && electrobun dev",
-    "dev": "electrobun dev --watch",
-    "dev:hmr": "concurrently \"bun run hmr\" \"bun run start\"",
-    "hmr": "vite --port 5173",
-    "build:canary": "vite build && electrobun build --env=canary"
+    "start": "electron-vite preview",
+    "dev": "electron-vite dev",
+    "prebuild": "electron-vite build"
   },
   "dependencies": {
-    "electrobun": "1.16.0",
     "@heroui/react": "^3.0.1",
     "@heroui/styles": "^3.0.1",
     "@hookform/resolvers": "^5.2.1",
@@ -37,7 +35,9 @@
     "tailwind-merge": "^3.3.1",
     "tailwindcss": "4.1.11",
     "usehooks-ts": "^3.1.1",
-    "zod": "^3.25.76"
+    "zod": "^3.25.76",
+    "@electron-toolkit/preload": "^3.0.2",
+    "@electron-toolkit/utils": "^4.0.0"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.11",
@@ -46,6 +46,9 @@
     "@types/react-dom": "^19.1.7",
     "@vitejs/plugin-react": "^4.5.2",
     "concurrently": "^9.2.0",
+    "electron": "^39.2.6",
+    "electron-builder": "^26.0.12",
+    "electron-vite": "^5.0.0",
     "eslint": "^9.32.0",
     "prettier": "^3.6.2",
     "prettier-plugin-tailwindcss": "^0.6.14",

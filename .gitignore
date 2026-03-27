@@ -5,4 +5,3 @@
 **/.snakemake
 **/*.db
 **/.tmp
-**/neutralinojs.log
