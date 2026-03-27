@@ -1,5 +1,10 @@
 import { is } from "@electron-toolkit/utils";
 import { BrowserWindow, ipcMain } from "electron";
+import {
+  closeBackendMonitorWindow,
+  isBackendMonitorWindowOpen,
+  openBackendMonitorWindow,
+} from "./backend-monitor-window";
 import { registerBackendIpcHandlers } from "./backend-process";
 
 export function setupEvents(mainWindow: BrowserWindow) {
@@ -20,6 +25,18 @@ export function setupEvents(mainWindow: BrowserWindow) {
 
 export function setupIpcHandlers(mainWindow: BrowserWindow) {
   registerBackendIpcHandlers();
+  ipcMain.removeHandler("window:openBackendMonitor");
+  ipcMain.removeHandler("window:getBackendMonitorState");
+  ipcMain.removeHandler("window:reattachBackendMonitor");
+  ipcMain.handle("window:openBackendMonitor", async () => {
+    openBackendMonitorWindow(mainWindow);
+  });
+  ipcMain.handle("window:getBackendMonitorState", async () => {
+    return isBackendMonitorWindowOpen();
+  });
+  ipcMain.handle("window:reattachBackendMonitor", async () => {
+    closeBackendMonitorWindow(mainWindow);
+  });
 
   // IPC handlers for window controls
   ipcMain.on("window:minimize", () => {

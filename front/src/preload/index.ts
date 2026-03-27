@@ -1,5 +1,6 @@
 import { contextBridge, ipcRenderer } from "electron";
 import type {
+  BackendLogEntry,
   BackendProcessEvent,
   BackendStartResult,
   BackendState,
@@ -16,8 +17,24 @@ const api = {
   closeWindow: () => {
     ipcRenderer.send("window:close");
   },
+  openBackendMonitorWindow: () => {
+    return ipcRenderer.invoke("window:openBackendMonitor");
+  },
+  reattachBackendMonitorWindow: () => {
+    return ipcRenderer.invoke("window:reattachBackendMonitor");
+  },
+  getBackendMonitorWindowState: () => {
+    return ipcRenderer.invoke("window:getBackendMonitorState") as Promise<boolean>;
+  },
   onIsMaximized: (callback: (isMaximized: boolean) => void) => {
     ipcRenderer.on("window:isMaximized", (_, isMaximized: boolean) => callback(isMaximized));
+  },
+  onBackendMonitorWindowState: (callback: (isOpen: boolean) => void) => {
+    const listener = (_: unknown, isOpen: boolean) => callback(isOpen);
+    ipcRenderer.on("window:backendMonitorState", listener);
+    return () => {
+      ipcRenderer.off("window:backendMonitorState", listener);
+    };
   },
   startBackend: () => {
     return ipcRenderer.invoke("backend:start") as Promise<BackendStartResult>;
@@ -28,11 +45,28 @@ const api = {
   getBackendState: () => {
     return ipcRenderer.invoke("backend:state") as Promise<BackendState>;
   },
+  getBackendLogs: () => {
+    return ipcRenderer.invoke("backend:logs") as Promise<BackendLogEntry[]>;
+  },
   onBackendProcessEvent: (callback: (event: BackendProcessEvent) => void) => {
     const listener = (_: unknown, event: BackendProcessEvent) => callback(event);
     ipcRenderer.on("backend:process-event", listener);
     return () => {
       ipcRenderer.off("backend:process-event", listener);
+    };
+  },
+  onBackendLog: (callback: (log: BackendLogEntry) => void) => {
+    const listener = (_: unknown, log: BackendLogEntry) => callback(log);
+    ipcRenderer.on("backend:log", listener);
+    return () => {
+      ipcRenderer.off("backend:log", listener);
+    };
+  },
+  onBackendLogsCleared: (callback: () => void) => {
+    const listener = () => callback();
+    ipcRenderer.on("backend:logs-cleared", listener);
+    return () => {
+      ipcRenderer.off("backend:logs-cleared", listener);
     };
   },
 };

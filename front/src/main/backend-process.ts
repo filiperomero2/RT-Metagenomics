@@ -3,7 +3,12 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import { promisify } from "node:util";
 import { app, BrowserWindow, ipcMain } from "electron";
+import {
+  MAX_BACKEND_LOG_LINES,
+  createBackendLogEntry,
+} from "../shared/backend-log";
 import type {
+  BackendLogEntry,
   BackendProcessEvent,
   BackendStartResult,
   BackendState,
@@ -16,6 +21,8 @@ const BACKEND_CMD = [
 ].join(" && ");
 
 let backendProcess: ChildProcessWithoutNullStreams | null = null;
+let backendLogs: BackendLogEntry[] = [];
+let nextBackendLogId = 0;
 let stdoutBuffer = "";
 let stderrBuffer = "";
 
@@ -27,6 +34,30 @@ function broadcastBackendEvent(event: BackendProcessEvent) {
       window.webContents.send("backend:process-event", event);
     }
   }
+}
+
+function broadcastBackendLog(log: BackendLogEntry) {
+  for (const window of BrowserWindow.getAllWindows()) {
+    if (!window.isDestroyed()) {
+      window.webContents.send("backend:log", log);
+    }
+  }
+}
+
+function resetBackendLogs() {
+  backendLogs = [];
+
+  for (const window of BrowserWindow.getAllWindows()) {
+    if (!window.isDestroyed()) {
+      window.webContents.send("backend:logs-cleared");
+    }
+  }
+}
+
+function appendBackendLog(line: string) {
+  const entry = createBackendLogEntry(nextBackendLogId++, line);
+  backendLogs = [...backendLogs, entry].slice(-MAX_BACKEND_LOG_LINES);
+  broadcastBackendLog(entry);
 }
 
 function resolveBackendCwd() {
@@ -71,11 +102,7 @@ function emitBufferedOutput(stream: "stdout" | "stderr", chunk: string) {
 
   for (const line of lines) {
     if (line.trim()) {
-      broadcastBackendEvent({
-        type: "output",
-        stream,
-        line,
-      });
+      appendBackendLog(line);
     }
   }
 }
@@ -83,11 +110,7 @@ function emitBufferedOutput(stream: "stdout" | "stderr", chunk: string) {
 function flushBufferedOutput(stream: "stdout" | "stderr") {
   const buffer = getBuffer(stream);
   if (buffer.trim()) {
-    broadcastBackendEvent({
-      type: "output",
-      stream,
-      line: buffer,
-    });
+    appendBackendLog(buffer);
   }
   setBuffer(stream, "");
 }
@@ -99,14 +122,24 @@ export function getBackendState(): BackendState {
   };
 }
 
+export function getBackendLogs() {
+  return backendLogs;
+}
+
 export function startBackendProcess(): BackendStartResult {
   const currentState = getBackendState();
   if (currentState.isRunning) {
+    appendBackendLog(
+      `[system] Backend process already running${currentState.pid ? ` (PID ${currentState.pid})` : ""}`,
+    );
     return {
       alreadyRunning: true,
       pid: currentState.pid,
     };
   }
+
+  resetBackendLogs();
+  appendBackendLog("[system] Activating conda env and starting uvicorn...");
 
   const child = spawn("bash", ["-lc", BACKEND_CMD], {
     cwd: resolveBackendCwd(),
@@ -129,6 +162,9 @@ export function startBackendProcess(): BackendStartResult {
   });
 
   child.once("spawn", () => {
+    appendBackendLog(
+      `[system] Backend process started${child.pid ? ` (PID ${child.pid})` : ""}`,
+    );
     broadcastBackendEvent({
       type: "started",
       pid: child.pid ?? null,
@@ -136,11 +172,7 @@ export function startBackendProcess(): BackendStartResult {
   });
 
   child.once("error", (error) => {
-    broadcastBackendEvent({
-      type: "output",
-      stream: "stderr",
-      line: `[system] Failed to start backend: ${error.message}`,
-    });
+    appendBackendLog(`[system] Failed to start backend: ${error.message}`);
   });
 
   child.once("exit", (code, signal) => {
@@ -150,6 +182,10 @@ export function startBackendProcess(): BackendStartResult {
     if (backendProcess === child) {
       backendProcess = null;
     }
+
+    appendBackendLog(
+      `[system] Process exited (${signal ? `signal ${signal}` : `code ${code ?? 0}`})`,
+    );
 
     broadcastBackendEvent({
       type: "exit",
@@ -176,6 +212,8 @@ export async function stopBackendProcess() {
     backendProcess = null;
     return;
   }
+
+  appendBackendLog("[system] Stopping backend...");
 
   if (process.platform === "win32") {
     try {
@@ -217,9 +255,17 @@ export function registerBackendIpcHandlers() {
   ipcMain.removeHandler("backend:start");
   ipcMain.removeHandler("backend:stop");
   ipcMain.removeHandler("backend:state");
+  ipcMain.removeHandler("backend:logs");
 
   ipcMain.handle("backend:start", async () => {
-    return startBackendProcess();
+    try {
+      return startBackendProcess();
+    } catch (error) {
+      appendBackendLog(
+        `[system] Failed to start backend: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
+      throw error;
+    }
   });
 
   ipcMain.handle("backend:stop", async () => {
@@ -229,5 +275,9 @@ export function registerBackendIpcHandlers() {
 
   ipcMain.handle("backend:state", async () => {
     return getBackendState();
+  });
+
+  ipcMain.handle("backend:logs", async () => {
+    return getBackendLogs();
   });
 }

@@ -3,15 +3,24 @@ export type BackendState = {
   pid: number | null;
 };
 
+export type BackendLogType =
+  | "system"
+  | "info"
+  | "success"
+  | "warning"
+  | "error"
+  | "debug";
+
+export type BackendLogEntry = {
+  id: number;
+  type: BackendLogType;
+  line: string;
+};
+
 export type BackendProcessEvent =
   | {
       type: "started";
       pid: number | null;
-    }
-  | {
-      type: "output";
-      stream: "stdout" | "stderr";
-      line: string;
     }
   | {
       type: "exit";
