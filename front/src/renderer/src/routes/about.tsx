@@ -6,8 +6,8 @@ export const Route = createFileRoute("/about")({
 
 function AboutPage() {
   return (
-    <div className="from-background to-surface/80 flex h-[calc(100%)] flex-col items-center justify-center bg-gradient-to-b p-8">
-      <div className="bg-surface mx-auto max-w-4xl space-y-6 rounded-lg p-8 shadow-lg ring ring-accent/40">
+    <div className="flex h-[calc(100%)] flex-col items-center justify-center p-8">
+      <div className="bg-surface ring-accent/40 mx-auto max-w-4xl space-y-6 rounded-lg p-8 shadow-lg ring">
         <h1 className="text-accent text-center text-4xl font-extrabold">
           About RT-Metagenomics
         </h1>
@@ -19,9 +19,9 @@ function AboutPage() {
           taxonomic assignment of sequencing reads in real time. Nevertheless,
           popular tools used for metagenomic analysis are not designed to take
           full advantage of this amazing feature. In this sense, we developed{" "}
-          <span className="text-accent font-bold">RT-Meta</span>, a
-          pipeline that performs metagenomic analysis in real time and displays
-          results in an interactive manner.
+          <span className="text-accent font-bold">RT-Meta</span>, a pipeline
+          that performs metagenomic analysis in real time and displays results
+          in an interactive manner.
         </p>
         <h2 className="text-accent text-2xl font-bold">Key Features</h2>
         <ul className="text-surface-foreground list-inside list-disc space-y-2">

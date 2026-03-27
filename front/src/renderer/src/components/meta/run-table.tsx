@@ -46,7 +46,6 @@ export function RunTable() {
     },
   });
 
-  if (isError) return <ErrorFull />;
   const reversedData = data ? [...data].toReversed() : [];
 
   return (
@@ -83,8 +82,17 @@ export function RunTable() {
           <Table.Body
             renderEmptyState={() => (
               <EmptyState className="flex h-[15rem] w-full flex-col items-center justify-center gap-4 text-center">
-                <Icon className="text-muted size-6" icon="gravity-ui:tray" />
-                <span className="text-muted text-sm">No results found</span>
+                {isPending ? (
+                  <LoadingFull className="mt-4" />
+                ) : (
+                  <>
+                    <Icon
+                      className="text-muted size-6"
+                      icon="gravity-ui:tray"
+                    />
+                    <span className="text-muted text-sm">No results found</span>
+                  </>
+                )}
               </EmptyState>
             )}
             // emptyContent={"No rows to display."}

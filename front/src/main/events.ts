@@ -1,5 +1,6 @@
 import { is } from "@electron-toolkit/utils";
 import { BrowserWindow, ipcMain } from "electron";
+import { registerBackendIpcHandlers } from "./backend-process";
 
 export function setupEvents(mainWindow: BrowserWindow) {
   mainWindow.on("ready-to-show", () => {
@@ -18,6 +19,8 @@ export function setupEvents(mainWindow: BrowserWindow) {
 }
 
 export function setupIpcHandlers(mainWindow: BrowserWindow) {
+  registerBackendIpcHandlers();
+
   // IPC handlers for window controls
   ipcMain.on("window:minimize", () => {
     console.log("Minimize window");

@@ -9,9 +9,12 @@ export const Route = createRootRoute({
 function RootLayout() {
   return (
     <Providers>
-      <div className="text-foreground min-h-screen font-sans select-none bg-surface">
+      <div className="text-foreground bg-surface min-h-screen font-sans select-none">
         <Header />
-        <div className="border-t-3 border-surface-secondary h-[calc(100vh-2.75rem)] bg-background rounded-t-2xl overflow-y-auto">
+        <div
+          id="content"
+          className="border-accent/30 bg-background from-background to-surface/80 h-[calc(100vh-2.75rem)] overflow-y-auto rounded-t-2xl border-t-1 bg-gradient-to-b"
+        >
           <Outlet />
         </div>
       </div>

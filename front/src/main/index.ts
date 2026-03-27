@@ -3,6 +3,7 @@ import { app, BrowserWindow, ipcMain, shell } from "electron";
 import { join } from "path";
 import icon from "../renderer/public/logo.png";
 import iconIco from "../renderer/public/logo.ico";
+import { stopBackendProcess } from "./backend-process";
 import { setupEvents, setupIpcHandlers } from "./events";
 
 let mainWindow: BrowserWindow | null = null;
@@ -16,6 +17,7 @@ function createWindow(): void {
     show: false,
     titleBarStyle: "hidden",
     autoHideMenuBar: true,
+    roundedCorners: true,
     ...(process.platform === "linux" ? { icon } : { icon: iconIco }),
 
     webPreferences: {
@@ -54,7 +56,7 @@ app.whenReady().then(() => {
   });
 
   createWindow();
-  
+
   setupIpcHandlers(mainWindow!);
   app.on("activate", function () {
     // On macOS it's common to re-create a window in the app when the
@@ -70,6 +72,10 @@ app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
     app.quit();
   }
+});
+
+app.on("before-quit", () => {
+  void stopBackendProcess();
 });
 
 // In this file you can include the rest of your app's specific main process

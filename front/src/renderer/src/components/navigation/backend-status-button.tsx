@@ -5,32 +5,39 @@ import {
   Card,
   Label,
   Popover,
-  PopoverContent,
-  PopoverTrigger,
   Switch,
 } from "@heroui/react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Circle, Loader, Play, Square, Terminal } from "lucide-react";
+import { Circle, Loader, Play, Square } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocalStorage } from "usehooks-ts";
+import type {
+  BackendProcessEvent,
+  BackendState,
+} from "../../../../shared/types/backend";
 
 const MAX_LOG_LINES = 200;
 
-const BACKEND_CMD = [
-  'eval "$(conda shell.bash hook)"',
-  "conda activate rt-meta",
-  "exec uvicorn main:app --host 0.0.0.0 --port 8000 --reload --log-level debug",
-].join(" && ");
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : "Unknown error";
+}
+
+function formatExitMessage(event: Extract<BackendProcessEvent, { type: "exit" }>) {
+  if (event.signal) {
+    return `signal ${event.signal}`;
+  }
+
+  return `code ${event.code ?? 0}`;
+}
 
 export function BackendStatusButton() {
   const qc = useQueryClient();
   const [starting, setStarting] = useState(false);
   const [logs, setLogs] = useLocalStorage<string[]>("logs", []);
-  const [spawnId, setSpawnId] = useLocalStorage<number | null>("spawnId", null);
-  const [backendPid, setBackendPid] = useLocalStorage<number | null>(
-    "backendPid",
-    null,
-  );
+  const [backendState, setBackendState] = useState<BackendState>({
+    isRunning: false,
+    pid: null,
+  });
   const logEndRef = useRef<HTMLDivElement>(null);
   const [mirrorToConsole, setMirrorToConsole] = useState(false);
   const mirrorRef = useRef(false);
@@ -46,94 +53,109 @@ export function BackendStatusButton() {
       const next = [...prev, line];
       return next.length > MAX_LOG_LINES ? next.slice(-MAX_LOG_LINES) : next;
     });
-  }, []);
+  }, [setLogs]);
 
-  const startBackend = async () => {
-    if (!window.NL_PORT) return;
+  const refreshBackendStatus = useCallback(() => {
+    return qc.invalidateQueries({ queryKey: ["backend-health"] });
+  }, [qc]);
+
+  const startBackend = useCallback(async () => {
     setStarting(true);
     setLogs([]);
-
     appendLog("[system] Activating conda env and starting uvicorn...");
-    const proc = await Neutralino.os.spawnProcess(BACKEND_CMD, {
-      cwd: "../back/app",
-    });
-    setSpawnId(proc.id);
-    setBackendPid(proc.pid);
-    appendLog("[system] Backend process started (PID " + proc.pid + ")");
-  };
 
-  const stopBackend = async () => {
-    if (!window.NL_PORT) return;
-    appendLog("[system] Stopping backend...");
-
-    // 1. Kill the entire process group by PID (children + parent in one shot)
-    if (backendPid !== null) {
-      try {
-        await Neutralino.os.execCommand(
-          `kill -TERM -${backendPid} 2>/dev/null; kill -9 -${backendPid} 2>/dev/null`,
-        );
-      } catch {
-        /* already gone */
-      }
-    }
-
-    // 2. Kill the spawned process via Neutralino as backup
-    if (spawnId !== null) {
-      try {
-        await Neutralino.os.updateSpawnedProcess(spawnId, "SIGKILL");
-      } catch {
-        /* already gone */
-      }
-    }
-
-    // 3. Fallback: kill anything still listening on port 8000
     try {
-      await Neutralino.os.execCommand(`fuser -k 8000/tcp 2>/dev/null`);
-    } catch {
-      /* nothing on port or fuser not available */
+      const proc = await window.api.startBackend();
+      setBackendState({
+        isRunning: true,
+        pid: proc.pid,
+      });
+      appendLog(
+        proc.alreadyRunning
+          ? `[system] Backend process already running${proc.pid ? ` (PID ${proc.pid})` : ""}`
+          : `[system] Backend process started${proc.pid ? ` (PID ${proc.pid})` : ""}`,
+      );
+      void refreshBackendStatus();
+    } catch (error) {
+      setStarting(false);
+      appendLog(`[system] Failed to start backend: ${getErrorMessage(error)}`);
     }
+  }, [appendLog, refreshBackendStatus, setLogs]);
 
-    setSpawnId(null);
-    setBackendPid(null);
-    setStarting(false);
-    appendLog("[system] Backend stopped");
-    qc.invalidateQueries({ queryKey: ["backendStatus"] });
-  };
+  const stopBackend = useCallback(async () => {
+    appendLog("[system] Stopping backend...");
+    try {
+      await window.api.stopBackend();
+      setBackendState({
+        isRunning: false,
+        pid: null,
+      });
+      setStarting(false);
+      appendLog("[system] Backend stopped");
+    } catch (error) {
+      appendLog(`[system] Failed to stop backend: ${getErrorMessage(error)}`);
+    } finally {
+      void refreshBackendStatus();
+    }
+  }, [appendLog, refreshBackendStatus]);
 
-  // Listen for stdout/stderr/exit from the spawned process
   useEffect(() => {
-    if (!window.NL_PORT) return;
-    const handler = (evt: CustomEvent) => {
-      if (spawnId === null || evt.detail.id !== spawnId) return;
-      const action: string = evt.detail.action;
-      if (action === "stdOut" || action === "stdErr") {
-        const text: string = evt.detail.data;
-        for (const line of text.split("\n")) {
-          if (line.trim()) appendLog(line);
-        }
-      } else if (action === "exit") {
-        appendLog("[system] Process exited (code " + evt.detail.data + ")");
-        setSpawnId(null);
-        setBackendPid(null);
+    return window.api.onBackendProcessEvent((event) => {
+      if (event.type === "started") {
+        setBackendState({
+          isRunning: true,
+          pid: event.pid,
+        });
+        return;
       }
-    };
-    Neutralino.events.on("spawnedProcess", handler);
-    return () => {
-      Neutralino.events.off("spawnedProcess", handler);
-    };
-  }, [spawnId, appendLog]);
 
-  // // Auto-start on mount
+      if (event.type === "output") {
+        appendLog(event.line);
+        return;
+      }
+
+      setBackendState({
+        isRunning: false,
+        pid: null,
+      });
+      setStarting(false);
+      appendLog(`[system] Process exited (${formatExitMessage(event)})`);
+      void refreshBackendStatus();
+    });
+  }, [appendLog, refreshBackendStatus]);
+
   useEffect(() => {
-    if (!spawnId) startBackend();
-  }, []);
+    let cancelled = false;
 
-  // Auto-scroll logs
+    void window.api
+      .getBackendState()
+      .then((state) => {
+        if (cancelled) return;
+
+        setBackendState(state);
+        if (!state.isRunning) {
+          void startBackend();
+        }
+      })
+      .catch((error) => {
+        if (cancelled) return;
+
+        setStarting(false);
+        appendLog(`[system] Failed to read backend state: ${getErrorMessage(error)}`);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [appendLog, startBackend]);
+
   useEffect(() => {
     logEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [logs]);
 
   const isRunning = isUp && !isError;
+  const hasProcess = backendState.isRunning || starting;
+
   useEffect(() => {
     if (isRunning) setStarting(false);
   }, [isRunning]);
@@ -176,17 +198,16 @@ export function BackendStatusButton() {
                 <Switch
                   size="sm"
                   isSelected={mirrorToConsole}
-                  onChange={setMirrorToConsole}
+                  onChange={() => setMirrorToConsole((current) => !current)}
                 >
                   <Switch.Control>
-                    <Switch.Thumb>
-                    </Switch.Thumb>
+                    <Switch.Thumb />
                   </Switch.Control>
                   <Switch.Content>
                     <Label>Console</Label>
                   </Switch.Content>
                 </Switch>
-                {(isRunning || starting) && window.NL_PORT ? (
+                {hasProcess ? (
                   <Button size="sm" variant="danger-soft" onPress={stopBackend}>
                     <Square size={14} />
                     Stop

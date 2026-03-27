@@ -1,4 +1,9 @@
 import { contextBridge, ipcRenderer } from "electron";
+import type {
+  BackendProcessEvent,
+  BackendStartResult,
+  BackendState,
+} from "../shared/types/backend";
 
 // Custom APIs for renderer
 const api = {
@@ -13,6 +18,22 @@ const api = {
   },
   onIsMaximized: (callback: (isMaximized: boolean) => void) => {
     ipcRenderer.on("window:isMaximized", (_, isMaximized: boolean) => callback(isMaximized));
+  },
+  startBackend: () => {
+    return ipcRenderer.invoke("backend:start") as Promise<BackendStartResult>;
+  },
+  stopBackend: () => {
+    return ipcRenderer.invoke("backend:stop") as Promise<BackendState>;
+  },
+  getBackendState: () => {
+    return ipcRenderer.invoke("backend:state") as Promise<BackendState>;
+  },
+  onBackendProcessEvent: (callback: (event: BackendProcessEvent) => void) => {
+    const listener = (_: unknown, event: BackendProcessEvent) => callback(event);
+    ipcRenderer.on("backend:process-event", listener);
+    return () => {
+      ipcRenderer.off("backend:process-event", listener);
+    };
   },
 };
 

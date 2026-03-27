@@ -84,7 +84,7 @@ const barcodes = Array.from({ length: 96 })
   }));
 
 export function NewRunForm() {
-  const { modal, handleOpen, handleClose } = useModal();
+  const { modal, handleOpen, setIsOpen, handleClose } = useModal();
   const [storedForm, setStoredForm] = useLocalStorage<MetaGenomic | undefined>(
     META_GENOMIC_FORM_STORAGE_KEY,
     undefined,
@@ -149,12 +149,12 @@ export function NewRunForm() {
 
   return (
     <>
-      <Drawer {...modal}>
+      <Drawer {...modal} onOpenChange={setIsOpen}>
         <Button onPress={handleOpen}>
           <Plus />
           New Metagenomic
         </Button>
-        <Drawer.Backdrop>
+        <Drawer.Backdrop variant="blur" isDismissable>
           <Drawer.Content placement="right">
             <FormProvider {...form}>
               <form onSubmit={form.handleSubmit(handleSubmit)}>
@@ -260,7 +260,10 @@ export function NewRunForm() {
                                 label="Krona Database"
                                 readOnly
                               />
-                              <Alert status="accent" className="bg-surface-secondary w-full col-span-2">
+                              <Alert
+                                status="accent"
+                                className="bg-surface-secondary col-span-2 w-full"
+                              >
                                 <Alert.Indicator />
                                 <Alert.Content>
                                   <Alert.Title>Path configuration</Alert.Title>
@@ -275,10 +278,7 @@ export function NewRunForm() {
                                     page.
                                   </Alert.Description>
                                 </Alert.Content>
-                     
                               </Alert>
-
-                          
                             </Accordion.Body>
                           </Accordion.Panel>
                         </Accordion.Item>

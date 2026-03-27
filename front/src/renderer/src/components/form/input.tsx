@@ -4,13 +4,12 @@ import {
   FieldError,
   InputGroup,
   type InputProps,
-  Input as InputUI,
   Label,
   TextField,
-  TextFieldProps,
+  TextFieldProps
 } from "@heroui/react";
-import { useController } from "react-hook-form";
 import { File } from "lucide-react";
+import { useController } from "react-hook-form";
 
 export function Input({
   name,
@@ -38,8 +37,7 @@ export function Input({
               variant="tertiary"
               onPress={async () => {
                 try {
-                  const path =
-                    await Neutralino.os.showFolderDialog("Select Data Folder");
+                  const path = ""
                   if (path) {
                     field.onChange(path, {
                       shouldValidate: true,

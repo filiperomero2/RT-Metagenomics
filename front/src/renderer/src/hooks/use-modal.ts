@@ -5,6 +5,7 @@ export function useModal() {
 
   const handleClose = () => setIsOpen(false);
   const handleOpen = () => setIsOpen(true);
+
   return {
     modal: {
       isOpen,
@@ -12,5 +13,6 @@ export function useModal() {
     },
     handleOpen,
     handleClose,
+    setIsOpen,
   };
 }
