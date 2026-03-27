@@ -17,7 +17,7 @@ export function Header() {
       id="header"
       className="bg-surface app-drag sticky top-0 flex h-[2.75rem] w-full items-center justify-between p-1 select-none"
     >
-      <div className="app-no-drag">
+      <div className="app-no-drag flex h-full items-center justify-center">
         <Button
           isIconOnly
           variant="ghost"
