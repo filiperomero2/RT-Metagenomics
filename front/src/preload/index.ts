@@ -20,6 +20,9 @@ const api = {
   closeWindow: () => {
     ipcRenderer.send("window:close");
   },
+  selectFolder: () => {
+    return ipcRenderer.invoke("dialog:selectFolder") as Promise<string | null>;
+  },
   openBackendMonitorWindow: () => {
     return ipcRenderer.invoke("window:openBackendMonitor");
   },

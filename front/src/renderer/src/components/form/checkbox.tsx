@@ -1,5 +1,13 @@
 import { cn } from "@/utils/cn";
-import { type CheckboxProps, Checkbox as CheckBoxUI } from "@heroui/react";
+import {
+  type CheckboxProps,
+  Checkbox as CheckBoxUI,
+  Description,
+  Label,
+  TextField,
+  Switch,
+  Surface,
+} from "@heroui/react";
 import { useController } from "react-hook-form";
 
 export function CheckBox({
@@ -7,27 +15,26 @@ export function CheckBox({
   label,
   ...rest
 }: CheckboxProps & { name: string; label?: string }) {
-  const { field } = useController({ name });
+  const { field, fieldState } = useController({ name });
+
+  // implement using switch
 
   return (
-    <CheckBoxUI
-      {...rest}
-      {...field}
-      style={{ color: `hsl(var(--heroui-${rest.color}) / 1)` }}
-      classNames={{
-        base: cn(
-          "inline-flex w-full max-w-md bg-content2 py-2.5 gap-1 m-0 mb-4 px-2",
-          "hover:bg-content3 items-center justify-start",
-          "cursor-pointer rounded-lg border-2 border-transparent",
-          "data-[selected=true]:border-current/20 data-[selected=true]:bg-current/20",
-        ),
-        label: "w-full ml-1",
-        wrapper: "mr-0"
-      }}
-      isSelected={field.value}
-      onValueChange={field.onChange}
-    >
-      {label}
-    </CheckBoxUI>
+    <Surface variant="tertiary" className="mt-2 w-full rounded-xl px-1 py-3">
+      <CheckBoxUI
+        {...field}
+        isInvalid={fieldState.invalid}
+        name={name}
+        className="w-full px-2"
+        {...rest}
+      >
+        <CheckBoxUI.Control>
+          <CheckBoxUI.Indicator />
+        </CheckBoxUI.Control>
+        <CheckBoxUI.Content>
+          {label && <Label htmlFor={name}>{label}</Label>}
+        </CheckBoxUI.Content>
+      </CheckBoxUI>
+    </Surface>
   );
 }

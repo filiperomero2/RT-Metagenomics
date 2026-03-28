@@ -1,15 +1,30 @@
-import { api } from "@/lib/axios";
-import { useQuery } from "@tanstack/react-query";
+import type { BackendProcessEvent } from "../../../shared/types/backend";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
+
+const BACKEND_STATE_QUERY_KEY = ["backend-state"] as const;
+
+function toOnlineState(event: BackendProcessEvent) {
+  return event.type === "started";
+}
 
 export function useBackendStatus() {
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    return window.api.onBackendProcessEvent((event) => {
+      queryClient.setQueryData(BACKEND_STATE_QUERY_KEY, toOnlineState(event));
+    });
+  }, [queryClient]);
+
   return useQuery({
-    queryKey: ["backend-health"],
-    refetchInterval: 5000,
-    retry: false,
+    queryKey: BACKEND_STATE_QUERY_KEY,
     queryFn: async () => {
-      const response = await api.get("/health");
-      return response.data;
+      const state = await window.api.getBackendState();
+      return state.isRunning;
     },
-    select: () => true as const,
+    refetchOnWindowFocus: false,
+    retry: false,
+    staleTime: Number.POSITIVE_INFINITY,
   });
 }

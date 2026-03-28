@@ -6,7 +6,7 @@ import {
   type InputProps,
   Label,
   TextField,
-  TextFieldProps
+  TextFieldProps,
 } from "@heroui/react";
 import { File } from "lucide-react";
 import { useController } from "react-hook-form";
@@ -17,15 +17,21 @@ export function Input({
   isFolderSelector,
   label,
   ...rest
-}: TextFieldProps & InputProps & {
-  name: string;
-  label?: string;
-  isFolderSelector?: boolean;
-}) {
+}: TextFieldProps &
+  InputProps & {
+    name: string;
+    label?: string;
+    isFolderSelector?: boolean;
+  }) {
   const { field, fieldState } = useController({ name });
 
   return (
-    <TextField variant="secondary" {...rest} className={cn("w-full", className)}>
+    <TextField
+      variant="secondary"
+      isInvalid={fieldState.invalid}
+      {...rest}
+      className={cn("w-full", className)}
+    >
       {label && <Label>{label}</Label>}
       <InputGroup>
         <InputGroup.Input {...field} />
@@ -36,15 +42,9 @@ export function Input({
               isIconOnly
               variant="tertiary"
               onPress={async () => {
-                try {
-                  const path = ""
-                  if (path) {
-                    field.onChange(path, {
-                      shouldValidate: true,
-                    });
-                  }
-                } catch {
-                  // dialog cancelled or Neutralino unavailable
+                const path = await window.api.selectFolder();
+                if (path) {
+                  field.onChange(path);
                 }
               }}
             >
@@ -53,10 +53,7 @@ export function Input({
           </InputGroup.Suffix>
         )}
       </InputGroup>
-
-      {fieldState.invalid && (
-        <FieldError>{fieldState.error?.message}</FieldError>
-      )}
+      <FieldError>{fieldState.error?.message}</FieldError>
     </TextField>
   );
 }

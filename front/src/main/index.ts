@@ -1,8 +1,8 @@
 import { electronApp, is, optimizer } from "@electron-toolkit/utils";
-import { app, BrowserWindow, ipcMain, shell } from "electron";
+import { app, BrowserWindow, shell } from "electron";
 import { join } from "path";
-import icon from "../renderer/public/logo.png";
 import iconIco from "../renderer/public/logo.ico";
+import icon from "../renderer/public/logo.png";
 import { stopBackendProcess } from "./backend-process";
 import { setupEvents, setupIpcHandlers } from "./events";
 
@@ -74,8 +74,8 @@ app.on("window-all-closed", () => {
   }
 });
 
-app.on("before-quit", () => {
-  void stopBackendProcess();
+app.on("before-quit", async () => {
+  await stopBackendProcess();
 });
 
 // In this file you can include the rest of your app's specific main process

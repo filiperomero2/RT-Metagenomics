@@ -1,6 +1,7 @@
 import { cn } from "@/utils/cn";
 import {
   Description,
+  FieldError,
   Header,
   Label,
   ListBox,
@@ -22,7 +23,7 @@ export function Select({
   const { field, fieldState } = useController({ name });
 
   return (
-    <SelectUI variant="secondary">
+    <SelectUI variant="secondary" {...rest} {...field} isInvalid={fieldState.invalid}>
       {label && <Label>{label}</Label>}
       <SelectUI.Trigger>
         <SelectUI.Value />
@@ -34,6 +35,7 @@ export function Select({
           {children}
         </ListBox>
       </SelectUI.Popover>
+      <FieldError>{fieldState.error?.message}</FieldError>
     </SelectUI>
   );
 

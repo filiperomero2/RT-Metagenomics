@@ -1,12 +1,12 @@
 import { useBackendStatus } from "@/hooks/use-backend-status";
 import { cn } from "@/utils/cn";
 import { Button, Popover } from "@heroui/react";
-import { Circle, Loader } from "lucide-react";
+import { Circle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { BackendMonitorPanel } from "./backend-monitor-panel";
 
 export function BackendStatusButton() {
-  const { data: isUp, isError, isLoading } = useBackendStatus();
+  const { data: isUp, isError } = useBackendStatus();
   const [isDetached, setIsDetached] = useState(false);
 
   const isRunning = isUp && !isError;
@@ -38,17 +38,13 @@ export function BackendStatusButton() {
       aria-label="Backend status"
       onPress={isDetached ? () => void window.api.openBackendMonitorWindow() : undefined}
     >
-      {isLoading ? (
-        <Loader size={18} className="animate-spin text-amber-400" />
-      ) : (
-        <Circle
-          size={18}
-          className={cn(
-            "fill-success text-success",
-            !isRunning && "fill-danger text-danger",
-          )}
-        />
-      )}
+      <Circle
+        size={18}
+        className={cn(
+          "fill-success text-success",
+          !isRunning && "fill-danger text-danger",
+        )}
+      />
     </Button>
   );
 

@@ -1,8 +1,13 @@
 import { useBackendStatus } from "@/hooks/use-backend-status";
 import { cn } from "@/utils/cn";
 import { Button, Card } from "@heroui/react";
-import { useQueryClient } from "@tanstack/react-query";
-import { ArrowDown, ExternalLink, Play, Square } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowDownToLine,
+  ExternalLink,
+  Play,
+  Square,
+} from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { MAX_BACKEND_LOG_LINES } from "../../../../shared/backend-log";
 import type {
@@ -100,8 +105,6 @@ export function BackendMonitorPanel({
   detached = false,
   logViewportClassName,
 }: BackendMonitorPanelProps) {
-  const qc = useQueryClient();
-  const [starting, setStarting] = useState(false);
   const [logs, setLogs] = useState<BackendLogEntry[]>([]);
   const [backendState, setBackendState] = useState<BackendState>({
     isRunning: false,
@@ -110,7 +113,7 @@ export function BackendMonitorPanel({
   const [autoScroll, setAutoScroll] = useState(true);
   const logViewportRef = useRef<HTMLDivElement>(null);
   const isProgrammaticScrollRef = useRef(false);
-  const { data: isUp, isError, isLoading } = useBackendStatus();
+  const { data: isUp, isError } = useBackendStatus();
 
   const scrollViewportToBottom = useCallback(() => {
     const viewport = logViewportRef.current;
@@ -133,49 +136,32 @@ export function BackendMonitorPanel({
     setLogs((prev) => [...prev, entry].slice(-MAX_BACKEND_LOG_LINES));
   }, []);
 
-  const refreshBackendStatus = useCallback(() => {
-    return qc.invalidateQueries({ queryKey: ["backend-health"] });
-  }, [qc]);
-
   const startBackend = useCallback(async () => {
-    setStarting(true);
-
     try {
       const proc = await window.api.startBackend();
       setBackendState({
         isRunning: true,
         pid: proc.pid,
       });
-
-      if (proc.alreadyRunning) {
-        setStarting(false);
-      }
-
-      void refreshBackendStatus();
     } catch (error) {
-      setStarting(false);
       console.error(
         "Failed to start backend monitor window:",
         getErrorMessage(error),
       );
     }
-  }, [refreshBackendStatus]);
+  }, []);
 
   const stopBackend = useCallback(async () => {
     try {
       const state = await window.api.stopBackend();
       setBackendState(state);
-      if (!state.isRunning) {
-        setStarting(false);
-      }
-      void refreshBackendStatus();
     } catch (error) {
       console.error(
         "Failed to stop backend monitor window:",
         getErrorMessage(error),
       );
     }
-  }, [refreshBackendStatus]);
+  }, []);
 
   useEffect(() => {
     return window.api.onBackendProcessEvent((event) => {
@@ -191,11 +177,9 @@ export function BackendMonitorPanel({
         isRunning: false,
         pid: null,
       });
-      setStarting(false);
-      void refreshBackendStatus();
       console.info("[backend]", `Process exited (${formatExitMessage(event)})`);
     });
-  }, [refreshBackendStatus]);
+  }, []);
 
   useEffect(() => {
     const unsubscribeLog = window.api.onBackendLog((log) => {
@@ -223,7 +207,6 @@ export function BackendMonitorPanel({
       .catch((error) => {
         if (cancelled) return;
 
-        setStarting(false);
         console.error(
           "Failed to initialize backend monitor:",
           getErrorMessage(error),
@@ -246,18 +229,10 @@ export function BackendMonitorPanel({
   }, [autoScroll, logs, scrollViewportToBottom]);
 
   const isRunning = isUp && !isError;
-  const hasProcess = backendState.isRunning || starting;
-
-  useEffect(() => {
-    if (isRunning) {
-      setStarting(false);
-    }
-  }, [isRunning]);
+  const hasProcess = backendState.isRunning;
 
   const getStatusLabel = () => {
-    if (isLoading) return "Checking backend...";
     if (isRunning) return "Backend is running";
-    if (starting) return "Starting backend...";
     return "Backend is offline";
   };
 
@@ -290,7 +265,7 @@ export function BackendMonitorPanel({
               });
             }}
           >
-            <ArrowDown size={14} />
+            <ArrowDownToLine size={14} />
           </Button>
 
           {hasProcess ? (
@@ -307,7 +282,7 @@ export function BackendMonitorPanel({
         </div>
       </Card.Header>
 
-      <Card.Content className="flex-1 min-h-0">
+      <Card.Content className="min-h-0 flex-1">
         <div
           ref={logViewportRef}
           className={cn(

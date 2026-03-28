@@ -1,14 +1,11 @@
-import { cn } from "@/utils/cn";
 import {
-  type AutocompleteProps,
-  Autocomplete as AutocompleteUI,
   ComboBox,
   ComboBoxProps,
+  FieldError,
   Input,
   Label,
-  ListBox,
+  ListBox
 } from "@heroui/react";
-import { useEffect, useState } from "react";
 import { useController } from "react-hook-form";
 
 export function Autocomplete<T extends object = object>({
@@ -18,18 +15,13 @@ export function Autocomplete<T extends object = object>({
   children,
   ...rest
 }: ComboBoxProps<T> & { name: string; label: string }) {
-  const [inputValue, setInputValue] = useState("");
   const { field, fieldState } = useController({ name });
-
-  useEffect(() => {
-    setInputValue(field.value || "");
-  }, [field.value]);
 
   return (
     <ComboBox
       variant="secondary"
-      selectedKey={field.value}
-      onSelectionChange={field.onChange}
+      isInvalid={fieldState.invalid}
+      {...field}
       {...rest}
     >
       {label && <Label>{label}</Label>}
@@ -40,6 +32,7 @@ export function Autocomplete<T extends object = object>({
       <ComboBox.Popover>
         <ListBox>{children}</ListBox>
       </ComboBox.Popover>
+      <FieldError>{fieldState.error?.message}</FieldError>
     </ComboBox>
   );
 

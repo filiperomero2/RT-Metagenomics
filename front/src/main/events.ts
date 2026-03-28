@@ -1,15 +1,22 @@
 import { is } from "@electron-toolkit/utils";
-import { BrowserWindow, ipcMain } from "electron";
+import { BrowserWindow, dialog, ipcMain } from "electron";
 import {
   closeBackendMonitorWindow,
   isBackendMonitorWindowOpen,
   openBackendMonitorWindow,
 } from "./backend-monitor-window";
-import { registerBackendIpcHandlers } from "./backend-process";
+import { registerBackendIpcHandlers, startBackendProcess } from "./backend-process";
 
 export function setupEvents(mainWindow: BrowserWindow) {
   mainWindow.on("ready-to-show", () => {
     mainWindow!.show();
+
+    try {
+      startBackendProcess();
+    } catch (error) {
+      console.error("Failed to auto-start backend on window open:", error);
+    }
+
     if (is.dev) {
       mainWindow!.webContents.openDevTools({ mode: "detach" });
     }
@@ -29,6 +36,7 @@ export function setupIpcHandlers(mainWindow: BrowserWindow) {
   ipcMain.removeHandler("window:getBackendMonitorState");
   ipcMain.removeHandler("window:reattachBackendMonitor");
   ipcMain.removeHandler("window:getIsMaximized");
+  ipcMain.removeHandler("dialog:selectFolder");
   ipcMain.handle("window:openBackendMonitor", async () => {
     openBackendMonitorWindow(mainWindow);
   });
@@ -40,6 +48,18 @@ export function setupIpcHandlers(mainWindow: BrowserWindow) {
   });
   ipcMain.handle("window:getIsMaximized", async (event) => {
     return BrowserWindow.fromWebContents(event.sender)?.isMaximized() ?? false;
+  });
+  ipcMain.handle("dialog:selectFolder", async (event) => {
+    const targetWindow = BrowserWindow.fromWebContents(event.sender) ?? mainWindow;
+    const result = await dialog.showOpenDialog(targetWindow, {
+      properties: ["openDirectory"],
+    });
+
+    if (result.canceled) {
+      return null;
+    }
+
+    return result.filePaths[0] ?? null;
   });
 
   // IPC handlers for window controls

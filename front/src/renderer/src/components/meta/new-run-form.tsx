@@ -9,11 +9,8 @@ import {
   AccordionItem,
   Alert,
   Button,
-  Drawer,
-  DrawerBody,
-  DrawerFooter,
-  DrawerHeader,
   ListBox,
+  Modal,
 } from "@heroui/react";
 import { useMutation } from "@tanstack/react-query";
 import {
@@ -37,7 +34,7 @@ import { useModal } from "@/hooks/use-modal";
 import { SettingsData } from "@/routes/settings";
 import { cn } from "@/utils/cn";
 import { Link } from "@tanstack/react-router";
-import { Cog, Database, Dna, Info, Plus, X } from "lucide-react";
+import { Cog, Database, Dna, Plus, X } from "lucide-react";
 
 const schema = z.object({
   path: z.string().min(1, { message: "Path is required" }),
@@ -149,216 +146,207 @@ export function NewRunForm() {
 
   return (
     <>
-      <Drawer {...modal} onOpenChange={setIsOpen}>
+      <Modal {...modal}>
         <Button onPress={handleOpen}>
           <Plus />
           New Metagenomic
         </Button>
-        <Drawer.Backdrop variant="blur" isDismissable>
-          <Drawer.Content placement="right">
-            <FormProvider {...form}>
-              <form onSubmit={form.handleSubmit(handleSubmit)}>
-                <Drawer.Dialog className="w-3xl">
-                  <Drawer.Header>New Metagenomics</Drawer.Header>
-                  <Drawer.Body className="grid h-full w-full grid-cols-1 content-start gap-x-3 gap-y-1">
-                    <div className="grid grid-cols-2 gap-2">
-                      <Input
-                        name="path"
-                        type="text"
-                        label="Path"
-                        placeholder="/path/to/data"
-                        className="col-span-3"
-                        isFolderSelector
-                      />
-                      <Input
-                        name="runName"
-                        type="text"
-                        label="Run Name"
-                        placeholder="Name of the run"
-                      />
-                      <Select name="dataType" label="Data Type">
-                        <ListBox.Item id="illumina" textValue="Illumina">
-                          Illumina
-                          <ListBox.ItemIndicator />
-                        </ListBox.Item>
+        <Modal.Backdrop variant="blur" isDismissable>
+          <FormProvider {...form}>
+            <Modal.Container size="cover">
+              <Modal.Dialog>
+                <Modal.CloseTrigger />
+                <Modal.Header>New Metagenomics</Modal.Header>
+                <Modal.Body className="grid content-start gap-x-3 gap-y-1">
+                  <div className="grid grid-cols-[1fr_1fr_0.5fr] gap-2 px-3">
+                    <Input
+                      name="path"
+                      type="text"
+                      label="Path"
+                      placeholder="/path/to/data"
+                      isFolderSelector
+                    />
+                    <Input
+                      name="runName"
+                      type="text"
+                      label="Run Name"
+                      placeholder="Name of the run"
+                    />
+                    <Select name="dataType" label="Data Type">
+                      <ListBox.Item id="illumina" textValue="Illumina">
+                        Illumina
+                        <ListBox.ItemIndicator />
+                      </ListBox.Item>
 
-                        <ListBox.Item id="nanopore" textValue="Nanopore">
-                          Nanopore
-                          <ListBox.ItemIndicator />
-                        </ListBox.Item>
-                      </Select>
-                    </div>
+                      <ListBox.Item id="nanopore" textValue="Nanopore">
+                        Nanopore
+                        <ListBox.ItemIndicator />
+                      </ListBox.Item>
+                    </Select>
+                  </div>
 
-                    <div className="nth-[0]:px-3">
-                      <Accordion
-                        allowsMultipleExpanded
-                        defaultExpandedKeys={["Options", "Samples"]}
+                  <div className="nth-[0]:px-3">
+                    <Accordion
+                      allowsMultipleExpanded
+                      defaultExpandedKeys={["Options", "Samples"]}
+                    >
+                      <Accordion.Item id="Options">
+                        <Accordion.Heading>
+                          <Accordion.Trigger>
+                            <p className="flex items-center gap-2">Options</p>
+                            <Cog />
+                          </Accordion.Trigger>
+                        </Accordion.Heading>
+                        <Accordion.Panel>
+                          <Accordion.Body className="@container grid grid-cols-2 gap-2">
+                            <NumberInput
+                              name="threads"
+                              label="Threads"
+                              className="col-span-2 @md:col-span-1"
+                            />
+                            <NumberInput
+                              name="threadsTotal"
+                              label="Threads Total"
+                              className="col-span-2 @md:col-span-1"
+                            />
+                            <NumberInput
+                              name="trim"
+                              label="Trim"
+                              className="col-span-2 @md:col-span-1"
+                            />
+                            <NumberInput
+                              name="minimumReadLength"
+                              label="Minimum Read Length"
+                              className="col-span-2 @md:col-span-1"
+                            />
+
+                            <CheckBox
+                              name="removeUnclassifiedReads"
+                              label="Remove Unclassified Reads"
+                            />
+                            <CheckBox
+                              name="removeHumanReads"
+                              label="Remove Human Reads"
+                            />
+                          </Accordion.Body>
+                        </Accordion.Panel>
+                      </Accordion.Item>
+
+                      <Accordion.Item id="Databases">
+                        <Accordion.Heading>
+                          <Accordion.Trigger>
+                            <p className="flex items-center gap-2">Databases</p>
+                            <Database />
+                          </Accordion.Trigger>
+                        </Accordion.Heading>
+                        <Accordion.Panel>
+                          <Accordion.Body className="grid grid-cols-2 gap-2">
+                            <Input
+                              name="kraken2Database"
+                              label="Kraken2 Database"
+                              readOnly
+                            />
+                            <Input
+                              name="kronaDatabase"
+                              label="Krona Database"
+                              readOnly
+                            />
+                            <Alert
+                              status="accent"
+                              className="bg-surface-secondary col-span-2 w-full"
+                            >
+                              <Alert.Indicator />
+                              <Alert.Content>
+                                <Alert.Title>Path configuration</Alert.Title>
+                                <Alert.Description>
+                                  To change database paths, go to the{" "}
+                                  <Link
+                                    to="/settings"
+                                    className="font-bold underline underline-offset-2"
+                                  >
+                                    Settings
+                                  </Link>{" "}
+                                  page.
+                                </Alert.Description>
+                              </Alert.Content>
+                            </Alert>
+                          </Accordion.Body>
+                        </Accordion.Panel>
+                      </Accordion.Item>
+
+                      <AccordionItem
+                        id="Samples"
+                        // textValue="Samples"
+                        // indicator={<Dna />}
                       >
-                        <Accordion.Item id="Options">
-                          <Accordion.Heading>
-                            <Accordion.Trigger>
-                              <p className="flex items-center gap-2">Options</p>
-                              <Cog />
-                            </Accordion.Trigger>
-                          </Accordion.Heading>
-                          <Accordion.Panel>
-                            <Accordion.Body className="@container grid grid-cols-2 gap-2">
-                              <NumberInput
-                                name="threads"
-                                label="Threads"
-                                className="col-span-2 @md:col-span-1"
-                              />
-                              <NumberInput
-                                name="threadsTotal"
-                                label="Threads Total"
-                                className="col-span-2 @md:col-span-1"
-                              />
-                              <NumberInput
-                                name="trim"
-                                label="Trim"
-                                className="col-span-2 @md:col-span-1"
-                              />
-                              <NumberInput
-                                name="minimumReadLength"
-                                label="Minimum Read Length"
-                                className="col-span-2 @md:col-span-1"
-                              />
+                        <Accordion.Heading>
+                          <Accordion.Trigger>
+                            <p className="flex items-center gap-2">Samples</p>
+                            <Dna />
+                          </Accordion.Trigger>
+                        </Accordion.Heading>
 
-                              <CheckBox
-                                name="removeUnclassifiedReads"
-                                label="Remove Unclassified Reads"
-                              />
-                              <CheckBox
-                                name="removeHumanReads"
-                                label="Remove Human Reads"
-                              />
-                            </Accordion.Body>
-                          </Accordion.Panel>
-                        </Accordion.Item>
-
-                        <Accordion.Item
-                          id="Databases"
-                          // indicator={<Database />}
-                        >
-                          <Accordion.Heading>
-                            <Accordion.Trigger>
-                              <p className="flex items-center gap-2">
-                                Databases
-                              </p>
-                              <Database />
-                            </Accordion.Trigger>
-                          </Accordion.Heading>
-                          <Accordion.Panel>
-                            <Accordion.Body className="grid grid-cols-2 gap-2">
-                              <Input
-                                name="kraken2Database"
-                                label="Kraken2 Database"
-                                readOnly
-                              />
-                              <Input
-                                name="kronaDatabase"
-                                label="Krona Database"
-                                readOnly
-                              />
-                              <Alert
-                                status="accent"
-                                className="bg-surface-secondary col-span-2 w-full"
-                              >
-                                <Alert.Indicator />
-                                <Alert.Content>
-                                  <Alert.Title>Path configuration</Alert.Title>
-                                  <Alert.Description>
-                                    To change database paths, go to the{" "}
-                                    <Link
-                                      to="/settings"
-                                      className="font-bold underline underline-offset-2"
-                                    >
-                                      Settings
-                                    </Link>{" "}
-                                    page.
-                                  </Alert.Description>
-                                </Alert.Content>
-                              </Alert>
-                            </Accordion.Body>
-                          </Accordion.Panel>
-                        </Accordion.Item>
-
-                        <AccordionItem
-                          id="Samples"
-                          // textValue="Samples"
-                          // indicator={<Dna />}
-                        >
-                          <Accordion.Heading>
-                            <Accordion.Trigger>
-                              <p className="flex items-center gap-2">Samples</p>
-                              <Dna />
-                            </Accordion.Trigger>
-                          </Accordion.Heading>
-
-                          <Accordion.Panel>
-                            <Accordion.Body>
-                              <div className="grid gap-2 pb-2">
-                                {samplesArrayField.fields.map(
-                                  (field, index) => (
-                                    <Sample
-                                      key={field.id}
-                                      index={index}
-                                      canDelete={
-                                        samplesArrayField.fields.length > 1
-                                      }
-                                      deleteSample={() =>
-                                        samplesArrayField.remove(index)
-                                      }
-                                    />
-                                  ),
-                                )}
-                              </div>
-                              <Button
-                                className="mt-2 w-full"
-                                variant="primary"
-                                type="button"
-                                onPress={() =>
-                                  samplesArrayField.append(
-                                    { name: "", barcode: "" },
-                                    {
-                                      focusIndex:
-                                        samplesArrayField.fields.length,
-                                    },
-                                  )
-                                }
-                              >
-                                <Plus />
-                              </Button>
-                            </Accordion.Body>
-                          </Accordion.Panel>
-                        </AccordionItem>
-                      </Accordion>
-                    </div>
-                  </Drawer.Body>
-                  <Drawer.Footer>
-                    <Button
-                      variant="danger-soft"
-                      type="button"
-                      size="lg"
-                      onPress={handleClose}
-                    >
-                      Close
-                    </Button>
-                    <Button
-                      type="submit"
-                      size="lg"
-                      className="px-10"
-                      isPending={isPending}
-                    >
-                      Submit
-                    </Button>
-                  </Drawer.Footer>
-                </Drawer.Dialog>
-              </form>
-            </FormProvider>
-          </Drawer.Content>
-        </Drawer.Backdrop>
-      </Drawer>
+                        <Accordion.Panel>
+                          <Accordion.Body>
+                            <div className="grid gap-2 pb-2">
+                              {samplesArrayField.fields.map((field, index) => (
+                                <Sample
+                                  key={field.id}
+                                  index={index}
+                                  canDelete={
+                                    samplesArrayField.fields.length > 1
+                                  }
+                                  deleteSample={() =>
+                                    samplesArrayField.remove(index)
+                                  }
+                                />
+                              ))}
+                            </div>
+                            <Button
+                              className="mt-2 w-full"
+                              variant="primary"
+                              type="button"
+                              onPress={() =>
+                                samplesArrayField.append(
+                                  { name: "", barcode: "" },
+                                  {
+                                    focusIndex: samplesArrayField.fields.length,
+                                  },
+                                )
+                              }
+                            >
+                              <Plus />
+                            </Button>
+                          </Accordion.Body>
+                        </Accordion.Panel>
+                      </AccordionItem>
+                    </Accordion>
+                  </div>
+                </Modal.Body>
+                <Modal.Footer>
+                  <Button
+                    variant="danger-soft"
+                    type="button"
+                    size="lg"
+                    onPress={handleClose}
+                  >
+                    Close
+                  </Button>
+                  <Button
+                    type="submit"
+                    size="lg"
+                    className="px-10"
+                    isPending={isPending}
+                    onClick={form.handleSubmit(handleSubmit, console.log)}
+                  >
+                    Submit
+                  </Button>
+                </Modal.Footer>
+              </Modal.Dialog>
+            </Modal.Container>
+          </FormProvider>
+        </Modal.Backdrop>
+      </Modal>
     </>
   );
 }

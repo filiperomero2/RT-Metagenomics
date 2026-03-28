@@ -15,7 +15,7 @@ export function NumberInput({
   const { field, fieldState } = useController({ name });
 
   return (
-    <NumberField {...field} variant="secondary">
+    <NumberField {...field} variant="secondary" isInvalid={fieldState.invalid}>
       <Label>{label}</Label>
       <NumberField.Group>
         <NumberField.DecrementButton />
@@ -23,9 +23,7 @@ export function NumberInput({
         <NumberField.IncrementButton />
       </NumberField.Group>
       {description && <Description>{description}</Description>}
-      {fieldState.invalid && (
-        <FieldError>{fieldState.error?.message}</FieldError>
-      )}
+      <FieldError>{fieldState.error?.message}</FieldError>
     </NumberField>
   );
 }

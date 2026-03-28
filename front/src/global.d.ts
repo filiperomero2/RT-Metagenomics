@@ -14,6 +14,7 @@ declare global {
       getIsMaximized: () => Promise<boolean>;
       maximizeWindow: () => void;
       closeWindow: () => void;
+      selectFolder: () => Promise<string | null>;
       openBackendMonitorWindow: () => Promise<void>;
       reattachBackendMonitorWindow: () => Promise<void>;
       getBackendMonitorWindowState: () => Promise<boolean>;

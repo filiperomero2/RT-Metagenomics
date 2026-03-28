@@ -4,7 +4,7 @@ import { join } from "node:path";
 import icon from "../renderer/public/logo.png";
 import iconIco from "../renderer/public/logo.ico";
 
-let backendMonitorWindow: BrowserWindow | null = null;
+export let backendMonitorWindow: BrowserWindow | null = null;
 
 function broadcastBackendMonitorWindowStateChange() {
   const isOpen = isBackendMonitorWindowOpen();

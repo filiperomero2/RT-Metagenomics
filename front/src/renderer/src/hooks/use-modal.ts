@@ -9,7 +9,7 @@ export function useModal() {
   return {
     modal: {
       isOpen,
-      onClose: handleClose,
+      onOpenChange: setIsOpen,
     },
     handleOpen,
     handleClose,
