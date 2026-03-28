@@ -16,8 +16,11 @@ from usecases.stop_metagenomic_usecase import StopMetagenomicsUseCase
 from repositories.metagenomics_run_repository import MetagenomicsRunRepository
 from infra.database.db import get_session
 from services.database_setup_service import DatabaseSetupService
+from services.settings_service import SettingsService
 from usecases.update_kraken2_db_usecase import UpdateKraken2DbUseCase
 from usecases.update_krona_db_usecase import UpdateKronaDbUseCase
+from usecases.get_settings_usecase import GetSettingsUseCase
+from usecases.save_settings_usecase import SaveSettingsUseCase
 from repositories.config_repository import ConfigRepository
 
 # Database session dependency
@@ -128,6 +131,12 @@ def get_database_setup_service(
     """Get DatabaseSetupService instance."""
     return DatabaseSetupService(config_repository)
 
+def get_settings_service(
+    config_repository: Annotated[ConfigRepository, Depends(get_config_repository)]
+) -> SettingsService:
+    """Get SettingsService instance."""
+    return SettingsService(config_repository)
+
 def get_update_kraken2_db_usecase(
     database_setup_service: Annotated[DatabaseSetupService, Depends(get_database_setup_service)]
 ) -> UpdateKraken2DbUseCase:
@@ -139,6 +148,18 @@ def get_update_krona_db_usecase(
 ) -> UpdateKronaDbUseCase:
     """Get UpdateKronaDbUseCase instance."""
     return UpdateKronaDbUseCase(database_setup_service)
+
+def get_get_settings_usecase(
+    settings_service: Annotated[SettingsService, Depends(get_settings_service)]
+) -> GetSettingsUseCase:
+    """Get GetSettingsUseCase instance."""
+    return GetSettingsUseCase(settings_service)
+
+def get_save_settings_usecase(
+    settings_service: Annotated[SettingsService, Depends(get_settings_service)]
+) -> SaveSettingsUseCase:
+    """Get SaveSettingsUseCase instance."""
+    return SaveSettingsUseCase(settings_service)
 
 # Type aliases for cleaner imports
 CreateMetagenomicsUseCaseDependency = Annotated[CreateMetagenomicsRunUseCase, Depends(get_create_metagenomics_usecase)]
@@ -154,3 +175,6 @@ StopMetagenomicsUseCaseDependency = Annotated[StopMetagenomicsUseCase, Depends(g
 PathsServiceDependency = Annotated[PathsService, Depends(get_paths_service)]
 UpdateKraken2DbUseCaseDependency = Annotated[UpdateKraken2DbUseCase, Depends(get_update_kraken2_db_usecase)]
 UpdateKronaDbUseCaseDependency = Annotated[UpdateKronaDbUseCase, Depends(get_update_krona_db_usecase)]
+ConfigRepositoryDependency = Annotated[ConfigRepository, Depends(get_config_repository)]
+GetSettingsUseCaseDependency = Annotated[GetSettingsUseCase, Depends(get_get_settings_usecase)]
+SaveSettingsUseCaseDependency = Annotated[SaveSettingsUseCase, Depends(get_save_settings_usecase)]

@@ -29,10 +29,9 @@ import { z } from "zod";
 import { Autocomplete } from "@/components/form/autocomplete";
 import {
   META_GENOMIC_FORM_STORAGE_KEY,
-  SETTINGS_STORAGE_KEY,
 } from "@/constants/local-storage";
+import { useSettings } from "@/hooks/use-settings";
 import { useModal } from "@/hooks/use-modal";
-import { SettingsData } from "@/routes/settings";
 import { cn } from "@/utils/cn";
 import { Link } from "@tanstack/react-router";
 import { Cog, Database, Dna, Plus, X } from "lucide-react";
@@ -89,13 +88,7 @@ export function NewRunForm() {
   const [storedForm, setStoredForm] = useLocalStorage<
     z.infer<typeof schema> | undefined
   >(META_GENOMIC_FORM_STORAGE_KEY, undefined, { initializeWithValue: false });
-  const [globalSettings] = useLocalStorage<SettingsData | undefined>(
-    SETTINGS_STORAGE_KEY,
-    undefined,
-    {
-      initializeWithValue: false,
-    },
-  );
+  const { data: globalSettings, isLoading: isSettingsLoading } = useSettings();
 
   const { mutateAsync, isPending } = useMutation({
     mutationFn: (data: MetaGenomic) => api.post("/v1/metagenomics/run", data),
@@ -127,7 +120,10 @@ export function NewRunForm() {
         globalSettings?.databases?.kraken2 ?? storedForm?.kraken2Database ?? "",
       kronaDatabase:
         globalSettings?.databases?.krona ?? storedForm?.kronaDatabase ?? "",
-      diamondDatabase: globalSettings?.databases?.diamond?.taxdump ?? "",
+      diamondDatabase:
+        globalSettings?.databases?.diamond?.taxdump ??
+        storedForm?.diamondDatabase ??
+        "",
       samples: Array.from({ length: 3 })
         .fill(0)
         .map((_, i) => ({ name: "", barcode: "", isNegativeControl: false })),
@@ -155,7 +151,7 @@ export function NewRunForm() {
   };
 
   const button = (
-    <Button onPress={handleOpen}>
+    <Button onPress={handleOpen} isDisabled={isSettingsLoading}>
       <Plus />
       New Metagenomic
     </Button>

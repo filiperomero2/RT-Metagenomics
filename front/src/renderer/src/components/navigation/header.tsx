@@ -1,4 +1,4 @@
-import { Button, ButtonGroup } from "@heroui/react";
+import { Button, ButtonGroup, Separator } from "@heroui/react";
 import { useNavigate } from "@tanstack/react-router";
 import { ChartPie, Info, Settings } from "lucide-react";
 import { WindowControls } from "./window-controls";

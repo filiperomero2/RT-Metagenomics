@@ -1,8 +1,9 @@
 import { Input } from "@/components/form/input";
 import { NumberInput } from "@/components/form/number-input";
 import { ThemeSwitcher } from "@/components/state-components/theme-switcher";
-import { SETTINGS_STORAGE_KEY } from "@/constants/local-storage";
-import { Accordion, Button, Card, toast } from "@heroui/react";
+import { useSaveSettings, useSettings } from "@/hooks/use-settings";
+import { DEFAULT_SETTINGS, type SettingsData } from "@/types/settings";
+import { Button, Card, toast } from "@heroui/react";
 import { createFileRoute } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import {
@@ -13,74 +14,18 @@ import {
   Settings2,
   Timer,
 } from "lucide-react";
-import { useEffect } from "react";
 import { FormProvider, useForm } from "react-hook-form";
-
-interface DatabasePaths {
-  krona: string;
-  kraken2: string;
-  diamond: {
-    taxdump: string;
-    "assembly-summary": string;
-    "taxid-to-family": string;
-  };
-}
-
-export interface SettingsData {
-  polling_interval: number;
-  iteration_interval: number;
-  databases: DatabasePaths;
-}
-
-const DEFAULT_SETTINGS: SettingsData = {
-  polling_interval: 5,
-  iteration_interval: 10,
-  databases: {
-    krona: "",
-    kraken2: "",
-    diamond: {
-      taxdump: "",
-      "assembly-summary": "",
-      "taxid-to-family": "",
-    },
-  },
-};
-
-function loadSettings(): SettingsData {
-  try {
-    const stored = localStorage.getItem(SETTINGS_STORAGE_KEY);
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      return {
-        ...DEFAULT_SETTINGS,
-        ...parsed,
-        databases: {
-          ...DEFAULT_SETTINGS.databases,
-          ...parsed.databases,
-          diamond: {
-            ...DEFAULT_SETTINGS.databases.diamond,
-            ...parsed.databases?.diamond,
-          },
-        },
-      };
-    }
-  } catch {
-    // ignore parse errors
-  }
-  return DEFAULT_SETTINGS;
-}
-
-function saveSettings(settings: SettingsData) {
-  localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
-}
 
 export const Route = createFileRoute("/settings")({
   component: SettingsPage,
 });
 
 function SettingsPage() {
+  const { data: settings } = useSettings();
+  const { mutateAsync: saveSettings, isPending } = useSaveSettings();
+
   const methods = useForm<SettingsData>({
-    defaultValues: DEFAULT_SETTINGS,
+    values: settings ?? DEFAULT_SETTINGS,
   });
 
   const {
@@ -89,21 +34,10 @@ function SettingsPage() {
     formState: { isDirty },
   } = methods;
 
-  useEffect(() => {
-    const settings = loadSettings();
-    reset(settings);
-  }, [reset]);
-
-  const onSave = (data: SettingsData) => {
-    saveSettings(data);
-    reset(data);
-    toast.success("Your settings have been saved to local storage.");
-  };
-
-  const onReset = () => {
-    saveSettings(DEFAULT_SETTINGS);
-    reset(DEFAULT_SETTINGS);
-    toast.warning("All settings have been restored to defaults.");
+  const onSave = async (data: SettingsData) => {
+    const savedSettings = await saveSettings(data);
+    reset(savedSettings);
+    toast.success("Your settings have been saved.");
   };
 
   return (
@@ -119,11 +53,12 @@ function SettingsPage() {
             <h1 className="text-foreground text-3xl font-bold">Settings</h1>
           </div>
           <div className="flex gap-2">
-            <Button variant="danger-soft" onPress={onReset} size="sm">
-              <RotateCcw size={16} />
-              Reset
-            </Button>
-            <Button type="submit" isDisabled={!isDirty} size="sm">
+            <Button
+              type="submit"
+              isDisabled={!isDirty}
+              isPending={isPending}
+              size="sm"
+            >
               <Save size={16} />
               Save
             </Button>

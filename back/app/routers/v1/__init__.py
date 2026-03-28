@@ -2,15 +2,18 @@ from typing import Annotated, Optional
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import FileResponse, StreamingResponse
 from dto.health_check_response import HealthCheckResponse
+from dto.settings_config import SettingsConfig
 from usecases.create_metagenomic_usecase import CreateMetagenomicsRunInput, CreateMetagenomicsSampleInput
 
 from dto import CreateMetagenomicsRunRequest
 from infra.dependencies import (
     CreateMetagenomicsUseCaseDependency,
+    GetSettingsUseCaseDependency,
     ListMetagenomicsUseCaseDependency,
     GetMetagenomicsResultUseCaseDependency,
     GetMetagenomicsMetricsUseCaseDependency,
     ExportResultUseCaseDependency,
+    SaveSettingsUseCaseDependency,
     StartMetagenomicsUseCaseDependency,
     StopMetagenomicsUseCaseDependency,
     UpdateKraken2DbUseCaseDependency,
@@ -67,6 +70,19 @@ async def update_krona_database(usecase: UpdateKronaDbUseCaseDependency):
         ) from exc
 
     return {"status": "success"}
+
+
+@router.get("/config", response_model=SettingsConfig)
+async def get_app_config(usecase: GetSettingsUseCaseDependency):
+    return usecase.execute()
+
+
+@router.put("/config", response_model=SettingsConfig)
+async def save_app_config(
+    settings: SettingsConfig,
+    usecase: SaveSettingsUseCaseDependency
+):
+    return usecase.execute(settings)
 
 
 @router.post("/metagenomics/run", response_model=dict)
