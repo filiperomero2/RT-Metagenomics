@@ -1,6 +1,6 @@
 import { useBackendStatus } from "@/hooks/use-backend-status";
 import { cn } from "@/utils/cn";
-import { Button, Card } from "@heroui/react";
+import { Button, Card, ToggleButton } from "@heroui/react";
 import {
   ArrowDown,
   ArrowDownToLine,
@@ -244,7 +244,7 @@ export function BackendMonitorPanel({
             <div
               className={cn(
                 "size-4 rounded-full",
-                isRunning ? "bg-green-500" : "bg-red-500",
+                isRunning ? "bg-success" : "bg-danger",
               )}
             />
           )}
@@ -262,9 +262,9 @@ export function BackendMonitorPanel({
             </Button>
           )}
 
-          <Button
+          <ToggleButton
             size="sm"
-            variant={autoScroll ? "secondary" : "ghost"}
+            isSelected={autoScroll}
             onPress={() => {
               setAutoScroll((current) => {
                 const next = !current;
@@ -276,7 +276,7 @@ export function BackendMonitorPanel({
             }}
           >
             <ArrowDownToLine size={14} />
-          </Button>
+          </ToggleButton>
 
           {hasProcess ? (
             <Button size="sm" variant="danger-soft" onPress={stopBackend}>
