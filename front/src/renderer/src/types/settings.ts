@@ -1,6 +1,12 @@
+export interface Kraken2DatabaseConfig {
+  name: string;
+  value: string;
+  is_default: boolean;
+}
+
 export interface DatabasePaths {
   krona: string;
-  kraken2: string;
+  kraken2: Kraken2DatabaseConfig[];
   diamond: {
     taxdump: string;
     "assembly-summary": string;
@@ -19,7 +25,7 @@ export const DEFAULT_SETTINGS: SettingsData = {
   iteration_interval: 10,
   databases: {
     krona: "",
-    kraken2: "",
+    kraken2: [],
     diamond: {
       taxdump: "",
       "assembly-summary": "",
@@ -43,4 +49,10 @@ export function mergeSettings(
       },
     },
   };
+}
+
+export function getDefaultKraken2DatabasePath(
+  databases?: Kraken2DatabaseConfig[] | null,
+): string {
+  return databases?.find((database) => database.is_default)?.value ?? "";
 }

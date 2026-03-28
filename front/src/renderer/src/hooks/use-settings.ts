@@ -1,6 +1,9 @@
 import { api } from "@/lib/axios";
 import { queryKeys } from "@/utils/query-keys-factory";
-import { type SettingsData, mergeSettings } from "@/types/settings";
+import {
+  type SettingsData,
+  mergeSettings,
+} from "@/types/settings";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
 export function useSettings() {
@@ -45,6 +48,31 @@ export function useUpdateKronaDatabase() {
       errorMessage: {
         title: "Krona Database",
         description: "Failed to update the Krona database.",
+      },
+    },
+  });
+}
+
+export function useInstallKraken2Database() {
+  return useMutation({
+    mutationFn: async (url?: string) => {
+      const response = await api.post<{
+        status: string;
+        name: string;
+        kraken2Database: string;
+      }>("/v1/databases/kraken2/install", null, {
+        params: url ? { url } : undefined,
+      });
+      return response.data;
+    },
+    meta: {
+      successMessage: {
+        title: "Kraken2 Database",
+        description: "Kraken2 database installed successfully.",
+      },
+      errorMessage: {
+        title: "Kraken2 Database",
+        description: "Failed to install the Kraken2 database.",
       },
     },
   });

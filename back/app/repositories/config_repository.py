@@ -16,7 +16,7 @@ class ConfigRepository:
         stmt = select(Config)
         if type:
             stmt = stmt.where(Config.type == _normalize_config_type(type))
-        stmt = stmt.order_by(Config.id.desc())
+        stmt = stmt.order_by(Config.is_default.desc(), Config.id.desc())
         return self.session.exec(stmt).fetchall()
 
     def get_config(self, id: int) -> Config:
@@ -24,7 +24,15 @@ class ConfigRepository:
         return self.session.exec(stmt).first()
 
     def get_config_by_type(self, type: ConfigType) -> Config | None:
-        stmt = select(Config).where(Config.type == _normalize_config_type(type))
+        stmt = (
+            select(Config)
+            .where(Config.type == _normalize_config_type(type))
+            .order_by(Config.is_default.desc(), Config.id.desc())
+        )
+        return self.session.exec(stmt).first()
+
+    def get_config_by_name(self, name: str) -> Config | None:
+        stmt = select(Config).where(Config.name == name)
         return self.session.exec(stmt).first()
 
     def find_and_remove(self, name: str) -> Config:
@@ -41,3 +49,20 @@ class ConfigRepository:
         self.session.add(config)
         self.session.commit()
         return config
+
+    def remove_configs_by_type_not_in(
+        self,
+        type: ConfigType,
+        names: set[str],
+    ) -> None:
+        stmt = select(Config).where(Config.type == _normalize_config_type(type))
+        configs = self.session.exec(stmt).fetchall()
+
+        removed_any = False
+        for config in configs:
+            if config.name not in names:
+                self.session.delete(config)
+                removed_any = True
+
+        if removed_any:
+            self.session.commit()

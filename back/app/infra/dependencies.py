@@ -132,10 +132,11 @@ def get_database_setup_service(
     return DatabaseSetupService(config_repository)
 
 def get_settings_service(
-    config_repository: Annotated[ConfigRepository, Depends(get_config_repository)]
+    config_repository: Annotated[ConfigRepository, Depends(get_config_repository)],
+    database_setup_service: Annotated[DatabaseSetupService, Depends(get_database_setup_service)],
 ) -> SettingsService:
     """Get SettingsService instance."""
-    return SettingsService(config_repository)
+    return SettingsService(config_repository, database_setup_service)
 
 def get_update_kraken2_db_usecase(
     database_setup_service: Annotated[DatabaseSetupService, Depends(get_database_setup_service)]

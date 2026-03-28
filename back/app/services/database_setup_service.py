@@ -1,9 +1,9 @@
-import os
 import subprocess
 from pathlib import Path
 from typing import Dict
 
 from config import config
+from dto.settings_config import Kraken2DatabaseConfig
 from entities.config import Config
 from entities.enum import ConfigType
 from repositories.config_repository import ConfigRepository
@@ -20,7 +20,35 @@ class DatabaseSetupService:
         self.base_dir = Path.home() / ".rt-metagenomics"
         self.base_dir.mkdir(parents=True, exist_ok=True)
 
-    def install_kraken2_database(self, url: str) -> Dict[str, str]:
+    def get_kraken2_base_dir(self) -> Path:
+        kraken2_dir = self.base_dir / config.kraken2.default_path
+        kraken2_dir.mkdir(parents=True, exist_ok=True)
+        return kraken2_dir
+
+    def list_kraken2_databases(self) -> list[Kraken2DatabaseConfig]:
+        kraken2_dir = self.get_kraken2_base_dir()
+        stored_databases = {
+            config.value: config
+            for config in self.config_repository.list_config(ConfigType.KRAKEN2)
+        }
+
+        databases = [
+            Kraken2DatabaseConfig(
+                name=database_dir.name,
+                value=str(database_dir),
+                is_default=(
+                    stored_databases[str(database_dir)].is_default
+                    if str(database_dir) in stored_databases
+                    else False
+                ),
+            )
+            for database_dir in kraken2_dir.iterdir()
+            if database_dir.is_dir()
+        ]
+
+        return sorted(databases, key=lambda database: database.name.lower())
+
+    def install_kraken2_database(self, url: str | None) -> Dict[str, str]:
         """
         Download and extract the viral Kraken2 database, making it available
         to the application.
@@ -30,8 +58,7 @@ class DatabaseSetupService:
         """
         # Remove 
 
-        kraken2_dir = self.base_dir / config.kraken2.default_path
-        kraken2_dir.mkdir(parents=True, exist_ok=True)
+        kraken2_dir = self.get_kraken2_base_dir()
 
         archive_url = url if url else config.kraken2.default_download_url
         archive_name = None
@@ -67,10 +94,22 @@ class DatabaseSetupService:
             cwd=str(extract_path),
         )
 
-        self.config_repository.save_config(Config(name=extract_folder_name, type=ConfigType.KRAKEN2, value=str(extract_path)))
+        has_default = any(
+            database.is_default
+            for database in self.config_repository.list_config(ConfigType.KRAKEN2)
+        )
+        self.config_repository.save_config(
+            Config(
+                name=extract_folder_name,
+                type=ConfigType.KRAKEN2,
+                value=str(extract_path),
+                is_default=not has_default,
+            )
+        )
 
         return {
             "status": "installed",
+            "name": extract_folder_name,
             "kraken2Database": str(extract_path),
         }
 
@@ -97,4 +136,3 @@ class DatabaseSetupService:
             "status": "updated",
             "kronaDatabase": krona_dir,
         }
-

@@ -31,6 +31,7 @@ import {
   META_GENOMIC_FORM_STORAGE_KEY,
 } from "@/constants/local-storage";
 import { useSettings } from "@/hooks/use-settings";
+import { getDefaultKraken2DatabasePath } from "@/types/settings";
 import { useModal } from "@/hooks/use-modal";
 import { cn } from "@/utils/cn";
 import { Link } from "@tanstack/react-router";
@@ -117,7 +118,11 @@ export function NewRunForm() {
       removeUnclassifiedReads: false,
       minimumReadLength: 50,
       kraken2Database:
-        globalSettings?.databases?.kraken2 ?? storedForm?.kraken2Database ?? "",
+        (
+          getDefaultKraken2DatabasePath(globalSettings?.databases?.kraken2) ||
+          storedForm?.kraken2Database
+        ) ??
+        "",
       kronaDatabase:
         globalSettings?.databases?.krona ?? storedForm?.kronaDatabase ?? "",
       diamondDatabase:
@@ -136,7 +141,7 @@ export function NewRunForm() {
     name: "samples",
   });
   const hasDatabases =
-    globalSettings?.databases?.kraken2 &&
+    getDefaultKraken2DatabasePath(globalSettings?.databases?.kraken2) &&
     globalSettings?.databases?.krona &&
     globalSettings?.databases?.diamond?.taxdump;
 

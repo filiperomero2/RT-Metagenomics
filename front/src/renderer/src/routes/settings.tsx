@@ -2,22 +2,38 @@ import { Input } from "@/components/form/input";
 import { NumberInput } from "@/components/form/number-input";
 import { ThemeSwitcher } from "@/components/state-components/theme-switcher";
 import {
+  useInstallKraken2Database,
   useSaveSettings,
   useSettings,
   useUpdateKronaDatabase,
 } from "@/hooks/use-settings";
-import { DEFAULT_SETTINGS, type SettingsData } from "@/types/settings";
-import { Button, Card, Spinner, toast } from "@heroui/react";
+import {
+  DEFAULT_SETTINGS,
+  getDefaultKraken2DatabasePath,
+  type Kraken2DatabaseConfig,
+  type SettingsData,
+} from "@/types/settings";
+import {
+  Button,
+  Card,
+  InputGroup,
+  Label,
+  Spinner,
+  TextField,
+  toast,
+} from "@heroui/react";
 import { createFileRoute } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import {
   Database,
+  Download,
   Palette,
   RotateCcw,
   Save,
   Settings2,
   Timer,
 } from "lucide-react";
+import { useState } from "react";
 import { FormProvider, useForm, useWatch } from "react-hook-form";
 
 export const Route = createFileRoute("/settings")({
@@ -29,6 +45,9 @@ function SettingsPage() {
   const { mutateAsync: saveSettings, isPending } = useSaveSettings();
   const { mutate: updateKronaDatabase, isPending: isUpdatingKrona } =
     useUpdateKronaDatabase();
+  const { mutateAsync: installKraken2Database, isPending: isInstallingKraken2 } =
+    useInstallKraken2Database();
+  const [kraken2InstallUrl, setKraken2InstallUrl] = useState("");
 
   const methods = useForm<SettingsData>({
     values: settings ?? DEFAULT_SETTINGS,
@@ -43,14 +62,58 @@ function SettingsPage() {
     control: methods.control,
     name: "databases.krona",
   });
+  const kraken2Databases = useWatch({
+    control: methods.control,
+    name: "databases.kraken2",
+  });
   const savedKronaPath =
     settings?.databases.krona ?? DEFAULT_SETTINGS.databases.krona;
   const hasUnsavedKronaPathChanges = kronaPath !== savedKronaPath;
+  const defaultKraken2DatabasePath = getDefaultKraken2DatabasePath(
+    kraken2Databases,
+  );
 
   const onSave = async (data: SettingsData) => {
     const savedSettings = await saveSettings(data);
     reset(savedSettings);
     toast.success("Your settings have been saved.");
+  };
+
+  const setDefaultKraken2Database = (value: string) => {
+    methods.setValue(
+      "databases.kraken2",
+      (kraken2Databases ?? []).map((database) => ({
+        ...database,
+        is_default: database.value === value,
+      })),
+      { shouldDirty: true },
+    );
+  };
+
+  const installKraken2 = async () => {
+    const result = await installKraken2Database(kraken2InstallUrl.trim() || undefined);
+    const currentDatabases = kraken2Databases ?? [];
+    const alreadyExists = currentDatabases.some(
+      (database) => database.value === result.kraken2Database,
+    );
+
+    if (alreadyExists) {
+      setKraken2InstallUrl("");
+      return;
+    }
+
+    const nextDatabases: Kraken2DatabaseConfig[] = [
+      ...currentDatabases,
+      {
+        name: result.name,
+        value: result.kraken2Database,
+        is_default: currentDatabases.length === 0,
+      },
+    ];
+    methods.setValue("databases.kraken2", nextDatabases, {
+      shouldDirty: currentDatabases.length === 0,
+    });
+    setKraken2InstallUrl("");
   };
 
   return (
@@ -165,13 +228,81 @@ function SettingsPage() {
                 </h2>
                 <Database className="text-primary" size={20} />
               </Card.Header>
-              <Card.Content>
-                <Input
-                  name="databases.kraken2"
-                  label="Database Path"
-                  placeholder="/path/to/kraken2/db"
-                  isFolderSelector
-                />
+              <Card.Content className="gap-3">
+                <div className="flex flex-col gap-2">
+                  <p className="text-muted text-sm">
+                    Installed databases found in the Kraken2 base directory.
+                    Select which one should be the default.
+                  </p>
+                  {kraken2Databases?.length ? (
+                    kraken2Databases.map((database) => {
+                      const isDefault = database.value === defaultKraken2DatabasePath;
+
+                      return (
+                        <button
+                          key={database.value}
+                          type="button"
+                          className={`rounded-lg border px-3 py-2 text-left transition ${
+                            isDefault
+                              ? "border-primary bg-primary/10"
+                              : "border-default-200 bg-content2 hover:border-primary/50"
+                          }`}
+                          onClick={() => setDefaultKraken2Database(database.value)}
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <p className="font-medium">{database.name}</p>
+                              <p className="text-muted break-all text-xs">
+                                {database.value}
+                              </p>
+                            </div>
+                            <span
+                              className={`shrink-0 rounded-full px-2 py-1 text-xs font-medium ${
+                                isDefault
+                                  ? "bg-primary text-primary-foreground"
+                                  : "bg-default-100 text-default-700"
+                              }`}
+                            >
+                              {isDefault ? "Default" : "Set default"}
+                            </span>
+                          </div>
+                        </button>
+                      );
+                    })
+                  ) : (
+                    <p className="text-muted rounded-lg border border-dashed px-3 py-4 text-sm">
+                      No Kraken2 databases were found in the base directory yet.
+                    </p>
+                  )}
+                </div>
+
+                <TextField
+                  value={kraken2InstallUrl}
+                  onChange={(event) => setKraken2InstallUrl(event.target.value)}
+                  variant="secondary"
+                  isDisabled={isInstallingKraken2}
+                >
+                  <Label>Install URL (optional)</Label>
+                  <InputGroup>
+                    <InputGroup.Input placeholder="https://.../k2_database.tar.gz" />
+                  </InputGroup>
+                </TextField>
+
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-muted text-sm">
+                    Leave the URL blank to install the default Kraken2 archive.
+                  </p>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    isPending={isInstallingKraken2}
+                    onPress={() => void installKraken2()}
+                  >
+                    {isInstallingKraken2 ? <Spinner /> : <Download size={16} />}
+                    {isInstallingKraken2 ? "Installing..." : "Install new"}
+                  </Button>
+                </div>
               </Card.Content>
             </Card>
             <Card>

@@ -19,21 +19,13 @@ from infra.dependencies import (
     UpdateKraken2DbUseCaseDependency,
     UpdateKronaDbUseCaseDependency
 )
-from config import config
 
 router = APIRouter(prefix='/v1')
 
-
 @router.post("/databases/kraken2/install", response_model=dict)
 async def install_kraken2_database(
-    usecase: UpdateKraken2DbUseCaseDependency
-):
-    return await install_kraken2_database(config.kraken2.default_download_url, usecase)
-
-@router.post("/databases/kraken2/install", response_model=dict)
-async def install_kraken2_database(
-    url: str,
-    usecase: UpdateKraken2DbUseCaseDependency
+    usecase: UpdateKraken2DbUseCaseDependency,
+    url: Optional[str] = Query(default=None),
 ):
     """
     Download and install the viral Kraken2 database FROM URL and return 200 if successful.
@@ -49,7 +41,7 @@ async def install_kraken2_database(
             },
         ) from exc
 
-    return {"status": "success"}
+    return result
 
 
 @router.post("/databases/krona/update", response_model=dict)
