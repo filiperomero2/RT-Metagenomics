@@ -8,6 +8,7 @@ import {
   Accordion,
   AccordionItem,
   Alert,
+  AlertDialog,
   Button,
   ListBox,
   Modal,
@@ -56,6 +57,9 @@ const schema = z.object({
   kronaDatabase: z
     .string()
     .min(1, { message: "Krona Database Path is required" }),
+  diamondDatabase: z
+    .string()
+    .min(1, { message: "Diamond Database Path is required" }),
   samples: z
     .array(
       z.object({
@@ -81,12 +85,10 @@ const barcodes = Array.from({ length: 96 })
   }));
 
 export function NewRunForm() {
-  const { modal, handleOpen, setIsOpen, handleClose } = useModal();
-  const [storedForm, setStoredForm] = useLocalStorage<MetaGenomic | undefined>(
-    META_GENOMIC_FORM_STORAGE_KEY,
-    undefined,
-    { initializeWithValue: false },
-  );
+  const { modal, handleOpen, handleClose } = useModal();
+  const [storedForm, setStoredForm] = useLocalStorage<
+    z.infer<typeof schema> | undefined
+  >(META_GENOMIC_FORM_STORAGE_KEY, undefined, { initializeWithValue: false });
   const [globalSettings] = useLocalStorage<SettingsData | undefined>(
     SETTINGS_STORAGE_KEY,
     undefined,
@@ -112,7 +114,7 @@ export function NewRunForm() {
 
   const form = useForm({
     values: {
-      path: "",
+      path: storedForm?.path ?? "",
       runName: "",
       dataType: storedForm?.dataType ?? "nanopore",
       threads: 1,
@@ -125,6 +127,7 @@ export function NewRunForm() {
         globalSettings?.databases?.kraken2 ?? storedForm?.kraken2Database ?? "",
       kronaDatabase:
         globalSettings?.databases?.krona ?? storedForm?.kronaDatabase ?? "",
+      diamondDatabase: globalSettings?.databases?.diamond?.taxdump ?? "",
       samples: Array.from({ length: 3 })
         .fill(0)
         .map((_, i) => ({ name: "", barcode: "", isNegativeControl: false })),
@@ -136,21 +139,65 @@ export function NewRunForm() {
     control: form.control,
     name: "samples",
   });
+  const hasDatabases =
+    globalSettings?.databases?.kraken2 &&
+    globalSettings?.databases?.krona &&
+    globalSettings?.databases?.diamond?.taxdump;
 
-  const handleSubmit = (data: z.infer<typeof schema>) => {
-    form.reset();
-
+  const handleSubmit = async (data: z.infer<typeof schema>) => {
     setStoredForm(data);
-    mutateAsync(data, { onSuccess: handleClose });
+    await mutateAsync(data, {
+      onSuccess: () => {
+        handleClose();
+        form.reset();
+      },
+    });
   };
+
+  const button = (
+    <Button onPress={handleOpen}>
+      <Plus />
+      New Metagenomic
+    </Button>
+  );
+
+  if (!hasDatabases) {
+    return (
+      <AlertDialog>
+        {button}
+        <AlertDialog.Backdrop>
+          <AlertDialog.Container>
+            <AlertDialog.Dialog className="sm:max-w-[400px]">
+              <AlertDialog.CloseTrigger />
+              <AlertDialog.Header>
+                <AlertDialog.Icon status="warning" />
+                <AlertDialog.Heading>Missing Databases</AlertDialog.Heading>
+              </AlertDialog.Header>
+              <AlertDialog.Body>
+                <p>
+                  To run a metagenomic analysis, you need to configure the paths
+                  for the Kraken2, Krona, and Diamond databases.
+                </p>
+              </AlertDialog.Body>
+              <AlertDialog.Footer>
+                <Button slot="close" variant="tertiary">
+                  Cancel
+                </Button>
+                <Button slot="close" variant="primary">
+                  <Link to="/settings">Go to Settings</Link>
+                </Button>
+              </AlertDialog.Footer>
+            </AlertDialog.Dialog>
+          </AlertDialog.Container>
+        </AlertDialog.Backdrop>
+      </AlertDialog>
+    );
+  }
 
   return (
     <>
       <Modal {...modal}>
-        <Button onPress={handleOpen}>
-          <Plus />
-          New Metagenomic
-        </Button>
+        {button}
         <Modal.Backdrop variant="blur" isDismissable>
           <FormProvider {...form}>
             <Modal.Container size="cover">
@@ -158,14 +205,7 @@ export function NewRunForm() {
                 <Modal.CloseTrigger />
                 <Modal.Header>New Metagenomics</Modal.Header>
                 <Modal.Body className="grid content-start gap-x-3 gap-y-1">
-                  <div className="grid grid-cols-[1fr_1fr_0.5fr] gap-2 px-3">
-                    <Input
-                      name="path"
-                      type="text"
-                      label="Path"
-                      placeholder="/path/to/data"
-                      isFolderSelector
-                    />
+                  <div className="grid grid-cols-4 gap-2 px-3">
                     <Input
                       name="runName"
                       type="text"
@@ -183,12 +223,20 @@ export function NewRunForm() {
                         <ListBox.ItemIndicator />
                       </ListBox.Item>
                     </Select>
+                    <Input
+                      name="path"
+                      type="text"
+                      label="Path"
+                      placeholder="/path/to/data"
+                      className="col-span-2"
+                      isFolderSelector
+                    />
                   </div>
 
                   <div className="nth-[0]:px-3">
                     <Accordion
                       allowsMultipleExpanded
-                      defaultExpandedKeys={["Options", "Samples"]}
+                      defaultExpandedKeys={[ "Samples"]}
                     >
                       <Accordion.Item id="Options">
                         <Accordion.Heading>
@@ -240,20 +288,25 @@ export function NewRunForm() {
                           </Accordion.Trigger>
                         </Accordion.Heading>
                         <Accordion.Panel>
-                          <Accordion.Body className="grid grid-cols-2 gap-2">
+                          <Accordion.Body className="grid grid-cols-3 gap-2">
                             <Input
                               name="kraken2Database"
                               label="Kraken2 Database"
-                              readOnly
+                              isDisabled
                             />
                             <Input
                               name="kronaDatabase"
                               label="Krona Database"
-                              readOnly
+                              isDisabled
+                            />
+                            <Input
+                              name="diamondDatabase"
+                              label="Diamond Database"
+                              isDisabled
                             />
                             <Alert
                               status="accent"
-                              className="bg-surface-secondary col-span-2 w-full"
+                              className="bg-surface-secondary col-span-3 w-full"
                             >
                               <Alert.Indicator />
                               <Alert.Content>

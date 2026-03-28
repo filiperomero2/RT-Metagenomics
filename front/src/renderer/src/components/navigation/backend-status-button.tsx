@@ -56,7 +56,7 @@ export function BackendStatusButton() {
     <Popover>
       <Popover.Trigger>{statusButton}</Popover.Trigger>
       <Popover.Content>
-        <Popover.Dialog>
+        <Popover.Dialog className="p-0">
           <BackendMonitorPanel />
         </Popover.Dialog>
       </Popover.Content>

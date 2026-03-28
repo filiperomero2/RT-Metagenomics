@@ -5,7 +5,10 @@ import {
   isBackendMonitorWindowOpen,
   openBackendMonitorWindow,
 } from "./backend-monitor-window";
-import { registerBackendIpcHandlers, startBackendProcess } from "./backend-process";
+import {
+  registerBackendIpcHandlers,
+  startBackendProcess,
+} from "./backend-process";
 
 export function setupEvents(mainWindow: BrowserWindow) {
   mainWindow.on("ready-to-show", () => {
@@ -37,8 +40,9 @@ export function setupIpcHandlers(mainWindow: BrowserWindow) {
   ipcMain.removeHandler("window:reattachBackendMonitor");
   ipcMain.removeHandler("window:getIsMaximized");
   ipcMain.removeHandler("dialog:selectFolder");
+
   ipcMain.handle("window:openBackendMonitor", async () => {
-    openBackendMonitorWindow(mainWindow);
+    openBackendMonitorWindow();
   });
   ipcMain.handle("window:getBackendMonitorState", async () => {
     return isBackendMonitorWindowOpen();
@@ -50,7 +54,8 @@ export function setupIpcHandlers(mainWindow: BrowserWindow) {
     return BrowserWindow.fromWebContents(event.sender)?.isMaximized() ?? false;
   });
   ipcMain.handle("dialog:selectFolder", async (event) => {
-    const targetWindow = BrowserWindow.fromWebContents(event.sender) ?? mainWindow;
+    const targetWindow =
+      BrowserWindow.fromWebContents(event.sender) ?? mainWindow;
     const result = await dialog.showOpenDialog(targetWindow, {
       properties: ["openDirectory"],
     });

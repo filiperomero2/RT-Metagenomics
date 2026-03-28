@@ -1,12 +1,9 @@
-import { cn } from "@/utils/cn";
 import {
   Description,
   FieldError,
-  Header,
   Label,
   ListBox,
-  type SelectProps,
-  Select as SelectUI,
+  Select as SelectUI
 } from "@heroui/react";
 import { useController } from "react-hook-form";
 
@@ -39,16 +36,4 @@ export function Select({
     </SelectUI>
   );
 
-  // return (
-  //   <SelectUI
-  //     size="sm"
-  //     variant="flat"
-  //     {...rest}
-  //     {...field}
-  //     selectedKeys={[field.value]}
-  //     className={cn(!fieldState.invalid && "pb-4", className)}
-  //     isInvalid={fieldState.invalid}
-  //     errorMessage={fieldState.error?.message}
-  //   />
-  // );
 }

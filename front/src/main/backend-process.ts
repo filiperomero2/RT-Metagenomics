@@ -1,11 +1,16 @@
-import { execFile, spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
-import { existsSync } from "node:fs";
-import path from "node:path";
-import { promisify } from "node:util";
 import { app, BrowserWindow, ipcMain } from "electron";
 import {
-  MAX_BACKEND_LOG_LINES,
+  ChildProcessByStdio,
+  execFile,
+  spawn
+} from "node:child_process";
+import { existsSync } from "node:fs";
+import path from "node:path";
+import { Stream } from "node:stream";
+import { promisify } from "node:util";
+import {
   createBackendLogEntry,
+  MAX_BACKEND_LOG_LINES,
 } from "../shared/backend-log";
 import type {
   BackendLogEntry,
@@ -20,7 +25,11 @@ const BACKEND_CMD = [
   "exec uvicorn main:app --host 0.0.0.0 --port 8000 --reload --log-level debug",
 ].join(" && ");
 
-let backendProcess: ChildProcessWithoutNullStreams | null = null;
+let backendProcess: ChildProcessByStdio<
+  null,
+  Stream.Readable,
+  Stream.Readable
+> | null = null;
 let backendLogs: BackendLogEntry[] = [];
 let nextBackendLogId = 0;
 let stdoutBuffer = "";
@@ -238,7 +247,10 @@ export async function stopBackendProcess() {
     }
 
     try {
-      await execFileAsync("bash", ["-lc", "fuser -k 8000/tcp 2>/dev/null || true"]);
+      await execFileAsync("bash", [
+        "-lc",
+        "fuser -k 8000/tcp 2>/dev/null || true",
+      ]);
     } catch {
       // fuser is optional.
     }

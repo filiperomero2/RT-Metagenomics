@@ -35,11 +35,16 @@ function loadBackendMonitorWindow(window: BrowserWindow) {
   });
 }
 
-export function openBackendMonitorWindow(parentWindow?: BrowserWindow | null) {
+export function openBackendMonitorWindow() {
   if (isBackendMonitorWindowOpen() && backendMonitorWindow) {
     if (backendMonitorWindow.isMinimized()) {
       backendMonitorWindow.restore();
     }
+
+    if (!backendMonitorWindow.isVisible()) {
+      backendMonitorWindow.show();
+    }
+
     backendMonitorWindow.focus();
     return backendMonitorWindow;
   }
@@ -54,7 +59,7 @@ export function openBackendMonitorWindow(parentWindow?: BrowserWindow | null) {
     titleBarStyle: "hidden",
     autoHideMenuBar: true,
     roundedCorners: true,
-    parent: parentWindow ?? undefined,
+    // parent: parentWindow ?? undefined,
     ...(process.platform === "linux" ? { icon } : { icon: iconIco }),
     webPreferences: {
       preload: join(__dirname, "../../out/preload/index.mjs"),

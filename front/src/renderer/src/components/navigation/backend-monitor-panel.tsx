@@ -237,9 +237,19 @@ export function BackendMonitorPanel({
   };
 
   return (
-    <Card className={cn("flex flex-col rounded-none", className)}>
+    <Card className={cn("flex flex-col ", className)}>
       <Card.Header className="flex-row justify-between gap-4">
-        <span className="text-sm font-semibold">{getStatusLabel()}</span>
+        <span className="inline-flex items-center gap-2 text-sm font-semibold">
+          {detached && (
+            <div
+              className={cn(
+                "size-4 rounded-full",
+                isRunning ? "bg-green-500" : "bg-red-500",
+              )}
+            />
+          )}
+          {getStatusLabel()}
+        </span>
         <div className="flex items-center gap-3">
           {!detached && (
             <Button
@@ -310,7 +320,7 @@ export function BackendMonitorPanel({
               <div
                 key={log.id}
                 className={cn(
-                  "mb-1 flex items-start gap-2 rounded-sm border-l-2 px-2 py-1 break-all whitespace-pre-wrap last:mb-0",
+                  "mb-1 flex items-center gap-2 rounded-sm border-l-2 px-2 py-1 break-all whitespace-pre-wrap last:mb-0 select-text",
                   LOG_TYPE_META[log.type].rowClassName,
                 )}
               >

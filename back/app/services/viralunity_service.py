@@ -32,7 +32,7 @@ class ViralUnityService:
             try:
                 next_task = self.repository.get_pending_run()
                 if next_task is None:
-                    logger.debug("No task to process, waiting for new tasks...")
+                    # logger.debug("No task to process, waiting for new tasks...")
                     time.sleep(config.service.polling_interval)
                     continue
                 try:

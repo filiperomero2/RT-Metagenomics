@@ -29,12 +29,13 @@ export function Input({
     <TextField
       variant="secondary"
       isInvalid={fieldState.invalid}
-      {...rest}
       className={cn("w-full", className)}
+      {...rest}
+      {...field}
     >
       {label && <Label>{label}</Label>}
       <InputGroup>
-        <InputGroup.Input {...field} />
+        <InputGroup.Input />
 
         {isFolderSelector && (
           <InputGroup.Suffix>
