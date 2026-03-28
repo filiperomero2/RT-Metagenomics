@@ -135,6 +135,10 @@ export function getBackendLogs() {
   return backendLogs;
 }
 
+export function clearBackendLogs() {
+  resetBackendLogs();
+}
+
 export function startBackendProcess(): BackendStartResult {
   const currentState = getBackendState();
   if (currentState.isRunning) {
@@ -268,6 +272,7 @@ export function registerBackendIpcHandlers() {
   ipcMain.removeHandler("backend:stop");
   ipcMain.removeHandler("backend:state");
   ipcMain.removeHandler("backend:logs");
+  ipcMain.removeHandler("backend:clearLogs");
 
   ipcMain.handle("backend:start", async () => {
     try {
@@ -291,5 +296,9 @@ export function registerBackendIpcHandlers() {
 
   ipcMain.handle("backend:logs", async () => {
     return getBackendLogs();
+  });
+
+  ipcMain.handle("backend:clearLogs", async () => {
+    clearBackendLogs();
   });
 }

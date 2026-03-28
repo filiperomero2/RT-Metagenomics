@@ -1,10 +1,11 @@
+from entities.enum import ConfigType
 from sqlmodel import Field, SQLModel
 
 class Config(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
 
     name: str = Field(default=None, unique=True)
-    type: str = Field(default=None)
+    type: ConfigType = Field(default=None)
     value: str = Field(default=None)
 
     def __repr__(self):

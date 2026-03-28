@@ -1,9 +1,13 @@
 import { Input } from "@/components/form/input";
 import { NumberInput } from "@/components/form/number-input";
 import { ThemeSwitcher } from "@/components/state-components/theme-switcher";
-import { useSaveSettings, useSettings } from "@/hooks/use-settings";
+import {
+  useSaveSettings,
+  useSettings,
+  useUpdateKronaDatabase,
+} from "@/hooks/use-settings";
 import { DEFAULT_SETTINGS, type SettingsData } from "@/types/settings";
-import { Button, Card, toast } from "@heroui/react";
+import { Button, Card, Spinner, toast } from "@heroui/react";
 import { createFileRoute } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import {
@@ -14,7 +18,7 @@ import {
   Settings2,
   Timer,
 } from "lucide-react";
-import { FormProvider, useForm } from "react-hook-form";
+import { FormProvider, useForm, useWatch } from "react-hook-form";
 
 export const Route = createFileRoute("/settings")({
   component: SettingsPage,
@@ -23,6 +27,8 @@ export const Route = createFileRoute("/settings")({
 function SettingsPage() {
   const { data: settings } = useSettings();
   const { mutateAsync: saveSettings, isPending } = useSaveSettings();
+  const { mutate: updateKronaDatabase, isPending: isUpdatingKrona } =
+    useUpdateKronaDatabase();
 
   const methods = useForm<SettingsData>({
     values: settings ?? DEFAULT_SETTINGS,
@@ -33,6 +39,13 @@ function SettingsPage() {
     reset,
     formState: { isDirty },
   } = methods;
+  const kronaPath = useWatch({
+    control: methods.control,
+    name: "databases.krona",
+  });
+  const savedKronaPath =
+    settings?.databases.krona ?? DEFAULT_SETTINGS.databases.krona;
+  const hasUnsavedKronaPathChanges = kronaPath !== savedKronaPath;
 
   const onSave = async (data: SettingsData) => {
     const savedSettings = await saveSettings(data);
@@ -118,8 +131,30 @@ function SettingsPage() {
                     name="databases.krona"
                     label="Database Path"
                     placeholder="/path/to/krona/db"
+                    isDisabled={isUpdatingKrona}
                     isFolderSelector
                   />
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-muted text-sm">
+                      Updates use the saved Krona path from your settings.
+                    </p>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      isPending={isUpdatingKrona}
+                      isDisabled={hasUnsavedKronaPathChanges || !savedKronaPath}
+                      onPress={() => updateKronaDatabase()}
+                    >
+                      {isUpdatingKrona ? <Spinner /> : <RotateCcw size={16} />}
+                      {isUpdatingKrona ? "Updating..." : "Update Krona"}
+                    </Button>
+                  </div>
+                  {hasUnsavedKronaPathChanges && (
+                    <p className="text-warning text-sm">
+                      Save the new Krona path before running the update.
+                    </p>
+                  )}
                 </div>
               </Card.Content>
             </Card>

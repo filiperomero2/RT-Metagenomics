@@ -23,10 +23,6 @@ class ConfigRepository:
         stmt = select(Config).where(Config.id == id)
         return self.session.exec(stmt).first()
 
-    def get_config_by_name(self, name: str) -> Config | None:
-        stmt = select(Config).where(Config.name == name)
-        return self.session.exec(stmt).first()
-
     def get_config_by_type(self, type: ConfigType) -> Config | None:
         stmt = select(Config).where(Config.type == _normalize_config_type(type))
         return self.session.exec(stmt).first()

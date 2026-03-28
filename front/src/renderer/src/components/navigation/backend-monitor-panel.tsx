@@ -4,6 +4,8 @@ import { Button, Card, ToggleButton } from "@heroui/react";
 import {
   ArrowDown,
   ArrowDownToLine,
+  BrushCleaningIcon,
+  Eraser,
   ExternalLink,
   Play,
   Square,
@@ -163,6 +165,17 @@ export function BackendMonitorPanel({
     }
   }, []);
 
+  const clearLogs = useCallback(async () => {
+    try {
+      await window.api.clearBackendLogs();
+    } catch (error) {
+      console.error(
+        "Failed to clear backend logs:",
+        getErrorMessage(error),
+      );
+    }
+  }, []);
+
   useEffect(() => {
     return window.api.onBackendProcessEvent((event) => {
       if (event.type === "started") {
@@ -277,6 +290,15 @@ export function BackendMonitorPanel({
           >
             <ArrowDownToLine size={14} />
           </ToggleButton>
+
+          <Button
+            size="sm"
+            variant="tertiary"
+            isDisabled={logs.length === 0}
+            onPress={clearLogs}
+          >
+            <BrushCleaningIcon size={14} />
+          </Button>
 
           {hasProcess ? (
             <Button size="sm" variant="danger-soft" onPress={stopBackend}>

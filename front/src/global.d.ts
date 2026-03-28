@@ -26,6 +26,7 @@ declare global {
       stopBackend: () => Promise<BackendState>;
       getBackendState: () => Promise<BackendState>;
       getBackendLogs: () => Promise<BackendLogEntry[]>;
+      clearBackendLogs: () => Promise<void>;
       onBackendProcessEvent: (
         callback: (event: BackendProcessEvent) => void,
       ) => () => void;

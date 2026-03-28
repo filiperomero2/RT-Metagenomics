@@ -28,3 +28,24 @@ export function useSaveSettings() {
     },
   });
 }
+
+export function useUpdateKronaDatabase() {
+  return useMutation({
+    mutationFn: async () => {
+      const response = await api.post<{ status: string }>(
+        "/v1/databases/krona/update",
+      );
+      return response.data;
+    },
+    meta: {
+      successMessage: {
+        title: "Krona Database",
+        description: "Krona database update started successfully.",
+      },
+      errorMessage: {
+        title: "Krona Database",
+        description: "Failed to update the Krona database.",
+      },
+    },
+  });
+}

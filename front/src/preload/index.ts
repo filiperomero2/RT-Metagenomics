@@ -59,6 +59,9 @@ const api = {
   getBackendLogs: () => {
     return ipcRenderer.invoke("backend:logs") as Promise<BackendLogEntry[]>;
   },
+  clearBackendLogs: () => {
+    return ipcRenderer.invoke("backend:clearLogs") as Promise<void>;
+  },
   onBackendProcessEvent: (callback: (event: BackendProcessEvent) => void) => {
     const listener = (_: unknown, event: BackendProcessEvent) => callback(event);
     ipcRenderer.on("backend:process-event", listener);
