@@ -19,6 +19,7 @@ from services.database_setup_service import DatabaseSetupService
 from services.settings_service import SettingsService
 from usecases.update_kraken2_db_usecase import UpdateKraken2DbUseCase
 from usecases.update_krona_db_usecase import UpdateKronaDbUseCase
+from usecases.update_taxdump_db_usecase import UpdateTaxdumpDbUseCase
 from usecases.get_settings_usecase import GetSettingsUseCase
 from usecases.save_settings_usecase import SaveSettingsUseCase
 from repositories.config_repository import ConfigRepository
@@ -150,6 +151,12 @@ def get_update_krona_db_usecase(
     """Get UpdateKronaDbUseCase instance."""
     return UpdateKronaDbUseCase(database_setup_service)
 
+def get_update_taxdump_db_usecase(
+    database_setup_service: Annotated[DatabaseSetupService, Depends(get_database_setup_service)]
+) -> UpdateTaxdumpDbUseCase:
+    """Get UpdateTaxdumpDbUseCase instance."""
+    return UpdateTaxdumpDbUseCase(database_setup_service)
+
 def get_get_settings_usecase(
     settings_service: Annotated[SettingsService, Depends(get_settings_service)]
 ) -> GetSettingsUseCase:
@@ -176,6 +183,7 @@ StopMetagenomicsUseCaseDependency = Annotated[StopMetagenomicsUseCase, Depends(g
 PathsServiceDependency = Annotated[PathsService, Depends(get_paths_service)]
 UpdateKraken2DbUseCaseDependency = Annotated[UpdateKraken2DbUseCase, Depends(get_update_kraken2_db_usecase)]
 UpdateKronaDbUseCaseDependency = Annotated[UpdateKronaDbUseCase, Depends(get_update_krona_db_usecase)]
+UpdateTaxdumpDbUseCaseDependency = Annotated[UpdateTaxdumpDbUseCase, Depends(get_update_taxdump_db_usecase)]
 ConfigRepositoryDependency = Annotated[ConfigRepository, Depends(get_config_repository)]
 GetSettingsUseCaseDependency = Annotated[GetSettingsUseCase, Depends(get_get_settings_usecase)]
 SaveSettingsUseCaseDependency = Annotated[SaveSettingsUseCase, Depends(get_save_settings_usecase)]

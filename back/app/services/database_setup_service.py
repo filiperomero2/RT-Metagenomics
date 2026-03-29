@@ -136,3 +136,73 @@ class DatabaseSetupService:
             "status": "updated",
             "kronaDatabase": krona_dir,
         }
+
+    def install_taxdump(self, url: str | None) -> Dict[str, str]:
+        """
+        Download and extract the NCBI taxdump, making it available
+        to the application for Diamond pipeline taxonomy annotation.
+
+        Args:
+            url: Optional custom URL to download from. If None, uses the default.
+
+        Returns:
+            Dict with the taxdump directory path and status.
+        """
+        taxdump_dir = self.base_dir / config.taxdump.default_path
+        taxdump_dir.mkdir(parents=True, exist_ok=True)
+
+        archive_url = url if url else config.taxdump.default_download_url
+        archive_name = "taxdump.tar.gz"
+        file_path = taxdump_dir / archive_name
+
+        # Clean slate: remove existing archive and any prior dump files
+        if file_path.is_file():
+            file_path.unlink()
+
+        # Remove existing taxonomy files if present
+        for existing_file in taxdump_dir.iterdir():
+            if existing_file.is_file():
+                existing_file.unlink()
+            elif existing_file.is_dir():
+                shutil.rmtree(existing_file)
+
+        # Download the archive
+        subprocess.run(
+            ["wget", "-O", str(file_path), archive_url],
+            check=True,
+            cwd=str(taxdump_dir),
+        )
+
+        # Extract the archive (files unpack flat at tarball root)
+        subprocess.run(
+            ["tar", "-xzf", str(file_path)],
+            check=True,
+            cwd=str(taxdump_dir),
+        )
+
+        # Clean up the archive
+        if file_path.is_file():
+            file_path.unlink()
+
+        # Validate required files exist
+        nodes_path = taxdump_dir / "nodes.dmp"
+        names_path = taxdump_dir / "names.dmp"
+        if not nodes_path.is_file() or not names_path.is_file():
+            raise RuntimeError(
+                f"Taxdump extraction failed: nodes.dmp or names.dmp not found in {taxdump_dir}"
+            )
+
+        # Persist with the exact config name used by settings
+        # Must match SETTINGS_CONFIG_NAMES[ConfigType.DIAMOND_TAXDUMP] in settings_service.py
+        self.config_repository.save_config(
+            Config(
+                name="databases.diamond.taxdump",
+                type=ConfigType.DIAMOND_TAXDUMP,
+                value=str(taxdump_dir),
+            )
+        )
+
+        return {
+            "status": "installed",
+            "taxdump": str(taxdump_dir),
+        }

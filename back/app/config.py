@@ -36,6 +36,11 @@ class Kraken2Config:
     default_download_url: str = "https://genome-idx.s3.amazonaws.com/kraken/k2_standard_20250301.tar.gz"
 
 @dataclass
+class TaxdumpConfig:
+    default_path: str = "./taxdump"
+    default_download_url: str = "https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz"
+
+@dataclass
 class APIConfig:
     # CORS settings
     allow_origins: list = None
@@ -70,6 +75,7 @@ class AppConfig:
     logging: LoggingConfig
     krona: KronaConfig
     kraken2: Kraken2Config
+    taxdump: TaxdumpConfig
     
     def __post_init__(self):
         pass
@@ -94,6 +100,11 @@ def load_config() -> AppConfig:
     # Kraken2 configuration
     kraken2_config.default_path = os.getenv("KRAKEN2_DATABASE_PATH", kraken2_config.default_path)
     kraken2_config.default_download_url = os.getenv("DEFAULT_KRAKEN2_DATABASE_DOWNLOAD_URL", kraken2_config.default_download_url)
+
+    # Taxdump configuration
+    taxdump_config = TaxdumpConfig()
+    taxdump_config.default_path = os.getenv("TAXDUMP_PATH", taxdump_config.default_path)
+    taxdump_config.default_download_url = os.getenv("TAXDUMP_DOWNLOAD_URL", taxdump_config.default_download_url)
     
     # Service configuration
     service_config.polling_interval = float(os.getenv("POLLING_INTERVAL", service_config.polling_interval))
@@ -116,6 +127,7 @@ def load_config() -> AppConfig:
         logging=logging_config,
         krona=krona_config,
         kraken2=kraken2_config,
+        taxdump=taxdump_config,
     )
 
 # Global configuration instance

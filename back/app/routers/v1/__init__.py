@@ -17,7 +17,8 @@ from infra.dependencies import (
     StartMetagenomicsUseCaseDependency,
     StopMetagenomicsUseCaseDependency,
     UpdateKraken2DbUseCaseDependency,
-    UpdateKronaDbUseCaseDependency
+    UpdateKronaDbUseCaseDependency,
+    UpdateTaxdumpDbUseCaseDependency
 )
 
 router = APIRouter(prefix='/v1')
@@ -62,6 +63,29 @@ async def update_krona_database(usecase: UpdateKronaDbUseCaseDependency):
         ) from exc
 
     return {"status": "success"}
+
+
+@router.post("/databases/taxdump/install", response_model=dict)
+async def install_taxdump_database(
+    usecase: UpdateTaxdumpDbUseCaseDependency,
+    url: Optional[str] = Query(default=None),
+):
+    """
+    Download and install the NCBI taxdump from URL and return 200 if successful.
+    The taxdump is used for Diamond pipeline taxonomy annotation.
+    """
+    try:
+        result = usecase.execute(url)
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "error": "TaxdumpInstallError",
+                "message": str(exc),
+            },
+        ) from exc
+
+    return result
 
 
 @router.get("/config", response_model=SettingsConfig)
