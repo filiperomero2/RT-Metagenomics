@@ -1,4 +1,4 @@
-import { Metrics } from "@/mainview/types/metrics";
+import { Metrics } from "@/types/metrics";
 
 export function generateFamilyDataSets(sampleMetrics?: Metrics["sampleMetrics"]) {
   if (!sampleMetrics) return []
