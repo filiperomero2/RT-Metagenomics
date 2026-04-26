@@ -17,7 +17,7 @@ const stateToIcon: Record<MetaGenomicRun["state"], ReactNode> = {
   completed: <CircleCheck size={24} />,
   failed: <CircleX size={24} />,
   pending: <CircleEllipsis size={24} />,
-  running: <Spinner variant="gradient" size="sm" />,
+  running: <Spinner size="sm" />,
 };
 
 type IconWrapperProps = {
@@ -30,7 +30,7 @@ export const IconState = ({ className, state }: IconWrapperProps) => (
     className={cn(
       className,
       iconColors[state],
-      "rounded-small flex h-fit w-fit items-center justify-center p-1",
+      "rounded-xl flex h-fit w-fit items-center justify-center p-1",
     )}
   >
     {stateToIcon[state]}

@@ -1,5 +1,5 @@
 import { cn } from "@/utils/cn";
-import { Button, Skeleton } from "@heroui/react";
+import { Button, Skeleton, ToggleButton } from "@heroui/react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronRight, Maximize, Minimize } from "lucide-react";
 import { useEffect, useId, useState } from "react";
@@ -60,7 +60,7 @@ export function Accordion({
     >
       <div
         className={cn(
-          "bg-content2/60 text-content2-foreground sticky top-0 z-10 mx-auto flex w-full items-center justify-between gap-2 overflow-clip rounded-xl px-4 py-1.5 shadow backdrop-blur-2xl",
+          "bg-surface-secondary/60 text-foreground sticky top-0 z-10 mx-auto flex w-full items-center justify-between gap-2 overflow-clip rounded-xl px-4 py-1.5 shadow backdrop-blur-2xl",
           isFullScreen && "rounded-t-none",
           {
             "border-warning border-l-2": stateIndicator === "warning",
@@ -72,8 +72,8 @@ export function Accordion({
         <div className="z-10 flex w-full items-center">
           {toggle && !isFullScreen && (
             <motion.div animate={{ rotateZ: show ? 90 : 0 }}>
-              <Button isIconOnly variant="light" onPress={toggle}>
-                <ChevronRight className="text-foreground-700" />
+              <Button isIconOnly variant="ghost" onPress={toggle}>
+                <ChevronRight className="text-muted" />
               </Button>
             </motion.div>
           )}
@@ -82,30 +82,29 @@ export function Accordion({
 
           <div className="relative flex items-center gap-1">
             {actions?.map((action) => (
-              <Button
+              <ToggleButton
                 key={action.label}
-                onPress={action.onPress}
+                onChange={action.onPress}
                 size="sm"
-                variant={action.active ? "shadow" : "light"}
-                color={action.active ? "primary" : "default"}
-                startContent={action.icon}
-                className="text-foreground-700"
+                variant="ghost"
+                isSelected={action.active}
               >
+                {action.icon}
                 {action.label}
-              </Button>
+              </ToggleButton>
             ))}
 
             <Button
               onPress={handleFullScreen}
               isIconOnly
               size="sm"
-              variant="light"
+              variant="ghost"
               className="ml-2"
             >
               {isFullScreen ? (
-                <Minimize className="text-foreground-700" />
+                <Minimize className="text-muted" />
               ) : (
-                <Maximize className="text-foreground-700" />
+                <Maximize className="text-muted" />
               )}
             </Button>
           </div>
@@ -131,7 +130,7 @@ export function Accordion({
       >
         <div
           className={cn(
-            "bg-content2/70 mt-1 overflow-clip rounded-xl",
+            "bg-surface-secondary/70 mt-1 overflow-clip rounded-xl",
             className,
           )}
           data-fullscreen={isFullScreen}

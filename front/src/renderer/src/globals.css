@@ -96,4 +96,10 @@
   .app-no-drag {
     app-region: no-drag;
   }
+
+  .scrollbar-hide {
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
 }

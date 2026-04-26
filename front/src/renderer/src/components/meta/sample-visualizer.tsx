@@ -7,7 +7,7 @@ import {
   useIsChartSelected,
 } from "@/hooks/use-selected-charts";
 import { Sample } from "@/types/meta-genomic-run";
-import { Checkbox } from "@heroui/react";
+import { Checkbox, Label } from "@heroui/react";
 import { useState } from "react";
 
 export function SampleVisualizer({
@@ -37,12 +37,17 @@ export function SampleVisualizer({
           <h1>{sample.name}</h1>
         ) : (
           <Checkbox
+            id={`sample-toggle-${sample.id}`}
             className="py-0 pl-4"
-            size="lg"
             isSelected={isSelected}
             onChange={() => toggleSelectedCharts(sample)}
           >
-            {sample.name}
+            <Checkbox.Control className="size-5">
+              <Checkbox.Indicator />
+            </Checkbox.Control>
+            <Checkbox.Content>
+              <Label htmlFor={`sample-toggle-${sample.id}`}>{sample.name}</Label>
+            </Checkbox.Content>
           </Checkbox>
         )
       }

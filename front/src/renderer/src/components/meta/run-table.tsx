@@ -10,6 +10,7 @@ import {
   ButtonGroup,
   EmptyState,
   Popover,
+  Separator,
   Table,
   Tooltip,
 } from "@heroui/react";
@@ -49,16 +50,21 @@ export function RunTable() {
   const reversedData = data ? [...data].toReversed() : [];
 
   return (
-    <Table
-      aria-label="Metagenomics Table"
-      // removeWrapper
-      // defaultSelectedKeys={[focused?.id || ""]}
-      // selectionMode="single"
-    >
+    <Table aria-label="Metagenomics Table">
       <Table.ScrollContainer>
-        <Table.Content>
+        <Table.Content
+          selectionMode="single"
+          onSelectionChange={(selection) => {
+            if (typeof selection === "string") return;
+            const run = reversedData.find((run) => selection?.has(run.id));
+
+            setFocusedRun(run);
+          }}
+        >
           <Table.Header>
-            <Table.Column width="2.5%">Status</Table.Column>
+            <Table.Column width="2.5%" isRowHeader>
+              Status
+            </Table.Column>
             <Table.Column>Data Type</Table.Column>
             <Table.Column>Run Name</Table.Column>
             <Table.Column>Iteractions</Table.Column>
@@ -95,22 +101,18 @@ export function RunTable() {
                 )}
               </EmptyState>
             )}
-            // emptyContent={"No rows to display."}
-            // isLoading={isPending}
-            // loadingContent={<LoadingFull className="mt-[3.5rem]" />}
           >
             {reversedData.map((run) => (
               <Table.Row
                 key={run.id}
+                id={run.id}
                 className="cursor-pointer rounded-xl"
-                onClick={() => setFocusedRun(run)}
               >
                 <Table.Cell>
                   <IconState state={run.state} />
                 </Table.Cell>
                 <Table.Cell>{run.parameters.dataType}</Table.Cell>
                 <Table.Cell className="w-full">{run.name}</Table.Cell>
-
                 <Table.Cell>{run.iteration}</Table.Cell>
                 <Table.Cell>{run.metrics.nTotalIdentifiedReads}</Table.Cell>
                 <Table.Cell>{run.metrics.nTotalReads}</Table.Cell>
@@ -122,20 +124,29 @@ export function RunTable() {
                       </Button>
                     </Popover.Trigger>
                     <Popover.Content>
-                      <div className="flex w-lg flex-col gap-2 px-2 py-2">
-                        <p className="text-medium m-auto pb-3 font-bold">
+                      <Popover.Dialog className="flex w-lg flex-col">
+                        <Popover.Heading className="pb-3 text-xl font-bold">
                           PARAMETERS
-                        </p>
-                        <ParameterItem
-                          label="Last change:"
-                          value={new Date(
-                            run.executionHashTime,
-                          )?.toLocaleString()}
-                        />
-                        {Object.entries(run.parameters).map(([key, value]) => (
-                          <ParameterItem key={key} label={key} value={value} />
-                        ))}
-                      </div>
+                        </Popover.Heading>
+                        <Separator className="mb-2" />
+                        <div className="flex w-full flex-col gap-0.5 rounded-xl">
+                          <ParameterItem
+                            label="Last change:"
+                            value={new Date(
+                              run.executionHashTime,
+                            )?.toLocaleString()}
+                          />
+                          {Object.entries(run.parameters).map(
+                            ([key, value]) => (
+                              <ParameterItem
+                                key={key}
+                                label={key}
+                                value={value}
+                              />
+                            ),
+                          )}
+                        </div>
+                      </Popover.Dialog>
                     </Popover.Content>
                   </Popover>
                 </Table.Cell>
@@ -174,16 +185,15 @@ function ParameterItem({
   value: string | number | boolean | undefined;
 }) {
   return (
-    <div className="flex justify-between gap-2">
-      <p className="font-semibold capitalize">{label}</p>
+    <div className="flex w-full justify-between gap-2">
+      <p className="text-foreground/95 font-semibold capitalize">{label}</p>
+
       <Tooltip delay={1000}>
-        <Tooltip.Trigger>
-          <p className="text-foreground-400 line-clamp-1 w-1/2 text-end">
-            {String(value)}
-          </p>
+        <Tooltip.Trigger className="text-foreground/80 line-clamp-1 w-1/2 text-end">
+          {String(value)}
         </Tooltip.Trigger>
-        <Tooltip.Content>
-          <p className="text-foreground-400">{String(value)}</p>
+        <Tooltip.Content className="text-foreground-400">
+          {String(value)}
         </Tooltip.Content>
       </Tooltip>
     </div>

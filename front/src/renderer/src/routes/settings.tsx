@@ -206,7 +206,7 @@ function SettingsPage() {
                       size="sm"
                       variant="ghost"
                       isPending={isUpdatingKrona}
-                      isDisabled={hasUnsavedKronaPathChanges || !savedKronaPath}
+                      isDisabled={hasUnsavedKronaPathChanges}
                       onPress={() => updateKronaDatabase()}
                     >
                       {isUpdatingKrona ? <Spinner /> : <RotateCcw size={16} />}
@@ -278,7 +278,7 @@ function SettingsPage() {
 
                 <TextField
                   value={kraken2InstallUrl}
-                  onChange={(event) => setKraken2InstallUrl(event.target.value)}
+                  onChange={(event) => setKraken2InstallUrl(event)}
                   variant="secondary"
                   isDisabled={isInstallingKraken2}
                 >
