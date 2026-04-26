@@ -18,3 +18,7 @@ class ConfigType(str, Enum):
     ITERATION_INTERVAL = "iteration_interval"
     DIAMOND_TAXDUMP = "diamond_taxdump"
     DIAMOND_TAXIDS = "diamond_taxids"
+    DEACON_INDEX = "deacon_index"
+    VIRAL_GENOMES = "viral_genomes"
+    VIRAL_TAXIDS = "viral_taxids"
+    HOST_REFERENCE = "host_reference"

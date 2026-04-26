@@ -13,6 +13,10 @@ SETTINGS_CONFIG_NAMES = {
     ConfigType.KRAKEN2: "databases.kraken2",
     ConfigType.DIAMOND_TAXDUMP: "databases.diamond.taxdump",
     ConfigType.DIAMOND_TAXIDS: "databases.diamond.taxids",
+    ConfigType.VIRAL_GENOMES: "databases.viral.genomes",
+    ConfigType.VIRAL_TAXIDS: "databases.viral.taxids",
+    ConfigType.HOST_REFERENCE: "databases.deacon.host_reference",
+    ConfigType.DEACON_INDEX: "databases.deacon.index",
 }
 
 
@@ -38,6 +42,10 @@ class SettingsService:
             ConfigType.KRONA: settings.databases.krona,
             ConfigType.DIAMOND_TAXDUMP: settings.databases.diamond.taxdump,
             ConfigType.DIAMOND_TAXIDS: settings.databases.diamond.taxids,
+            ConfigType.VIRAL_GENOMES: settings.databases.viral.genomes,
+            ConfigType.VIRAL_TAXIDS: settings.databases.viral.taxids,
+            ConfigType.HOST_REFERENCE: settings.databases.deacon.host_reference,
+            ConfigType.DEACON_INDEX: settings.databases.deacon.index,
         }
 
         for config_type, value in values.items():
@@ -125,6 +133,30 @@ class SettingsService:
         )
         if diamond_taxids_path and diamond_taxids_path.value:
             settings.databases.diamond.taxids = diamond_taxids_path.value
+
+        viral_genomes_path = self.config_repository.get_config_by_type(
+            ConfigType.VIRAL_GENOMES
+        )
+        if viral_genomes_path and viral_genomes_path.value:
+            settings.databases.viral.genomes = viral_genomes_path.value
+
+        viral_taxids_path = self.config_repository.get_config_by_type(
+            ConfigType.VIRAL_TAXIDS
+        )
+        if viral_taxids_path and viral_taxids_path.value:
+            settings.databases.viral.taxids = viral_taxids_path.value
+
+        host_reference_path = self.config_repository.get_config_by_type(
+            ConfigType.HOST_REFERENCE
+        )
+        if host_reference_path and host_reference_path.value:
+            settings.databases.deacon.host_reference = host_reference_path.value
+
+        deacon_index_path = self.config_repository.get_config_by_type(
+            ConfigType.DEACON_INDEX
+        )
+        if deacon_index_path and deacon_index_path.value:
+            settings.databases.deacon.index = deacon_index_path.value
 
         return settings
 
