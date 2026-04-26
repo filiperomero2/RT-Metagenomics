@@ -10,6 +10,7 @@ export function useSample(sample: Sample) {
     queryFn: async () => {
       const response = await api.get(
         `v1/metagenomics/${sample.runId}/${sample.id}/result`,
+        { params: { kind: "kraken2_reads" } },
       );
       return response.data;
     },

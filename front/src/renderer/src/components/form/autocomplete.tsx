@@ -4,7 +4,7 @@ import {
   FieldError,
   Input,
   Label,
-  ListBox
+  ListBox,
 } from "@heroui/react";
 import { useController } from "react-hook-form";
 

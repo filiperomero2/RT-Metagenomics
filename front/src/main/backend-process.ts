@@ -1,9 +1,5 @@
 import { app, BrowserWindow, ipcMain } from "electron";
-import {
-  ChildProcessByStdio,
-  execFile,
-  spawn
-} from "node:child_process";
+import { ChildProcessByStdio, execFile, spawn } from "node:child_process";
 import { existsSync } from "node:fs";
 import path from "node:path";
 import { Stream } from "node:stream";

@@ -3,7 +3,7 @@ import {
   FieldError,
   Label,
   ListBox,
-  Select as SelectUI
+  Select as SelectUI,
 } from "@heroui/react";
 import { useController } from "react-hook-form";
 
@@ -20,7 +20,12 @@ export function Select({
   const { field, fieldState } = useController({ name });
 
   return (
-    <SelectUI variant="secondary" {...rest} {...field} isInvalid={fieldState.invalid}>
+    <SelectUI
+      variant="secondary"
+      {...rest}
+      {...field}
+      isInvalid={fieldState.invalid}
+    >
       {label && <Label>{label}</Label>}
       <SelectUI.Trigger>
         <SelectUI.Value />
@@ -28,12 +33,9 @@ export function Select({
       </SelectUI.Trigger>
       <Description />
       <SelectUI.Popover>
-        <ListBox>
-          {children}
-        </ListBox>
+        <ListBox>{children}</ListBox>
       </SelectUI.Popover>
       <FieldError>{fieldState.error?.message}</FieldError>
     </SelectUI>
   );
-
 }

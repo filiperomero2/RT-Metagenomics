@@ -48,12 +48,12 @@ export function WindowControls({
                 ? void window.api.reattachBackendMonitorWindow()
                 : window.api.closeWindow()
             }
-            className="group bg-[#ff5f57] ring-black/10 flex h-3.5 w-3.5 items-center justify-center rounded-full ring-1 transition-transform hover:scale-105"
+            className="group flex h-3.5 w-3.5 items-center justify-center rounded-full bg-[#ff5f57] ring-1 ring-black/10 transition-transform hover:scale-105"
           >
             {isReattachAction ? (
               <ExternalLink
                 size={8}
-                className="text-black/65 rotate-180 opacity-0 transition-opacity group-hover:opacity-100"
+                className="rotate-180 text-black/65 opacity-0 transition-opacity group-hover:opacity-100"
               />
             ) : (
               <X
@@ -66,7 +66,7 @@ export function WindowControls({
             type="button"
             aria-label="Minimize window"
             onClick={() => window.api.minimizeWindow()}
-            className="group bg-[#ffbd2e] ring-black/10 flex h-3.5 w-3.5 items-center justify-center rounded-full ring-1 transition-transform hover:scale-105"
+            className="group flex h-3.5 w-3.5 items-center justify-center rounded-full bg-[#ffbd2e] ring-1 ring-black/10 transition-transform hover:scale-105"
           >
             <Minus
               size={8}
@@ -77,7 +77,7 @@ export function WindowControls({
             type="button"
             aria-label={isMaximized ? "Restore window" : "Maximize window"}
             onClick={() => window.api.maximizeWindow()}
-            className="group bg-[#28c840] ring-black/10 flex h-3.5 w-3.5 items-center justify-center rounded-full ring-1 transition-transform hover:scale-105"
+            className="group flex h-3.5 w-3.5 items-center justify-center rounded-full bg-[#28c840] ring-1 ring-black/10 transition-transform hover:scale-105"
           >
             {isMaximized ? (
               <Copy

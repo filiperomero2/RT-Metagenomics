@@ -111,6 +111,16 @@ cd app
 uvicorn main:app --host 0.0.0.0 --port 8000 --reload --log-level debug
 ```
 
+#### Canonical Startup Command (explicit import path)
+Use this command when you want deterministic module resolution independent of shell state:
+```bash
+cd back
+PYTHONPATH="$PWD/app" \
+  uvicorn \
+  main:app --app-dir app --host 0.0.0.0 --port 8000 --reload --log-level debug
+```
+This command keeps backend modules on `sys.path` and relies on the editable `viralunity` install from step 3.3.
+
 #### Production Mode
 ```bash
 cd app

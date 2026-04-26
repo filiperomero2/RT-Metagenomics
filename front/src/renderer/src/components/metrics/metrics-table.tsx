@@ -11,9 +11,8 @@ export function MetricsTable() {
   const [show, setShow] = useState(false);
   const firstRender = useRef(true);
 
-  const hasValues = Object.values(data?.sampleMetrics || {}).filter(
-    Boolean,
-  ).length > 0;
+  const hasValues =
+    Object.values(data?.sampleMetrics || {}).filter(Boolean).length > 0;
 
   useEffect(() => {
     if (firstRender.current && hasValues) {

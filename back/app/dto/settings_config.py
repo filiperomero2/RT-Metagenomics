@@ -5,8 +5,7 @@ class DiamondDatabasePaths(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
     taxdump: str = ""
-    assembly_summary: str = Field(default="", alias="assembly-summary")
-    taxid_to_family: str = Field(default="", alias="taxid-to-family")
+    taxids: str = ""
 
 
 class Kraken2DatabaseConfig(BaseModel):

@@ -9,8 +9,7 @@ export interface DatabasePaths {
   kraken2: Kraken2DatabaseConfig[];
   diamond: {
     taxdump: string;
-    "assembly-summary": string;
-    "taxid-to-family": string;
+    taxids: string;
   };
 }
 
@@ -28,8 +27,7 @@ export const DEFAULT_SETTINGS: SettingsData = {
     kraken2: [],
     diamond: {
       taxdump: "",
-      "assembly-summary": "",
-      "taxid-to-family": "",
+      taxids: "",
     },
   },
 };

@@ -150,10 +150,13 @@ class ExportResultService:
         folder_path = self.paths_service.get_output_path(run)
         
         # Determine filename
-        filename = run.id+"_"+run.name+"_it_"+run.iteration + ".zip"
-        
-        # Create a zip file of the folder
-        zip_path = zip_folder(folder_path, filename)
+        filename = f"{run.id}_{run.name}_it_{run.iteration}.zip"
+
+        zip_path = zip_folder(
+            folder_path,
+            filename,
+            output_dir=os.path.dirname(folder_path) or ".",
+        )
         
         return {
             "file_path": zip_path,

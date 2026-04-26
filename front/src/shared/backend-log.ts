@@ -9,7 +9,9 @@ export function stripBackendLogPrefix(line: string) {
     "",
   );
 
-  return withoutLevelPrefix.trimStart() || withoutSystemPrefix.trimStart() || line;
+  return (
+    withoutLevelPrefix.trimStart() || withoutSystemPrefix.trimStart() || line
+  );
 }
 
 export function getBackendLogType(line: string): BackendLogType {

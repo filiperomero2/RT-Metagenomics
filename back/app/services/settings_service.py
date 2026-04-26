@@ -12,8 +12,7 @@ SETTINGS_CONFIG_NAMES = {
     ConfigType.KRONA: "databases.krona",
     ConfigType.KRAKEN2: "databases.kraken2",
     ConfigType.DIAMOND_TAXDUMP: "databases.diamond.taxdump",
-    ConfigType.DIAMOND_ASSEMBLY_SUMMARY: "databases.diamond.assembly-summary",
-    ConfigType.DIAMOND_TAXID_TO_FAMILY: "databases.diamond.taxid-to-family",
+    ConfigType.DIAMOND_TAXIDS: "databases.diamond.taxids",
 }
 
 
@@ -38,8 +37,7 @@ class SettingsService:
             ConfigType.ITERATION_INTERVAL: str(settings.iteration_interval),
             ConfigType.KRONA: settings.databases.krona,
             ConfigType.DIAMOND_TAXDUMP: settings.databases.diamond.taxdump,
-            ConfigType.DIAMOND_ASSEMBLY_SUMMARY: settings.databases.diamond.assembly_summary,
-            ConfigType.DIAMOND_TAXID_TO_FAMILY: settings.databases.diamond.taxid_to_family,
+            ConfigType.DIAMOND_TAXIDS: settings.databases.diamond.taxids,
         }
 
         for config_type, value in values.items():
@@ -74,11 +72,15 @@ class SettingsService:
     def _build_settings_config(self) -> SettingsConfig:
         settings = SettingsConfig()
 
-        polling_interval = self.config_repository.get_config_by_type(ConfigType.POLLING_INTERVAL)
+        polling_interval = self.config_repository.get_config_by_type(
+            ConfigType.POLLING_INTERVAL
+        )
         if polling_interval and polling_interval.value:
             settings.polling_interval = int(polling_interval.value)
 
-        iteration_interval = self.config_repository.get_config_by_type(ConfigType.ITERATION_INTERVAL)
+        iteration_interval = self.config_repository.get_config_by_type(
+            ConfigType.ITERATION_INTERVAL
+        )
         if iteration_interval and iteration_interval.value:
             settings.iteration_interval = int(iteration_interval.value)
 
@@ -107,20 +109,22 @@ class SettingsService:
                 )
                 for database in self.database_setup_service.list_kraken2_databases()
             ],
-            legacy_default_value=legacy_default_kraken2.value if legacy_default_kraken2 else None,
+            legacy_default_value=(
+                legacy_default_kraken2.value if legacy_default_kraken2 else None
+            ),
         )
 
-        diamond_taxdump_path = self.config_repository.get_config_by_type(ConfigType.DIAMOND_TAXDUMP)
+        diamond_taxdump_path = self.config_repository.get_config_by_type(
+            ConfigType.DIAMOND_TAXDUMP
+        )
         if diamond_taxdump_path and diamond_taxdump_path.value:
             settings.databases.diamond.taxdump = diamond_taxdump_path.value
 
-        diamond_assembly_summary_path = self.config_repository.get_config_by_type(ConfigType.DIAMOND_ASSEMBLY_SUMMARY)
-        if diamond_assembly_summary_path and diamond_assembly_summary_path.value:
-            settings.databases.diamond.assembly_summary = diamond_assembly_summary_path.value
-
-        diamond_taxid_to_family_path = self.config_repository.get_config_by_type(ConfigType.DIAMOND_TAXID_TO_FAMILY)
-        if diamond_taxid_to_family_path and diamond_taxid_to_family_path.value:
-            settings.databases.diamond.taxid_to_family = diamond_taxid_to_family_path.value
+        diamond_taxids_path = self.config_repository.get_config_by_type(
+            ConfigType.DIAMOND_TAXIDS
+        )
+        if diamond_taxids_path and diamond_taxids_path.value:
+            settings.databases.diamond.taxids = diamond_taxids_path.value
 
         return settings
 

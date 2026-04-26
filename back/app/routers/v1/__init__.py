@@ -3,6 +3,7 @@ from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import FileResponse, StreamingResponse
 from dto.health_check_response import HealthCheckResponse
 from dto.settings_config import SettingsConfig
+from services.startup_status_service import startup_status_service
 from usecases.create_metagenomic_usecase import CreateMetagenomicsRunInput, CreateMetagenomicsSampleInput
 
 from dto import CreateMetagenomicsRunRequest
@@ -72,7 +73,7 @@ async def install_taxdump_database(
 ):
     """
     Download and install the NCBI taxdump from URL and return 200 if successful.
-    The taxdump is used for Diamond pipeline taxonomy annotation.
+    The taxdump is used for Kraken2/Diamond taxonomic summaries in metagenomics.
     """
     try:
         result = usecase.execute(url)
@@ -115,27 +116,52 @@ async def start_metagenomics(
     Returns:
         CreateMetagenomicsResponse: The created metagenomics run with success status
     """
-    run = usecase.execute(CreateMetagenomicsRunInput(
-        dataType=metagenomics_run.dataType,
-        samples=[CreateMetagenomicsSampleInput(name=sample.name, barcode=sample.barcode) for sample in metagenomics_run.samples],
-        runName=metagenomics_run.runName,
-        path=metagenomics_run.path,
-        trim=metagenomics_run.trim,
-        threads=metagenomics_run.threads,
-        threadsTotal=metagenomics_run.threadsTotal,
-        removeHumanReads=metagenomics_run.removeHumanReads,
-        removeUnclassifiedReads=metagenomics_run.removeUnclassifiedReads,
-        minimumReadLength=metagenomics_run.minimumReadLength,
-        kraken2Database=metagenomics_run.kraken2Database,
-        kronaDatabase=metagenomics_run.kronaDatabase,
-        # Parameters for the diamond pipeline
-        diamondDatabase=metagenomics_run.diamondDatabase,
-        diamond=metagenomics_run.diamond,
-        denovoAssembly=False,
-        taxdump=metagenomics_run.taxdump,
-        assemblySummary=metagenomics_run.assemblySummary,
-        taxidToFamily=metagenomics_run.taxidToFamily,
-    ))
+    run = usecase.execute(
+        CreateMetagenomicsRunInput(
+            dataType=metagenomics_run.dataType,
+            samples=[
+                CreateMetagenomicsSampleInput(
+                    name=sample.name,
+                    barcode=sample.barcode,
+                    is_negative_control=sample.isNegativeControl,
+                )
+                for sample in metagenomics_run.samples
+            ],
+            runName=metagenomics_run.runName,
+            path=metagenomics_run.path,
+            threads=metagenomics_run.threads,
+            threadsTotal=metagenomics_run.threadsTotal,
+            removeHumanReads=metagenomics_run.removeHumanReads,
+            removeUnclassifiedReads=metagenomics_run.removeUnclassifiedReads,
+            minimumReadLength=metagenomics_run.minimumReadLength,
+            kraken2Database=metagenomics_run.kraken2Database,
+            kronaDatabase=metagenomics_run.kronaDatabase,
+            adapters=metagenomics_run.adapters,
+            trimHead=metagenomics_run.trimHead,
+            trimTail=metagenomics_run.trimTail,
+            runDenovoAssembly=metagenomics_run.runDenovoAssembly,
+            runKraken2Reads=metagenomics_run.runKraken2Reads,
+            runKraken2Contigs=metagenomics_run.runKraken2Contigs,
+            runDiamondReads=metagenomics_run.runDiamondReads,
+            runDiamondContigs=metagenomics_run.runDiamondContigs,
+            hostReference=metagenomics_run.hostReference,
+            deaconIndex=metagenomics_run.deaconIndex,
+            taxdump=metagenomics_run.taxdump,
+            diamondDatabase=metagenomics_run.diamondDatabase,
+            taxids=metagenomics_run.taxids,
+            bleedFraction=metagenomics_run.bleedFraction,
+            negativePThreshold=metagenomics_run.negativePThreshold,
+            minimumHitGroup=metagenomics_run.minimumHitGroup,
+            runPolishRacon=metagenomics_run.runPolishRacon,
+            runPolishMedaka=metagenomics_run.runPolishMedaka,
+            medakaModel=metagenomics_run.medakaModel,
+            runReferenceAssembly=metagenomics_run.runReferenceAssembly,
+            referenceAssemblyMethod=metagenomics_run.referenceAssemblyMethod,
+            referenceAssemblySource=metagenomics_run.referenceAssemblySource,
+            viralGenomes=metagenomics_run.viralGenomes,
+            viralTaxids=metagenomics_run.viralTaxids,
+        )
+    )
     
     return run.dict()
     
@@ -154,21 +180,29 @@ async def get_metagenomics(usecase: ListMetagenomicsUseCaseDependency):
     return runs_data
 
 @router.get("/metagenomics/{run_id}/{sample_id}/result")
-async def get_metagenomics_result(run_id: int, sample_id: int, usecase: GetMetagenomicsResultUseCaseDependency):
+async def get_metagenomics_result(
+    run_id: int,
+    sample_id: int,
+    usecase: GetMetagenomicsResultUseCaseDependency,
+    kind: str = Query(
+        default="kraken2_reads",
+        description="Krona report: kraken2_reads | kraken2_contigs | diamond_reads | diamond_contigs",
+    ),
+):
     """
-    Get the results of a specific metagenomics run.
-    
-    Args:
-        run_id: The ID of the metagenomics run
-        
-    Returns:
-        StreamingResponse: HTML report of the metagenomics results
+    Get a Krona HTML report for a sample (ViralUnity ITPS layout under samples/).
     """
-    result = usecase.execute(run_id, sample_id)
+    try:
+        result = usecase.execute(run_id, sample_id, kind=kind)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
     return FileResponse(
         path=result["file_path"],
         media_type=result["content_type"],
-        filename=result["filename"]
+        filename=result["filename"],
     )
 
 @router.get("/metagenomics/{run_id}/metrics")
@@ -236,5 +270,5 @@ async def health_check():
     Returns:
         HealthCheckResponse: API status and timestamp
     """
-    health_response = HealthCheckResponse()
+    health_response = HealthCheckResponse(startup=startup_status_service.snapshot().to_dict())
     return health_response.dict()

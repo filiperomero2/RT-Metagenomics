@@ -115,7 +115,7 @@ export function BackendMonitorPanel({
   const [autoScroll, setAutoScroll] = useState(true);
   const logViewportRef = useRef<HTMLDivElement>(null);
   const isProgrammaticScrollRef = useRef(false);
-  const { data: isUp, isError } = useBackendStatus();
+  const { data: backendStatus } = useBackendStatus();
 
   const scrollViewportToBottom = useCallback(() => {
     const viewport = logViewportRef.current;
@@ -169,10 +169,7 @@ export function BackendMonitorPanel({
     try {
       await window.api.clearBackendLogs();
     } catch (error) {
-      console.error(
-        "Failed to clear backend logs:",
-        getErrorMessage(error),
-      );
+      console.error("Failed to clear backend logs:", getErrorMessage(error));
     }
   }, []);
 
@@ -241,23 +238,41 @@ export function BackendMonitorPanel({
     scrollViewportToBottom();
   }, [autoScroll, logs, scrollViewportToBottom]);
 
-  const isRunning = isUp && !isError;
+  const status = backendStatus?.status ?? "offline";
+  const health = backendStatus?.health;
   const hasProcess = backendState.isRunning;
 
   const getStatusLabel = () => {
-    if (isRunning) return "Backend is running";
+    if (status === "ready") return "Backend is running";
+    if (status === "initializing") {
+      const step =
+        typeof health?.progressStep === "number" &&
+        typeof health?.progressTotal === "number" &&
+        health.progressTotal > 0
+          ? ` (${health.progressStep}/${health.progressTotal})`
+          : "";
+      return `Backend loading databases${step}`;
+    }
+    if (status === "degraded") {
+      return health?.error
+        ? `Backend degraded: ${health.error}`
+        : "Backend is running in degraded mode";
+    }
     return "Backend is offline";
   };
 
   return (
-    <Card className={cn("flex flex-col ", className)}>
+    <Card className={cn("flex flex-col", className)}>
       <Card.Header className="flex-row justify-between gap-4">
         <span className="inline-flex items-center gap-2 text-sm font-semibold">
           {detached && (
             <div
               className={cn(
                 "size-4 rounded-full",
-                isRunning ? "bg-success" : "bg-danger",
+                status === "ready" && "bg-success",
+                status === "initializing" && "bg-warning",
+                status === "degraded" && "bg-warning",
+                status === "offline" && "bg-danger",
               )}
             />
           )}
@@ -342,7 +357,7 @@ export function BackendMonitorPanel({
               <div
                 key={log.id}
                 className={cn(
-                  "mb-1 flex items-center gap-2 rounded-sm border-l-2 px-2 py-1 break-all whitespace-pre-wrap last:mb-0 select-text",
+                  "mb-1 flex items-center gap-2 rounded-sm border-l-2 px-2 py-1 break-all whitespace-pre-wrap select-text last:mb-0",
                   LOG_TYPE_META[log.type].rowClassName,
                 )}
               >

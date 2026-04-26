@@ -1,8 +1,6 @@
 import { Accordion } from "@/components/custom-accordion";
 import { useFocusedRun } from "@/hooks/use-focused-run";
-import {
-  viridisColorGenerator
-} from "@/utils/color-generator";
+import { viridisColorGenerator } from "@/utils/color-generator";
 import { Tooltip as TooltipHero } from "@heroui/react";
 import interpolate from "color-interpolate";
 import { ChartNoAxesColumnIncreasing } from "lucide-react";

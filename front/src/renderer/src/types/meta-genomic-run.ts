@@ -10,7 +10,7 @@ export interface MetaGenomicRun {
   updatedAt: Date;
   samples: Sample[];
   parameters: Parameters;
-  metrics: RunMetrics
+  metrics: RunMetrics;
 }
 
 export interface RunMetrics {
@@ -20,7 +20,6 @@ export interface RunMetrics {
 
 export interface Parameters {
   dataType: string;
-  trim: number;
   threads: number;
   threadsTotal: number;
   kraken2Database: string;
@@ -28,6 +27,30 @@ export interface Parameters {
   removeHumanReads: boolean;
   removeUnclassifiedReads: boolean;
   minimumReadLength: number;
+  adapters?: string | null;
+  trimHead?: number | null;
+  trimTail?: number | null;
+  runDenovoAssembly?: boolean;
+  runKraken2Reads?: boolean;
+  runKraken2Contigs?: boolean;
+  runDiamondReads?: boolean;
+  runDiamondContigs?: boolean;
+  hostReference?: string | null;
+  deaconIndex?: string | null;
+  taxdump?: string | null;
+  diamondDatabase?: string | null;
+  taxids?: string | null;
+  bleedFraction?: number;
+  negativePThreshold?: number;
+  minimumHitGroup?: number;
+  runPolishRacon?: boolean;
+  runPolishMedaka?: boolean;
+  medakaModel?: string | null;
+  runReferenceAssembly?: boolean;
+  referenceAssemblyMethod?: string | null;
+  referenceAssemblySource?: string | null;
+  viralGenomes?: string | null;
+  viralTaxids?: string | null;
 }
 
 export interface Sample {

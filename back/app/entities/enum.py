@@ -1,6 +1,7 @@
 from enum import Enum
 
 class DataType(str, Enum):
+    ILLUMINA = "illumina"
     NANOPORE = "nanopore"
     
 class RunState(str, Enum):
@@ -16,5 +17,4 @@ class ConfigType(str, Enum):
     POLLING_INTERVAL = "polling_interval"
     ITERATION_INTERVAL = "iteration_interval"
     DIAMOND_TAXDUMP = "diamond_taxdump"
-    DIAMOND_ASSEMBLY_SUMMARY = "diamond_assembly_summary"
-    DIAMOND_TAXID_TO_FAMILY = "diamond_taxid_to_family"
+    DIAMOND_TAXIDS = "diamond_taxids"

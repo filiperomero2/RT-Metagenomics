@@ -45,8 +45,10 @@ function SettingsPage() {
   const { mutateAsync: saveSettings, isPending } = useSaveSettings();
   const { mutate: updateKronaDatabase, isPending: isUpdatingKrona } =
     useUpdateKronaDatabase();
-  const { mutateAsync: installKraken2Database, isPending: isInstallingKraken2 } =
-    useInstallKraken2Database();
+  const {
+    mutateAsync: installKraken2Database,
+    isPending: isInstallingKraken2,
+  } = useInstallKraken2Database();
   const [kraken2InstallUrl, setKraken2InstallUrl] = useState("");
 
   const methods = useForm<SettingsData>({
@@ -69,9 +71,8 @@ function SettingsPage() {
   const savedKronaPath =
     settings?.databases.krona ?? DEFAULT_SETTINGS.databases.krona;
   const hasUnsavedKronaPathChanges = kronaPath !== savedKronaPath;
-  const defaultKraken2DatabasePath = getDefaultKraken2DatabasePath(
-    kraken2Databases,
-  );
+  const defaultKraken2DatabasePath =
+    getDefaultKraken2DatabasePath(kraken2Databases);
 
   const onSave = async (data: SettingsData) => {
     const savedSettings = await saveSettings(data);
@@ -91,7 +92,9 @@ function SettingsPage() {
   };
 
   const installKraken2 = async () => {
-    const result = await installKraken2Database(kraken2InstallUrl.trim() || undefined);
+    const result = await installKraken2Database(
+      kraken2InstallUrl.trim() || undefined,
+    );
     const currentDatabases = kraken2Databases ?? [];
     const alreadyExists = currentDatabases.some(
       (database) => database.value === result.kraken2Database,
@@ -236,7 +239,8 @@ function SettingsPage() {
                   </p>
                   {kraken2Databases?.length ? (
                     kraken2Databases.map((database) => {
-                      const isDefault = database.value === defaultKraken2DatabasePath;
+                      const isDefault =
+                        database.value === defaultKraken2DatabasePath;
 
                       return (
                         <button
@@ -247,12 +251,14 @@ function SettingsPage() {
                               ? "border-primary bg-primary/10"
                               : "border-default-200 bg-content2 hover:border-primary/50"
                           }`}
-                          onClick={() => setDefaultKraken2Database(database.value)}
+                          onClick={() =>
+                            setDefaultKraken2Database(database.value)
+                          }
                         >
                           <div className="flex items-start justify-between gap-3">
                             <div className="min-w-0">
                               <p className="font-medium">{database.name}</p>
-                              <p className="text-muted break-all text-xs">
+                              <p className="text-muted text-xs break-all">
                                 {database.value}
                               </p>
                             </div>
@@ -320,16 +326,9 @@ function SettingsPage() {
                   isFolderSelector
                 />
                 <Input
-                  name="databases.diamond.assembly-summary"
-                  label="Assembly Summary Path"
-                  placeholder="/path/to/diamond/assembly-summary"
-                  isFolderSelector
-                />
-                <Input
-                  name="databases.diamond.taxid-to-family"
-                  label="Taxid to Family Path"
-                  placeholder="/path/to/diamond/taxid-to-family"
-                  isFolderSelector
+                  name="databases.diamond.taxids"
+                  label="Diamond taxids (protein2taxid.tsv)"
+                  placeholder="/path/to/protein2taxid.tsv"
                 />
               </Card.Content>
             </Card>

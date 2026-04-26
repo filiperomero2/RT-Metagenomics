@@ -30,9 +30,9 @@ export interface Dataset {
 }
 
 export interface SummaryMetrics {
-  nTotalReads:                 number;
-  nTotalIdentifiedReads:       number;
+  nTotalReads: number;
+  nTotalIdentifiedReads: number;
   percentageOfIdentifiedReads: number;
-  meanTimeOfAnalysis:          number;
-  lastAnalysisTime:            number;
+  meanTimeOfAnalysis: number;
+  lastAnalysisTime: number;
 }

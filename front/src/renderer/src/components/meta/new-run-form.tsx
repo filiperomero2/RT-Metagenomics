@@ -6,7 +6,6 @@ import { api } from "@/lib/axios";
 import { MetaGenomic } from "@/types/meta-genomic";
 import {
   Accordion,
-  AccordionItem,
   Alert,
   AlertDialog,
   Button,
@@ -27,9 +26,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
 import { Autocomplete } from "@/components/form/autocomplete";
-import {
-  META_GENOMIC_FORM_STORAGE_KEY,
-} from "@/constants/local-storage";
+import { META_GENOMIC_FORM_STORAGE_KEY } from "@/constants/local-storage";
 import { useSettings } from "@/hooks/use-settings";
 import { getDefaultKraken2DatabasePath } from "@/types/settings";
 import { useModal } from "@/hooks/use-modal";
@@ -37,45 +34,118 @@ import { cn } from "@/utils/cn";
 import { Link } from "@tanstack/react-router";
 import { Cog, Database, Dna, Plus, X } from "lucide-react";
 
-const schema = z.object({
-  path: z.string().min(1, { message: "Path is required" }),
-  runName: z.string().min(5, { message: "Run Name is required" }),
-  dataType: z.enum(["illumina", "nanopore"]),
-  threads: z.number().min(1, { message: "Threads must be at least 1" }),
-  threadsTotal: z
-    .number()
-    .min(1, { message: "Threads Total must be at least 1" }),
-  trim: z.number().min(0, { message: "Trim must be at least 0" }),
-  removeHumanReads: z.boolean(),
-  removeUnclassifiedReads: z.boolean(),
-  minimumReadLength: z
-    .number()
-    .min(1, { message: "Minimum Read Length must be at least 1" }),
-  kraken2Database: z
-    .string()
-    .min(1, { message: "Kraken2 Database Path is required" }),
-  kronaDatabase: z
-    .string()
-    .min(1, { message: "Krona Database Path is required" }),
-  diamondDatabase: z
-    .string()
-    .min(1, { message: "Diamond Database Path is required" }),
-  samples: z
-    .array(
-      z.object({
-        name: z
-          .string()
-          .min(1, "")
-          .regex(
-            /^[a-zA-Z_-]+$/,
-            "Only letters, underscores, and hyphens are allowed",
-          ),
-        barcode: z.string().min(1, ""),
-        isNegativeControl: z.boolean().default(false),
-      }),
-    )
-    .min(1, { message: "At least one sample is required" }),
-});
+const schema = z
+  .object({
+    path: z.string().min(1, { message: "Path is required" }),
+    runName: z.string().min(5, { message: "Run Name is required" }),
+    dataType: z.enum(["illumina", "nanopore"]),
+    threads: z.number().min(1, { message: "Threads must be at least 1" }),
+    threadsTotal: z
+      .number()
+      .min(1, { message: "Threads Total must be at least 1" }),
+    trimHead: z.number().min(0),
+    trimTail: z.number().min(0),
+    removeHumanReads: z.boolean(),
+    removeUnclassifiedReads: z.boolean(),
+    minimumReadLength: z
+      .number()
+      .min(1, { message: "Minimum Read Length must be at least 1" }),
+    kraken2Database: z
+      .string()
+      .min(1, { message: "Kraken2 Database Path is required" }),
+    kronaDatabase: z
+      .string()
+      .min(1, { message: "Krona Database Path is required" }),
+    taxdump: z.string().optional(),
+    taxids: z.string().optional(),
+    diamondDatabase: z.string().optional(),
+    runDenovoAssembly: z.boolean(),
+    runKraken2Reads: z.boolean(),
+    runKraken2Contigs: z.boolean(),
+    runDiamondReads: z.boolean(),
+    runDiamondContigs: z.boolean(),
+    hostReference: z.string().optional(),
+    deaconIndex: z.string().optional(),
+    bleedFraction: z.number().min(0).max(1),
+    negativePThreshold: z.number().min(0).max(1),
+    minimumHitGroup: z.number().min(1),
+    runPolishRacon: z.boolean(),
+    runPolishMedaka: z.boolean(),
+    medakaModel: z.string().optional(),
+    runReferenceAssembly: z.boolean(),
+    referenceAssemblyMethod: z.string().optional(),
+    referenceAssemblySource: z.string().optional(),
+    viralGenomes: z.string().optional(),
+    viralTaxids: z.string().optional(),
+    adapters: z.string().optional(),
+    samples: z
+      .array(
+        z.object({
+          name: z
+            .string()
+            .min(1, "")
+            .regex(
+              /^[a-zA-Z_-]+$/,
+              "Only letters, underscores, and hyphens are allowed",
+            ),
+          barcode: z.string().min(1, ""),
+          isNegativeControl: z.boolean().default(false),
+        }),
+      )
+      .min(1, { message: "At least one sample is required" }),
+  })
+  .superRefine((data, ctx) => {
+    if (!data.runDenovoAssembly && data.runKraken2Contigs) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message:
+          "Kraken2 on contigs needs de novo assembly (MEGAHIT). Enable assembly or turn off Kraken2 on contigs.",
+        path: ["runKraken2Contigs"],
+      });
+    }
+    if (!data.runDenovoAssembly && data.runDiamondContigs) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message:
+          "Diamond on contigs needs de novo assembly. Enable assembly or turn off Diamond on contigs.",
+        path: ["runDiamondContigs"],
+      });
+    }
+    const anyDiamond = data.runDiamondReads || data.runDiamondContigs;
+    if (anyDiamond) {
+      if (!data.diamondDatabase?.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Diamond database path is required when Diamond is enabled",
+          path: ["diamondDatabase"],
+        });
+      }
+      if (!data.taxids?.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message:
+            "taxids (protein2taxid.tsv) is required when Diamond is enabled",
+          path: ["taxids"],
+        });
+      }
+    }
+    if (data.runReferenceAssembly) {
+      if (!data.referenceAssemblyMethod?.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Method is required for reference assembly",
+          path: ["referenceAssemblyMethod"],
+        });
+      }
+      if (!data.referenceAssemblySource?.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Source is required for reference assembly",
+          path: ["referenceAssemblySource"],
+        });
+      }
+    }
+  });
 
 const barcodes = Array.from({ length: 96 })
   .fill(0)
@@ -113,25 +183,50 @@ export function NewRunForm() {
       dataType: storedForm?.dataType ?? "nanopore",
       threads: 1,
       threadsTotal: 1,
-      trim: 0,
+      trimHead: storedForm?.trimHead ?? 0,
+      trimTail: storedForm?.trimTail ?? 0,
       removeHumanReads: false,
       removeUnclassifiedReads: false,
       minimumReadLength: 50,
       kraken2Database:
-        (
-          getDefaultKraken2DatabasePath(globalSettings?.databases?.kraken2) ||
-          storedForm?.kraken2Database
-        ) ??
+        getDefaultKraken2DatabasePath(globalSettings?.databases?.kraken2) ||
+        storedForm?.kraken2Database ||
         "",
       kronaDatabase:
         globalSettings?.databases?.krona ?? storedForm?.kronaDatabase ?? "",
-      diamondDatabase:
+      taxdump:
         globalSettings?.databases?.diamond?.taxdump ??
-        storedForm?.diamondDatabase ??
+        storedForm?.taxdump ??
         "",
+      taxids:
+        globalSettings?.databases?.diamond?.taxids ?? storedForm?.taxids ?? "",
+      diamondDatabase: storedForm?.diamondDatabase ?? "",
+      runDenovoAssembly: storedForm?.runDenovoAssembly ?? false,
+      runKraken2Reads: storedForm?.runKraken2Reads ?? true,
+      runKraken2Contigs: storedForm?.runKraken2Contigs ?? false,
+      runDiamondReads: storedForm?.runDiamondReads ?? false,
+      runDiamondContigs: storedForm?.runDiamondContigs ?? false,
+      hostReference: storedForm?.hostReference ?? "",
+      deaconIndex: storedForm?.deaconIndex ?? "",
+      bleedFraction: storedForm?.bleedFraction ?? 0.005,
+      negativePThreshold: storedForm?.negativePThreshold ?? 0.01,
+      minimumHitGroup: storedForm?.minimumHitGroup ?? 4,
+      runPolishRacon: storedForm?.runPolishRacon ?? false,
+      runPolishMedaka: storedForm?.runPolishMedaka ?? false,
+      medakaModel: storedForm?.medakaModel ?? "",
+      runReferenceAssembly: storedForm?.runReferenceAssembly ?? false,
+      referenceAssemblyMethod: storedForm?.referenceAssemblyMethod ?? "",
+      referenceAssemblySource: storedForm?.referenceAssemblySource ?? "",
+      viralGenomes: storedForm?.viralGenomes ?? "",
+      viralTaxids: storedForm?.viralTaxids ?? "",
+      adapters: storedForm?.adapters ?? "",
       samples: Array.from({ length: 3 })
         .fill(0)
-        .map((_, i) => ({ name: "", barcode: "", isNegativeControl: false })),
+        .map(() => ({
+          name: "",
+          barcode: "",
+          isNegativeControl: false,
+        })),
     },
     resolver: zodResolver(schema),
   });
@@ -141,13 +236,15 @@ export function NewRunForm() {
     name: "samples",
   });
   const hasDatabases =
-    getDefaultKraken2DatabasePath(globalSettings?.databases?.kraken2) &&
-    globalSettings?.databases?.krona &&
-    globalSettings?.databases?.diamond?.taxdump;
+    Boolean(
+      getDefaultKraken2DatabasePath(globalSettings?.databases?.kraken2),
+    ) &&
+    Boolean(globalSettings?.databases?.krona) &&
+    Boolean(globalSettings?.databases?.diamond?.taxdump);
 
   const handleSubmit = async (data: z.infer<typeof schema>) => {
     setStoredForm(data);
-    await mutateAsync(data, {
+    await mutateAsync(data as MetaGenomic, {
       onSuccess: () => {
         handleClose();
         form.reset();
@@ -176,8 +273,9 @@ export function NewRunForm() {
               </AlertDialog.Header>
               <AlertDialog.Body>
                 <p>
-                  To run a metagenomic analysis, you need to configure the paths
-                  for the Kraken2, Krona, and Diamond databases.
+                  To run a metagenomic analysis, configure Kraken2, Krona, and
+                  NCBI taxdump paths under Settings (taxdump is required for
+                  taxonomic summaries).
                 </p>
               </AlertDialog.Body>
               <AlertDialog.Footer>
@@ -237,7 +335,7 @@ export function NewRunForm() {
                   <div className="nth-[0]:px-3">
                     <Accordion
                       allowsMultipleExpanded
-                      defaultExpandedKeys={[ "Samples"]}
+                      defaultExpandedKeys={["Samples"]}
                     >
                       <Accordion.Item id="Options">
                         <Accordion.Heading>
@@ -259,8 +357,13 @@ export function NewRunForm() {
                               className="col-span-2 @md:col-span-1"
                             />
                             <NumberInput
-                              name="trim"
-                              label="Trim"
+                              name="trimHead"
+                              label="Trim head (Illumina, bases 5')"
+                              className="col-span-2 @md:col-span-1"
+                            />
+                            <NumberInput
+                              name="trimTail"
+                              label="Trim tail (Illumina, bases 3')"
                               className="col-span-2 @md:col-span-1"
                             />
                             <NumberInput
@@ -276,6 +379,92 @@ export function NewRunForm() {
                             <CheckBox
                               name="removeHumanReads"
                               label="Remove Human Reads"
+                            />
+
+                            <p className="text-muted col-span-2 text-sm font-medium">
+                              Pipeline toggles
+                            </p>
+                            <CheckBox
+                              name="runDenovoAssembly"
+                              label="De novo assembly (MEGAHIT)"
+                            />
+                            <CheckBox
+                              name="runKraken2Reads"
+                              label="Kraken2 on reads"
+                            />
+                            <CheckBox
+                              name="runKraken2Contigs"
+                              label="Kraken2 on contigs"
+                            />
+                            <CheckBox
+                              name="runDiamondReads"
+                              label="Diamond on reads"
+                            />
+                            <CheckBox
+                              name="runDiamondContigs"
+                              label="Diamond on contigs"
+                            />
+                            <CheckBox
+                              name="runPolishRacon"
+                              label="Racon polish (nanopore)"
+                            />
+                            <CheckBox
+                              name="runPolishMedaka"
+                              label="Medaka polish (nanopore)"
+                            />
+                            <CheckBox
+                              name="runReferenceAssembly"
+                              label="Reference assembly (experimental)"
+                            />
+                            <NumberInput
+                              name="bleedFraction"
+                              label="Bleed fraction"
+                              className="col-span-2 @md:col-span-1"
+                            />
+                            <NumberInput
+                              name="negativePThreshold"
+                              label="Negative control p-threshold"
+                              className="col-span-2 @md:col-span-1"
+                            />
+                            <NumberInput
+                              name="minimumHitGroup"
+                              label="Kraken2 minimum hit group"
+                              className="col-span-2 @md:col-span-1"
+                            />
+                            <Input
+                              name="hostReference"
+                              label="Host reference FASTA (optional)"
+                              className="col-span-2"
+                            />
+                            <Input
+                              name="deaconIndex"
+                              label="Deacon index (optional)"
+                              className="col-span-2"
+                            />
+                            <Input
+                              name="medakaModel"
+                              label="Medaka model (optional)"
+                              className="col-span-2"
+                            />
+                            <Input
+                              name="referenceAssemblyMethod"
+                              label="Ref. assembly method (kraken2|diamond|both)"
+                              className="col-span-2"
+                            />
+                            <Input
+                              name="referenceAssemblySource"
+                              label="Ref. assembly source (reads|contigs|both)"
+                              className="col-span-2"
+                            />
+                            <Input
+                              name="viralGenomes"
+                              label="Viral genomes FASTA (ref. assembly)"
+                              className="col-span-2"
+                            />
+                            <Input
+                              name="viralTaxids"
+                              label="Viral genome2taxid TSV (ref. assembly)"
+                              className="col-span-2"
                             />
                           </Accordion.Body>
                         </Accordion.Panel>
@@ -301,9 +490,20 @@ export function NewRunForm() {
                               isDisabled
                             />
                             <Input
-                              name="diamondDatabase"
-                              label="Diamond Database"
+                              name="taxdump"
+                              label="Taxdump (NCBI)"
                               isDisabled
+                            />
+                            <Input
+                              name="taxids"
+                              label="Diamond taxids (protein2taxid.tsv)"
+                              isDisabled
+                            />
+                            <Input
+                              name="diamondDatabase"
+                              label="Diamond protein DB (.faa or .dmnd)"
+                              placeholder="Required if Diamond reads/contigs enabled"
+                              className="col-span-3"
                             />
                             <Alert
                               status="accent"
@@ -328,11 +528,7 @@ export function NewRunForm() {
                         </Accordion.Panel>
                       </Accordion.Item>
 
-                      <AccordionItem
-                        id="Samples"
-                        // textValue="Samples"
-                        // indicator={<Dna />}
-                      >
+                      <Accordion.Item id="Samples">
                         <Accordion.Heading>
                           <Accordion.Trigger>
                             <p className="flex items-center gap-2">Samples</p>
@@ -362,7 +558,11 @@ export function NewRunForm() {
                               type="button"
                               onPress={() =>
                                 samplesArrayField.append(
-                                  { name: "", barcode: "" },
+                                  {
+                                    name: "",
+                                    barcode: "",
+                                    isNegativeControl: false,
+                                  },
                                   {
                                     focusIndex: samplesArrayField.fields.length,
                                   },
@@ -373,7 +573,7 @@ export function NewRunForm() {
                             </Button>
                           </Accordion.Body>
                         </Accordion.Panel>
-                      </AccordionItem>
+                      </Accordion.Item>
                     </Accordion>
                   </div>
                 </Modal.Body>
@@ -424,15 +624,12 @@ function Sample({
         isNegative && "ring-danger-soft/60 bg-danger-soft/15 rounded-lg ring",
       )}
     >
-      {/* <Tooltip content="Negative Control" showArrow placement="left">
-      <div className="h-full">
-        <CheckBox
-          color="secondary"
-          name={`samples.${index}.isNegativeControl`}
-          className="mb-0 h-full w-fit px-3"
-        />
-      </div>
-    </Tooltip> */}
+      <CheckBox
+        color="secondary"
+        name={`samples.${index}.isNegativeControl`}
+        label="Negative control"
+        className="col-span-full w-fit"
+      />
       <Input
         color={color}
         name={`samples.${index}.name`}

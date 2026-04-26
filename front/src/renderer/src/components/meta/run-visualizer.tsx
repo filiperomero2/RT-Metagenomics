@@ -47,7 +47,7 @@ export function RunVisualizer() {
             </span>
           </div>
 
-          <div className="bg-content2/40 border-content2-foreground/20 relative flex h-full items-center rounded-sm border p-2  shadow backdrop-blur-xs">
+          <div className="bg-content2/40 border-content2-foreground/20 relative flex h-full items-center rounded-sm border p-2 shadow backdrop-blur-xs">
             <div className="flex w-1/3 flex-col pr-2 text-xs">
               <span className="flex justify-between font-semibold">
                 lastAnalysisTime:
@@ -96,7 +96,7 @@ export function RunVisualizer() {
               size="sm"
               className="ml-2"
             >
-              <DownloadIcon size={18}/>
+              <DownloadIcon size={18} />
             </Button>
           </div>
 
