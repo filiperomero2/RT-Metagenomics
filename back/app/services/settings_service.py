@@ -12,8 +12,11 @@ SETTINGS_CONFIG_NAMES = {
     ConfigType.KRONA: "databases.krona",
     ConfigType.KRAKEN2: "databases.kraken2",
     ConfigType.DIAMOND_TAXDUMP: "databases.diamond.taxdump",
-    ConfigType.DIAMOND_ASSEMBLY_SUMMARY: "databases.diamond.assembly-summary",
-    ConfigType.DIAMOND_TAXID_TO_FAMILY: "databases.diamond.taxid-to-family",
+    ConfigType.DIAMOND_TAXIDS: "databases.diamond.taxids",
+    ConfigType.VIRAL_GENOMES: "databases.viral.genomes",
+    ConfigType.VIRAL_TAXIDS: "databases.viral.taxids",
+    ConfigType.HOST_REFERENCE: "databases.deacon.host_reference",
+    ConfigType.DEACON_INDEX: "databases.deacon.index",
 }
 
 
@@ -38,8 +41,11 @@ class SettingsService:
             ConfigType.ITERATION_INTERVAL: str(settings.iteration_interval),
             ConfigType.KRONA: settings.databases.krona,
             ConfigType.DIAMOND_TAXDUMP: settings.databases.diamond.taxdump,
-            ConfigType.DIAMOND_ASSEMBLY_SUMMARY: settings.databases.diamond.assembly_summary,
-            ConfigType.DIAMOND_TAXID_TO_FAMILY: settings.databases.diamond.taxid_to_family,
+            ConfigType.DIAMOND_TAXIDS: settings.databases.diamond.taxids,
+            ConfigType.VIRAL_GENOMES: settings.databases.viral.genomes,
+            ConfigType.VIRAL_TAXIDS: settings.databases.viral.taxids,
+            ConfigType.HOST_REFERENCE: settings.databases.deacon.host_reference,
+            ConfigType.DEACON_INDEX: settings.databases.deacon.index,
         }
 
         for config_type, value in values.items():
@@ -121,6 +127,30 @@ class SettingsService:
         diamond_taxid_to_family_path = self.config_repository.get_config_by_type(ConfigType.DIAMOND_TAXID_TO_FAMILY)
         if diamond_taxid_to_family_path and diamond_taxid_to_family_path.value:
             settings.databases.diamond.taxid_to_family = diamond_taxid_to_family_path.value
+
+        viral_genomes_path = self.config_repository.get_config_by_type(
+            ConfigType.VIRAL_GENOMES
+        )
+        if viral_genomes_path and viral_genomes_path.value:
+            settings.databases.viral.genomes = viral_genomes_path.value
+
+        viral_taxids_path = self.config_repository.get_config_by_type(
+            ConfigType.VIRAL_TAXIDS
+        )
+        if viral_taxids_path and viral_taxids_path.value:
+            settings.databases.viral.taxids = viral_taxids_path.value
+
+        host_reference_path = self.config_repository.get_config_by_type(
+            ConfigType.HOST_REFERENCE
+        )
+        if host_reference_path and host_reference_path.value:
+            settings.databases.deacon.host_reference = host_reference_path.value
+
+        deacon_index_path = self.config_repository.get_config_by_type(
+            ConfigType.DEACON_INDEX
+        )
+        if deacon_index_path and deacon_index_path.value:
+            settings.databases.deacon.index = deacon_index_path.value
 
         return settings
 

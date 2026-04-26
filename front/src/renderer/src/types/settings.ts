@@ -12,6 +12,14 @@ export interface DatabasePaths {
     "assembly-summary": string;
     "taxid-to-family": string;
   };
+  viral: {
+    genomes: string;
+    taxids: string;
+  };
+  deacon: {
+    host_reference: string;
+    index: string;
+  };
 }
 
 export interface SettingsData {
@@ -31,6 +39,14 @@ export const DEFAULT_SETTINGS: SettingsData = {
       "assembly-summary": "",
       "taxid-to-family": "",
     },
+    viral: {
+      genomes: "",
+      taxids: "",
+    },
+    deacon: {
+      host_reference: "",
+      index: "",
+    },
   },
 };
 
@@ -46,6 +62,14 @@ export function mergeSettings(
       diamond: {
         ...DEFAULT_SETTINGS.databases.diamond,
         ...settings?.databases?.diamond,
+      },
+      viral: {
+        ...DEFAULT_SETTINGS.databases.viral,
+        ...settings?.databases?.viral,
+      },
+      deacon: {
+        ...DEFAULT_SETTINGS.databases.deacon,
+        ...settings?.databases?.deacon,
       },
     },
   };

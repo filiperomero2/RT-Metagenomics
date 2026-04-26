@@ -188,6 +188,34 @@ class DatabaseSetupService:
                 value=paths["taxids"],
             )
         )
+        self.config_repository.save_config(
+            Config(
+                name="databases.viral.genomes",
+                type=ConfigType.VIRAL_GENOMES,
+                value=paths["viral_genomes"],
+            )
+        )
+        self.config_repository.save_config(
+            Config(
+                name="databases.viral.taxids",
+                type=ConfigType.VIRAL_TAXIDS,
+                value=paths["viral_taxids"],
+            )
+        )
+        self.config_repository.save_config(
+            Config(
+                name="databases.deacon.host_reference",
+                type=ConfigType.HOST_REFERENCE,
+                value=paths["host_reference"],
+            )
+        )
+        self.config_repository.save_config(
+            Config(
+                name="databases.deacon.index",
+                type=ConfigType.DEACON_INDEX,
+                value=paths["deacon_index"],
+            )
+        )
 
         return {
             "status": "installed",

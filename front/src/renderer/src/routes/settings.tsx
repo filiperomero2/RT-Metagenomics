@@ -278,7 +278,7 @@ function SettingsPage() {
 
                 <TextField
                   value={kraken2InstallUrl}
-                  onChange={(event) => setKraken2InstallUrl(event)}
+                  onChange={setKraken2InstallUrl}
                   variant="secondary"
                   isDisabled={isInstallingKraken2}
                 >
@@ -330,6 +330,46 @@ function SettingsPage() {
                   label="Taxid to Family Path"
                   placeholder="/path/to/diamond/taxid-to-family"
                   isFolderSelector
+                />
+              </Card.Content>
+            </Card>
+            <Card>
+              <Card.Header className="mb-2 flex flex-row items-center justify-between">
+                <h2 className="text-foreground-800 text-xl font-semibold">
+                  Viral
+                </h2>
+                <Database className="text-primary" size={20} />
+              </Card.Header>
+              <Card.Content className="gap-3">
+                <Input
+                  name="databases.viral.genomes"
+                  label="Viral genomes (viral.genomes.fasta)"
+                  placeholder="/path/to/viral.genomes.fasta"
+                />
+                <Input
+                  name="databases.viral.taxids"
+                  label="Viral taxids (genome2taxid.tsv)"
+                  placeholder="/path/to/genome2taxid.tsv"
+                />
+              </Card.Content>
+            </Card>
+            <Card>
+              <Card.Header className="mb-2 flex flex-row items-center justify-between">
+                <h2 className="text-foreground-800 text-xl font-semibold">
+                  Deacon
+                </h2>
+                <Database className="text-primary" size={20} />
+              </Card.Header>
+              <Card.Content className="gap-3">
+                <Input
+                  name="databases.deacon.host_reference"
+                  label="Host reference"
+                  placeholder="/path/to/host_reference.fasta"
+                />
+                <Input
+                  name="databases.deacon.index"
+                  label="Deacon index"
+                  placeholder="/path/to/deacon.index"
                 />
               </Card.Content>
             </Card>

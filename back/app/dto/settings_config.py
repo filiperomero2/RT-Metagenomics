@@ -9,6 +9,20 @@ class DiamondDatabasePaths(BaseModel):
     taxid_to_family: str = Field(default="", alias="taxid-to-family")
 
 
+class ViralDatabasePaths(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    genomes: str = ""
+    taxids: str = ""
+
+
+class DeaconDatabasePaths(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    host_reference: str = ""
+    index: str = ""
+
+
 class Kraken2DatabaseConfig(BaseModel):
     name: str
     value: str
@@ -19,6 +33,8 @@ class DatabasePaths(BaseModel):
     krona: str = ""
     kraken2: list[Kraken2DatabaseConfig] = Field(default_factory=list)
     diamond: DiamondDatabasePaths = Field(default_factory=DiamondDatabasePaths)
+    viral: ViralDatabasePaths = Field(default_factory=ViralDatabasePaths)
+    deacon: DeaconDatabasePaths = Field(default_factory=DeaconDatabasePaths)
 
 
 class SettingsConfig(BaseModel):
