@@ -48,11 +48,15 @@ class MetagenomicsRunRepository:
 
     def save_run(self, run: Run) -> Run:
         """Save a run"""
-        run.updatedAt = datetime.datetime.now()
-        run.next_scheduled_run_at = (
-            datetime.datetime.now()
-            + datetime.timedelta(minutes=config.service.iteration_interval)
-        )
+        now = datetime.datetime.now()
+        run.updatedAt = now
+        # Ensure newly created/reset runs start immediately.
+        if run.iteration == 0:
+            run.next_scheduled_run_at = now
+        else:
+            run.next_scheduled_run_at = now + datetime.timedelta(
+                seconds=config.service.iteration_interval
+            )
         self.session.add(run)
         self.session.commit()
         self.session.refresh(run)

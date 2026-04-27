@@ -17,7 +17,7 @@ class DatabaseConfig:
 class ServiceConfig:
     # Background service settings
     polling_interval: int = 1  # seconds
-    iteration_interval: int = 1  # 1 minute
+    iteration_interval: int = 60  # seconds
     
     # File processing settings
     default_minimum_read_length: int = 50
