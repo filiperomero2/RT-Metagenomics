@@ -12,7 +12,6 @@ import {
   Title,
   Tooltip,
 } from "chart.js";
-import { ChartNoAxesColumnIncreasing } from "lucide-react";
 import { useState } from "react";
 import { Bar } from "react-chartjs-2";
 import { ChartProps } from "./types";
@@ -36,6 +35,7 @@ export function BarChart({
   log,
 }: ChartProps) {
   const focused = useFocusedRun();
+
   const processedDataSets = dataSets?.map((dts) => ({
     ...dts,
     data: dts.data.map((v) => (log ? Number(Math.log10(v).toFixed(2)) : v)),
@@ -70,8 +70,8 @@ export function BarChart({
               }}
               options={{
                 responsive: true,
+                maintainAspectRatio: false,
                 animation: { duration: 500 },
-                aspectRatio: 19.5 / 9,
                 scales: {
                   x: {
                     stacked: true,

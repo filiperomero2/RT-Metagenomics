@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
+import { useHotkey } from "@tanstack/react-hotkeys";
 
 type Theme = "dark" | "light";
 
@@ -30,6 +31,12 @@ export function ThemeProvider({
     root.classList.add(theme);
     localStorage.setItem("theme", theme);
   }, [theme]);
+
+  const toggle = () => {
+    setTheme(theme === "dark" ? "light" : "dark");
+  };
+
+  useHotkey("Control+F10", toggle);
 
   return (
     <ThemeContext.Provider value={{ theme, setTheme }}>

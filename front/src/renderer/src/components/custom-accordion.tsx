@@ -55,13 +55,16 @@ export function Accordion({
 
   return (
     <div
-      className="scrollbar-hide flex h-full w-full snap-center flex-col overflow-auto"
+      className={cn(
+        "scrollbar-hide flex h-full w-full snap-center flex-col overflow-auto",
+        isFullScreen && "p-2 bg-background",
+      )}
       id={uniqueId}
     >
       <div
         className={cn(
           "bg-surface-secondary/60 text-foreground sticky top-0 z-10 mx-auto flex w-full items-center justify-between gap-2 overflow-clip rounded-xl px-4 py-1.5 shadow backdrop-blur-2xl",
-          isFullScreen && "rounded-t-none",
+          isFullScreen && "p-2",
           {
             "border-warning border-l-2": stateIndicator === "warning",
             "border-danger border-l-2": stateIndicator === "error",
@@ -130,7 +133,7 @@ export function Accordion({
       >
         <div
           className={cn(
-            "bg-surface-secondary/70 mt-1 overflow-clip rounded-xl",
+            "bg-surface-tertiary/40 mt-1 overflow-clip rounded-xl",
             className,
           )}
           data-fullscreen={isFullScreen}
