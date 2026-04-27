@@ -28,9 +28,13 @@ ChartJS.register(
   Colors,
 );
 
-export function BarChart({ title, dataSets, legend, isLoading }: ChartProps) {
-  const [show, setShow] = useState(false);
-  const [log, setLog] = useState(false);
+export function BarChart({
+  title,
+  dataSets,
+  legend,
+  isLoading,
+  log,
+}: ChartProps) {
   const focused = useFocusedRun();
   const processedDataSets = dataSets?.map((dts) => ({
     ...dts,
@@ -45,20 +49,10 @@ export function BarChart({ title, dataSets, legend, isLoading }: ChartProps) {
 
   return (
     <Accordion
-      show={show}
-      toggle={() => setShow(!show)}
+      show
       title={title}
-      className="h-[83dvh] data-[fullscreen='true']:h-full"
-      stateIndicator={hasValues ? "success" : "warning"}
+      className="h-full"
       isLoading={!hasValues || isLoading}
-      actions={[
-        {
-          label: "Log10",
-          active: log,
-          icon: <ChartNoAxesColumnIncreasing />,
-          onPress: () => setLog(!log),
-        },
-      ]}
     >
       {processedDataSets && (
         <div className="flex h-full items-center justify-center">
@@ -98,7 +92,7 @@ export function BarChart({ title, dataSets, legend, isLoading }: ChartProps) {
 
                 plugins: {
                   legend: {
-                    position: "right" as const,
+                    position: "bottom" as const,
                     title: {
                       display: true,
                       text: legend,

@@ -34,7 +34,7 @@ export function RunVisualizer() {
           }
         }}
       >
-        <Modal.Container size="cover" scroll="inside">
+        <Modal.Container size="cover" scroll="inside" className="p-5">
           <Modal.Dialog>
             <Modal.Header className="bg-surface/90 sticky top-0 z-20 grid grid-cols-[1fr_3fr_auto] items-center gap-1.5 py-1 capitalize backdrop-blur-2xl">
               <div className="flex items-center gap-2">

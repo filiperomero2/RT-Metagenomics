@@ -12,7 +12,7 @@ function Meta() {
   return (
     <div className="h-full p-8">
       <RunVisualizer />
-      {/* <SampleComparator /> */}
+      <SampleComparator />
 
       <div className="py-6 ">
         <div className="text-foreground-800 mb-4 flex w-full items-center justify-between gap-3 pb-6 text-3xl font-bold">

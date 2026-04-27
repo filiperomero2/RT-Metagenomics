@@ -55,7 +55,7 @@ export function Accordion({
 
   return (
     <div
-      className="scrollbar-hide flex w-full snap-center flex-col overflow-auto"
+      className="scrollbar-hide flex h-full w-full snap-center flex-col overflow-auto"
       id={uniqueId}
     >
       <div
@@ -124,7 +124,7 @@ export function Accordion({
       </div>
       <ShowComponent
         show={show || isFullScreen}
-        gridClassName={cn("h-full")}
+        gridClassName={cn("h-full min-h-0 flex-1")}
         initial={false}
         gridInnerClassName={fitContent ? "h-fit" : undefined}
       >

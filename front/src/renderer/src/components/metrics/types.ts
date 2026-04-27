@@ -5,6 +5,7 @@ export interface ChartProps {
   legend?: string;
   dataSets?: Dataset[];
   isLoading?: boolean;
+  log?: boolean
 }
 
 export interface MetricsTableProps {
