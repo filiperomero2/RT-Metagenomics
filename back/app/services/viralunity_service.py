@@ -52,6 +52,7 @@ class ViralUnityService:
                         self.repository.save_run(next_task)
                         continue
                     params = self.prepare_metagenomics_params(next_task)
+                    logger.debug(f"Params: {params}")
                     next_task.state = RunState.RUNNING
                     next_task.iteration += 1
                     next_task.executionHash = task_hash

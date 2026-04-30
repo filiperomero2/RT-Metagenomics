@@ -32,7 +32,7 @@ type BackendStatusData = {
 };
 
 function toOnlineState(event: BackendProcessEvent) {
-  return event.type === "started";
+  return event.type === "started" || event.type === "attached";
 }
 
 export function useBackendStatus() {

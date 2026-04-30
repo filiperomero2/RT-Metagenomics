@@ -111,6 +111,7 @@ export function BackendMonitorPanel({
   const [backendState, setBackendState] = useState<BackendState>({
     isRunning: false,
     pid: null,
+    ownership: null,
   });
   const [autoScroll, setAutoScroll] = useState(true);
   const logViewportRef = useRef<HTMLDivElement>(null);
@@ -144,6 +145,7 @@ export function BackendMonitorPanel({
       setBackendState({
         isRunning: true,
         pid: proc.pid,
+        ownership: proc.ownership,
       });
     } catch (error) {
       console.error(
@@ -179,6 +181,16 @@ export function BackendMonitorPanel({
         setBackendState({
           isRunning: true,
           pid: event.pid,
+          ownership: "managed",
+        });
+        return;
+      }
+
+      if (event.type === "attached") {
+        setBackendState({
+          isRunning: true,
+          pid: event.pid,
+          ownership: "attached",
         });
         return;
       }
@@ -186,6 +198,7 @@ export function BackendMonitorPanel({
       setBackendState({
         isRunning: false,
         pid: null,
+        ownership: null,
       });
       console.info("[backend]", `Process exited (${formatExitMessage(event)})`);
     });
@@ -241,6 +254,7 @@ export function BackendMonitorPanel({
   const status = backendStatus?.status ?? "offline";
   const health = backendStatus?.health;
   const hasProcess = backendState.isRunning;
+  const stopLabel = backendState.ownership === "attached" ? "Detach" : "Stop";
 
   const getStatusLabel = () => {
     if (status === "ready") return "Backend is running";
@@ -318,7 +332,7 @@ export function BackendMonitorPanel({
           {hasProcess ? (
             <Button size="sm" variant="danger-soft" onPress={stopBackend}>
               <Square size={14} />
-              Stop
+              {stopLabel}
             </Button>
           ) : (
             <Button size="sm" onPress={startBackend}>
