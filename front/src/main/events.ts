@@ -14,11 +14,9 @@ export function setupEvents(mainWindow: BrowserWindow) {
   mainWindow.on("ready-to-show", () => {
     mainWindow!.show();
 
-    try {
-      startBackendProcess();
-    } catch (error) {
+    void startBackendProcess().catch((error) => {
       console.error("Failed to auto-start backend on window open:", error);
-    }
+    });
 
     if (is.dev) {
       mainWindow!.webContents.openDevTools({ mode: "detach" });
