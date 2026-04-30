@@ -4,57 +4,58 @@ import {
   useSelectedCharts,
 } from "@/hooks/use-selected-charts";
 import { Button, Modal } from "@heroui/react";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { SquareSplitHorizontal, X } from "lucide-react";
 import { Fragment } from "react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { SampleVisualizer } from "./sample-visualizer";
+import { Portal } from "../portal";
 
 export function SampleComparator() {
-  const modal = useModal();
+  const { handleOpen, modal } = useModal();
   const samples = useSelectedCharts();
 
   const handleCompare = () => {
-    modal.handleOpen();
+    handleOpen();
   };
 
   return (
     <>
-      <motion.div
-        className="bg-surface-secondary pointer-events-auto fixed bottom-4 left-1/2 z-[999999] flex -translate-x-1/2 gap-2 rounded-2xl px-3 py-2"
-        initial={{ opacity: 0, y: 200 }}
-        animate={
-          samples.length > 1 && !modal.modal.isOpen
-            ? { opacity: 1, y: 0 }
-            : { opacity: 0, y: 200 }
-        }
-      >
-        <Button
-          onPress={handleCompare}
-          size="sm"
-          variant="primary"
-          type="button"
-        >
-          <SquareSplitHorizontal />
-          Compare charts
-        </Button>
+      <Portal>
+        <AnimatePresence>
+          {samples.length > 1 && !modal.isOpen && (
+            <motion.div
+              data-react-aria-top-layer
+              className="bg-surface-secondary pointer-events-auto absolute bottom-4 left-1/2 z-[999999] flex -translate-x-1/2 gap-2 rounded-2xl px-3 py-2"
+              initial={{ opacity: 0, y: 200 }}
+              exit={{ opacity: 0, y: 200 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <Button
+                onPress={handleCompare}
+                size="sm"
+                variant="primary"
+                type="button"
+              >
+                <SquareSplitHorizontal />
+                Compare charts
+              </Button>
 
-        <Button
-          onPress={clearSelectedCharts}
-          isIconOnly
-          size="sm"
-          variant="danger"
-          type="button"
-        >
-          <X />
-        </Button>
-      </motion.div>
+              <Button
+                onPress={clearSelectedCharts}
+                isIconOnly
+                size="sm"
+                variant="danger"
+                type="button"
+              >
+                <X />
+              </Button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </Portal>
       <Modal>
-        <Modal.Backdrop
-          isOpen={modal.modal.isOpen}
-          onOpenChange={modal.modal.onOpenChange}
-          isDismissable={false}
-        >
+        <Modal.Backdrop {...modal} isDismissable={false}>
           <Modal.Container size="cover" className="p-5">
             <Modal.Dialog>
               <Modal.CloseTrigger />
@@ -70,7 +71,7 @@ export function SampleComparator() {
                 >
                   {samples.map((sample, index) => (
                     <Fragment key={`${sample.runId}-${sample.id}`}>
-                      <Panel key={`${sample.runId}-${sample.id}`}>
+                      <Panel key={`${sample.runId}-${sample.id}`} minSize={25}>
                         <SampleVisualizer sample={sample} isComparing />
                       </Panel>
                       {index < samples.length - 1 && <PanelResizeHandle />}

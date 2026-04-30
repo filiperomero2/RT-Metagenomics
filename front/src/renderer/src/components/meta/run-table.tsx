@@ -54,6 +54,7 @@ export function RunTable() {
       <Table.ScrollContainer>
         <Table.Content
           selectionMode="single"
+          selectedKeys={focused ? new Set([focused.id]) : new Set()}
           onSelectionChange={(selection) => {
             if (typeof selection === "string") return;
             const run = reversedData.find((run) => selection?.has(run.id));

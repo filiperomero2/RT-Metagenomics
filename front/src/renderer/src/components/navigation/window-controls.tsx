@@ -82,7 +82,7 @@ export function WindowControls({
             {isMaximized ? (
               <Copy
                 size={8}
-                className="text-black/65 opacity-0 transition-opacity group-hover:opacity-100"
+                className="text-red-300/65 opacity-0 transition-opacity group-hover:opacity-100 "
               />
             ) : (
               <Square
@@ -113,7 +113,7 @@ export function WindowControls({
           className="rounded-none"
           isIconOnly
         >
-          {isMaximized ? <Copy size={16} /> : <Square size={16} />}
+          {isMaximized ? <Copy size={16} className="-rotate-90" /> : <Square size={16} />}
         </Button>
         <Button
           aria-label={
