@@ -308,28 +308,31 @@ function SettingsPage() {
             <Card>
               <Card.Header className="mb-2 flex flex-row items-center justify-between">
                 <h2 className="text-foreground-800 text-xl font-semibold">
-                  Diamond
+                  NCBI taxdump
                 </h2>
                 <Database className="text-primary" size={20} />
               </Card.Header>
               <Card.Content className="gap-3">
                 <Input
-                  name="databases.diamond.taxdump"
+                  name="databases.taxdump"
                   label="Taxdump Path"
-                  placeholder="/path/to/diamond/taxdump"
+                  placeholder="/path/to/NCBI/taxdump"
                   isFolderSelector
                 />
+              </Card.Content>
+            </Card>
+            <Card>
+              <Card.Header className="mb-2 flex flex-row items-center justify-between">
+                <h2 className="text-foreground-800 text-xl font-semibold">
+                  DIAMOND
+                </h2>
+                <Database className="text-primary" size={20} />
+              </Card.Header>
+              <Card.Content className="gap-3">
                 <Input
-                  name="databases.diamond.assembly-summary"
-                  label="Assembly Summary Path"
-                  placeholder="/path/to/diamond/assembly-summary"
-                  isFolderSelector
-                />
-                <Input
-                  name="databases.diamond.taxid-to-family"
-                  label="Taxid to Family Path"
-                  placeholder="/path/to/diamond/taxid-to-family"
-                  isFolderSelector
+                  name="databases.diamond"
+                  label="DIAMOND database (viral.dmnd)"
+                  placeholder="/path/to/databases/diamond/viral.dmnd"
                 />
               </Card.Content>
             </Card>
@@ -362,14 +365,9 @@ function SettingsPage() {
               </Card.Header>
               <Card.Content className="gap-3">
                 <Input
-                  name="databases.deacon.host_reference"
-                  label="Host reference"
-                  placeholder="/path/to/host_reference.fasta"
-                />
-                <Input
-                  name="databases.deacon.index"
-                  label="Deacon index"
-                  placeholder="/path/to/deacon.index"
+                  name="databases.deacon"
+                  label="Deacon index (.idx)"
+                  placeholder="/path/to/deacon_indexes/panhuman-1.idx"
                 />
               </Card.Content>
             </Card>

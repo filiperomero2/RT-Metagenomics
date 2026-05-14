@@ -103,6 +103,4 @@ class ViralUnityService:
             "diamond": run.parameters.diamond,
             "denovo_assembly": run.parameters.denovoAssembly,
             "taxdump": run.parameters.taxdump,
-            "assembly_summary": run.parameters.assemblySummary,
-            "taxid_to_family": run.parameters.taxidToFamily,
         }

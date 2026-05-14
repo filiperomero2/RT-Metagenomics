@@ -6,20 +6,23 @@ from dto.settings_config import Kraken2DatabaseConfig
 from entities.config import Config
 from entities.enum import ConfigType
 from repositories.config_repository import ConfigRepository
+from services.paths_service import PathsService
 from services.viralunity_databases_service import ViralUnityDatabasesService
+
 
 class DatabaseSetupService:
     """
     Helper service to install/update external databases used by RT-Metagenomics.
     """
 
-    def __init__(self, config_repository: ConfigRepository) -> None:
+    def __init__(
+        self,
+        config_repository: ConfigRepository,
+        paths_service: PathsService,
+    ) -> None:
         self.config_repository = config_repository
-        # Base directory for tool databases (under the service user's home directory)
-        self.base_dir = Path.home() / ".rt-metagenomics"
-        self.base_dir.mkdir(parents=True, exist_ok=True)
         self.vu_databases_service = ViralUnityDatabasesService(
-            self.base_dir / "databases"
+            paths_service.get_external_databases_dir()
         )
 
     def get_kraken2_base_dir(self) -> Path:
@@ -135,11 +138,11 @@ class DatabaseSetupService:
         )
 
         # Persist with the exact config name used by settings
-        # Must match SETTINGS_CONFIG_NAMES[ConfigType.DIAMOND_TAXDUMP] in settings_service.py
+        # Must match SETTINGS_CONFIG_NAMES[ConfigType.TAXDUMP] in settings_service.py
         self.config_repository.save_config(
             Config(
-                name="databases.diamond.taxdump",
-                type=ConfigType.DIAMOND_TAXDUMP,
+                name="databases.taxdump",
+                type=ConfigType.TAXDUMP,
                 value=str(taxdump_dir),
             )
         )
@@ -176,43 +179,22 @@ class DatabaseSetupService:
         )
         self.config_repository.save_config(
             Config(
-                name="databases.diamond.taxdump",
-                type=ConfigType.DIAMOND_TAXDUMP,
+                name="databases.taxdump",
+                type=ConfigType.TAXDUMP,
                 value=paths["taxdump"],
             )
         )
         self.config_repository.save_config(
             Config(
-                name="databases.diamond.taxids",
-                type=ConfigType.DIAMOND_TAXIDS,
-                value=paths["taxids"],
+                name="databases.diamond",
+                type=ConfigType.DIAMOND,
+                value=paths["diamond_database"],
             )
         )
         self.config_repository.save_config(
             Config(
-                name="databases.viral.genomes",
-                type=ConfigType.VIRAL_GENOMES,
-                value=paths["viral_genomes"],
-            )
-        )
-        self.config_repository.save_config(
-            Config(
-                name="databases.viral.taxids",
-                type=ConfigType.VIRAL_TAXIDS,
-                value=paths["viral_taxids"],
-            )
-        )
-        self.config_repository.save_config(
-            Config(
-                name="databases.deacon.host_reference",
-                type=ConfigType.HOST_REFERENCE,
-                value=paths["host_reference"],
-            )
-        )
-        self.config_repository.save_config(
-            Config(
-                name="databases.deacon.index",
-                type=ConfigType.DEACON_INDEX,
+                name="databases.deacon",
+                type=ConfigType.DEACON,
                 value=paths["deacon_index"],
             )
         )

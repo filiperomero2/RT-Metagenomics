@@ -1,26 +1,11 @@
 from pydantic import BaseModel, ConfigDict, Field
 
 
-class DiamondDatabasePaths(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
-
-    taxdump: str = ""
-    assembly_summary: str = Field(default="", alias="assembly-summary")
-    taxid_to_family: str = Field(default="", alias="taxid-to-family")
-
-
 class ViralDatabasePaths(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
     genomes: str = ""
     taxids: str = ""
-
-
-class DeaconDatabasePaths(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
-
-    host_reference: str = ""
-    index: str = ""
 
 
 class Kraken2DatabaseConfig(BaseModel):
@@ -31,10 +16,11 @@ class Kraken2DatabaseConfig(BaseModel):
 
 class DatabasePaths(BaseModel):
     krona: str = ""
+    taxdump: str = ""
     kraken2: list[Kraken2DatabaseConfig] = Field(default_factory=list)
-    diamond: DiamondDatabasePaths = Field(default_factory=DiamondDatabasePaths)
+    diamond: str = ""
     viral: ViralDatabasePaths = Field(default_factory=ViralDatabasePaths)
-    deacon: DeaconDatabasePaths = Field(default_factory=DeaconDatabasePaths)
+    deacon: str = ""
 
 
 class SettingsConfig(BaseModel):

@@ -11,12 +11,9 @@ SETTINGS_CONFIG_NAMES = {
     ConfigType.ITERATION_INTERVAL: "iteration_interval",
     ConfigType.KRONA: "databases.krona",
     ConfigType.KRAKEN2: "databases.kraken2",
-    ConfigType.DIAMOND_TAXDUMP: "databases.diamond.taxdump",
-    ConfigType.DIAMOND_TAXIDS: "databases.diamond.taxids",
-    ConfigType.VIRAL_GENOMES: "databases.viral.genomes",
-    ConfigType.VIRAL_TAXIDS: "databases.viral.taxids",
-    ConfigType.HOST_REFERENCE: "databases.deacon.host_reference",
-    ConfigType.DEACON_INDEX: "databases.deacon.index",
+    ConfigType.TAXDUMP: "databases.taxdump",
+    ConfigType.DIAMOND: "databases.diamond",
+    ConfigType.DEACON: "databases.deacon",
 }
 
 
@@ -40,12 +37,9 @@ class SettingsService:
             ConfigType.POLLING_INTERVAL: str(settings.polling_interval),
             ConfigType.ITERATION_INTERVAL: str(settings.iteration_interval),
             ConfigType.KRONA: settings.databases.krona,
-            ConfigType.DIAMOND_TAXDUMP: settings.databases.diamond.taxdump,
-            ConfigType.DIAMOND_TAXIDS: settings.databases.diamond.taxids,
-            ConfigType.VIRAL_GENOMES: settings.databases.viral.genomes,
-            ConfigType.VIRAL_TAXIDS: settings.databases.viral.taxids,
-            ConfigType.HOST_REFERENCE: settings.databases.deacon.host_reference,
-            ConfigType.DEACON_INDEX: settings.databases.deacon.index,
+            ConfigType.TAXDUMP: settings.databases.taxdump,
+            ConfigType.DIAMOND: settings.databases.diamond,
+            ConfigType.DEACON: settings.databases.deacon,
         }
 
         for config_type, value in values.items():
@@ -116,41 +110,17 @@ class SettingsService:
             legacy_default_value=legacy_default_kraken2.value if legacy_default_kraken2 else None,
         )
 
-        diamond_taxdump_path = self.config_repository.get_config_by_type(ConfigType.DIAMOND_TAXDUMP)
-        if diamond_taxdump_path and diamond_taxdump_path.value:
-            settings.databases.diamond.taxdump = diamond_taxdump_path.value
+        taxdump_path = self.config_repository.get_config_by_type(ConfigType.TAXDUMP)
+        if taxdump_path and taxdump_path.value:
+            settings.databases.taxdump = taxdump_path.value
 
-        diamond_assembly_summary_path = self.config_repository.get_config_by_type(ConfigType.DIAMOND_ASSEMBLY_SUMMARY)
-        if diamond_assembly_summary_path and diamond_assembly_summary_path.value:
-            settings.databases.diamond.assembly_summary = diamond_assembly_summary_path.value
+        diamond_path = self.config_repository.get_config_by_type(ConfigType.DIAMOND)
+        if diamond_path and diamond_path.value:
+            settings.databases.diamond = diamond_path.value
 
-        diamond_taxid_to_family_path = self.config_repository.get_config_by_type(ConfigType.DIAMOND_TAXID_TO_FAMILY)
-        if diamond_taxid_to_family_path and diamond_taxid_to_family_path.value:
-            settings.databases.diamond.taxid_to_family = diamond_taxid_to_family_path.value
-
-        viral_genomes_path = self.config_repository.get_config_by_type(
-            ConfigType.VIRAL_GENOMES
-        )
-        if viral_genomes_path and viral_genomes_path.value:
-            settings.databases.viral.genomes = viral_genomes_path.value
-
-        viral_taxids_path = self.config_repository.get_config_by_type(
-            ConfigType.VIRAL_TAXIDS
-        )
-        if viral_taxids_path and viral_taxids_path.value:
-            settings.databases.viral.taxids = viral_taxids_path.value
-
-        host_reference_path = self.config_repository.get_config_by_type(
-            ConfigType.HOST_REFERENCE
-        )
-        if host_reference_path and host_reference_path.value:
-            settings.databases.deacon.host_reference = host_reference_path.value
-
-        deacon_index_path = self.config_repository.get_config_by_type(
-            ConfigType.DEACON_INDEX
-        )
-        if deacon_index_path and deacon_index_path.value:
-            settings.databases.deacon.index = deacon_index_path.value
+        deacon_path = self.config_repository.get_config_by_type(ConfigType.DEACON)
+        if deacon_path and deacon_path.value:
+            settings.databases.deacon = deacon_path.value
 
         return settings
 

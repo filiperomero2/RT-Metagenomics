@@ -1,10 +1,24 @@
 import os
+from pathlib import Path
+
 from entities.run import Run
 
 
 class PathsService:
     def __init__(self):
         pass
+
+    def get_app_data_base_dir(self) -> Path:
+        """User-wide app data root (~/.rt-metagenomics). Created if missing."""
+        base = Path.home() / ".rt-metagenomics"
+        base.mkdir(parents=True, exist_ok=True)
+        return base
+
+    def get_external_databases_dir(self) -> Path:
+        """Root directory for downloaded tool databases (Kraken2, Krona, taxdump, etc.)."""
+        databases = self.get_app_data_base_dir() / "databases"
+        databases.mkdir(parents=True, exist_ok=True)
+        return databases
 
     def get_output_path(self, run: Run) -> str:
         """Base output directory (ViralUnity `output` argument before run_name)."""

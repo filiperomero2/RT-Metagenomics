@@ -156,7 +156,7 @@ class ViralUnityDatabasesService:
             if on_progress is not None:
                 on_progress(step, total, message)
 
-        total_steps = 7
+        total_steps = 5
         emit_progress(1, total_steps, "Installing Kraken2 database...")
         kraken2_database = self.install_kraken2(url=kraken2_url, force=force)
         emit_progress(2, total_steps, "Updating Krona taxonomy database...")
@@ -171,16 +171,7 @@ class ViralUnityDatabasesService:
             skip_makedb=False,
             force=force,
         )
-        emit_progress(5, total_steps, "Installing viral genomes database...")
-        viral_genomes, viral_taxids = self.install_virus_genomes(
-            taxon="Viruses",
-            refseq=refseq,
-            skip_makeblastdb=False,
-            force=force,
-        )
-        emit_progress(6, total_steps, "Installing host reference genome...")
-        host_reference = self.install_host_genome(accession=host_accession, force=force)
-        emit_progress(7, total_steps, "Installing Deacon index...")
+        emit_progress(5, total_steps, "Installing Deacon index...")
         deacon_index_path = self.install_deacon_index(
             index_name=deacon_index,
             force=force,
@@ -192,8 +183,5 @@ class ViralUnityDatabasesService:
             "taxdump": str(taxdump),
             "diamond_database": str(diamond_database),
             "taxids": str(taxids),
-            "viral_genomes": str(viral_genomes),
-            "viral_taxids": str(viral_taxids),
-            "host_reference": str(host_reference),
             "deacon_index": str(deacon_index_path),
         }

@@ -129,10 +129,11 @@ def get_stop_metagenomics_usecase(
     return StopMetagenomicsUseCase(repository)
 
 def get_database_setup_service(
-    config_repository: Annotated[ConfigRepository, Depends(get_config_repository)]
+    config_repository: Annotated[ConfigRepository, Depends(get_config_repository)],
+    paths_service: Annotated[PathsService, Depends(get_paths_service)],
 ) -> DatabaseSetupService:
     """Get DatabaseSetupService instance."""
-    return DatabaseSetupService(config_repository)
+    return DatabaseSetupService(config_repository, paths_service)
 
 def get_settings_service(
     config_repository: Annotated[ConfigRepository, Depends(get_config_repository)],

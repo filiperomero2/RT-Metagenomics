@@ -70,7 +70,10 @@ async def lifespan(app: FastAPI):
         thread_session = next(get_session())
         try:
             config_repository = get_config_repository(thread_session)
-            database_setup_service = DatabaseSetupService(config_repository)
+            database_setup_service = DatabaseSetupService(
+                config_repository,
+                get_paths_service(),
+            )
             logger.info("Running startup database bootstrap via ViralUnity get-databases...")
             bootstrap_result = database_setup_service.bootstrap_all_databases(
                 on_progress=lambda step, total, message: startup_status_service.update(
