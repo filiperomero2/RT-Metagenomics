@@ -1,9 +1,5 @@
 import { app, BrowserWindow, ipcMain } from "electron";
-import {
-  ChildProcessByStdio,
-  execFile,
-  spawn
-} from "node:child_process";
+import { ChildProcessByStdio, execFile, spawn } from "node:child_process";
 import { existsSync } from "node:fs";
 import path from "node:path";
 import { Stream } from "node:stream";
@@ -154,10 +150,22 @@ export function startBackendProcess(): BackendStartResult {
   resetBackendLogs();
   appendBackendLog("[system] Activating conda env and starting uvicorn...");
 
+  const appDir = resolveBackendCwd();
+  const viralunityProcessCwd = path.join(appDir, "viralunity");
+  if (!existsSync(viralunityProcessCwd)) {
+    throw new Error(
+      `Expected ViralUnity at ${viralunityProcessCwd}. Clone submodules or install viralunity next to the backend app.`,
+    );
+  }
+
+  const pythonPath = [appDir, process.env.PYTHONPATH]
+    .filter(Boolean)
+    .join(path.delimiter);
+
   const child = spawn("bash", ["-lc", BACKEND_CMD], {
-    cwd: resolveBackendCwd(),
+    cwd: viralunityProcessCwd,
     detached: process.platform !== "win32",
-    env: process.env,
+    env: { ...process.env, PYTHONPATH: pythonPath },
     stdio: ["ignore", "pipe", "pipe"],
   });
 

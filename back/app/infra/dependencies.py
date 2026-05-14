@@ -69,9 +69,11 @@ def get_metrics_service(
     """Get MetricsService instance."""
     return MetricsService(paths_service)
 
-def get_export_result_service() -> ExportResultService:
+def get_export_result_service(
+    paths_service: Annotated[PathsService, Depends(get_paths_service)],
+) -> ExportResultService:
     """Get ExportResultService instance."""
-    return ExportResultService()
+    return ExportResultService(paths_service)
 
 
 # Use case dependencies

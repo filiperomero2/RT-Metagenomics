@@ -50,10 +50,10 @@ class MetricsService:
     SAMPLE_PREFIX = "sample-"
     
     def get_sample_file_path_from_sample_name(self, run: Run, sample_name: str) -> str:
-        return f"{self.paths_service.get_krona_path(run)}/results/sample-{sample_name}.output.krona.txt"
-        
+        return self.paths_service.get_kraken2_reads_krona_txt_path(run, sample_name)
+
     def get_sample_report_file_path_from_sample_name(self, run: Run, sample_name: str) -> str:
-        return f"{self.paths_service.get_krona_path(run )}/results/sample-{sample_name}.report.txt"
+        return self.paths_service.get_kraken2_reads_report_path(run, sample_name)
 
     def get_summary_metrics(self, run: Run) -> Dict[str, Any]:
         """
@@ -97,11 +97,10 @@ class MetricsService:
         Returns:
             Extracted sample name (e.g., 'dengue' from 'sample-dengue.report.txt')
         """
-        # Example: [...]/metagenomics/taxonomic_assignments/results/sample-dengue.report.txt
-        # Expected return: dengue
+        # e.g. .../sample-dengue.output.krona.txt or .../sample-dengue.report.txt
         filename = file_name.split("/")[-1]
-        sample_name = filename.split(".")[0]
-        return sample_name.replace(self.SAMPLE_PREFIX, "")
+        base = filename.split(".")[0]
+        return base.replace(self.SAMPLE_PREFIX, "")
                 
     def get_sample_metrics(self, run: Run, sample_name: str) -> Optional[Dict[str, SampleMetrics]]:
         """

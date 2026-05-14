@@ -8,6 +8,7 @@ class Sample(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     sampleLib: str = Field(default=None)
     name: str = Field(default=None)
+    isNegativeControl: bool = Field(default=False)
     runId: int = Field(default=None, foreign_key="run.id")
     run: "Run" = Relationship(back_populates="samples")
     
@@ -15,7 +16,8 @@ class Sample(SQLModel, table=True):
         return {
             "id": self.id,
             "name": self.name,
-            "runId": self.runId
+            "runId": self.runId,
+            "isNegativeControl": self.isNegativeControl,
         }
     
     

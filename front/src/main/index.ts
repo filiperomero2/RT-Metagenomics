@@ -77,7 +77,7 @@ app.on("window-all-closed", () => {
 
 app.on("before-quit", async () => {
   await stopBackendProcess();
-  backendMonitorWindow?.close()
+  backendMonitorWindow?.close();
 });
 
 // In this file you can include the rest of your app's specific main process

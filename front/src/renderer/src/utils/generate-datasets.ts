@@ -1,7 +1,9 @@
 import { Metrics } from "@/types/metrics";
 
-export function generateFamilyDataSets(sampleMetrics?: Metrics["sampleMetrics"]) {
-  if (!sampleMetrics) return []
+export function generateFamilyDataSets(
+  sampleMetrics?: Metrics["sampleMetrics"],
+) {
+  if (!sampleMetrics) return [];
   const keys = Object.keys(sampleMetrics);
   const familyDataSets: Record<string, number[]> = {};
 
@@ -25,16 +27,18 @@ export function generateFamilyDataSets(sampleMetrics?: Metrics["sampleMetrics"])
   }));
 }
 
-export function generateViralDataSets(sampleMetrics?: Metrics["sampleMetrics"]) {
-  if (!sampleMetrics) return []
+export function generateViralDataSets(
+  sampleMetrics?: Metrics["sampleMetrics"],
+) {
+  if (!sampleMetrics) return [];
   const keys = Object.keys(sampleMetrics);
   const viralDataSets: Record<string, number[]> = {};
 
   keys?.forEach((sampleKey) => {
     const metrics = sampleMetrics[sampleKey];
     const viral = metrics?.nIdentifiedSequences;
-    const nonViral = metrics?.nSequences -  metrics?.nIdentifiedSequences;
-    
+    const nonViral = metrics?.nSequences - metrics?.nIdentifiedSequences;
+
     if (!viralDataSets["Viral"]) {
       viralDataSets["Viral"] = Array(keys.length).fill(0);
     }
@@ -50,6 +54,4 @@ export function generateViralDataSets(sampleMetrics?: Metrics["sampleMetrics"]) 
     dataSetTitle,
     data,
   }));
-
 }
-

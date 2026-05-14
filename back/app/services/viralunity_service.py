@@ -8,7 +8,7 @@ from entities.run import Run
 from entities.enum import RunState
 from entities.run_parameters import RunParameters
 from repositories.metagenomics_run_repository import MetagenomicsRunRepository
-from viralunity.viralunity.viralunity_meta import main as vu_metagenomics
+from viralunity.viralunity_meta import main as vu_metagenomics
 from services.file_hash_calculator_service import FileHashCalculatorService
 from config import config
 
