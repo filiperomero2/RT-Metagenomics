@@ -9,10 +9,6 @@ export interface DatabasePaths {
   taxdump: string;
   kraken2: Kraken2DatabaseConfig[];
   diamond: string;
-  viral: {
-    genomes: string;
-    taxids: string;
-  };
   deacon: string;
 }
 
@@ -30,10 +26,6 @@ export const DEFAULT_SETTINGS: SettingsData = {
     taxdump: "",
     kraken2: [],
     diamond: "",
-    viral: {
-      genomes: "",
-      taxids: "",
-    },
     deacon: "",
   },
 };
@@ -51,10 +43,6 @@ export function mergeSettings(
         settings?.databases?.taxdump ?? DEFAULT_SETTINGS.databases.taxdump,
       diamond:
         settings?.databases?.diamond ?? DEFAULT_SETTINGS.databases.diamond,
-      viral: {
-        ...DEFAULT_SETTINGS.databases.viral,
-        ...settings?.databases?.viral,
-      },
       deacon:
         settings?.databases?.deacon ?? DEFAULT_SETTINGS.databases.deacon,
     },

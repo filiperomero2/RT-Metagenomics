@@ -18,4 +18,3 @@ class ConfigType(str, Enum):
     TAXDUMP = "taxdump"
     DIAMOND = "diamond_database"
     DEACON = "deacon_database"
-    VIRAL_TAXIDS = "viral_taxids"

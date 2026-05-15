@@ -16,16 +16,7 @@ engine = create_engine(
 
 
 def create_db_and_tables():
-    logger.debug("Ensuring database schema...")
-    inspector = inspect(engine)
-    if inspector.has_table("runparameters"):
-        cols = {c["name"] for c in inspector.get_columns("runparameters")}
-        if "taxids" not in cols:
-            logger.warning(
-                "Outdated runparameters schema (missing taxids); "
-                "dropping all tables — breaking migration, data will be lost."
-            )
-            SQLModel.metadata.drop_all(engine)
+    logger.debug("Ensuring database schema...")   
 
     SQLModel.metadata.create_all(engine)
     _ensure_config_schema()

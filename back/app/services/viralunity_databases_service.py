@@ -10,7 +10,6 @@ from viralunity.viralunity_get_databases_cli import (
     get_kraken2,
     get_krona,
     get_taxdump,
-    get_virus_genome,
 )
 
 
@@ -40,10 +39,6 @@ class ViralUnityDatabasesService:
     def _diamond_ready(self) -> bool:
         diamond_dir = self.parent_dir / "diamond"
         return (diamond_dir / "viral.dmnd").is_file() and (diamond_dir / "protein2taxid.tsv").is_file()
-
-    def _virus_genomes_ready(self) -> bool:
-        genomes_dir = self.parent_dir / "virus_genomes"
-        return (genomes_dir / "viral.genomes.fasta").is_file() and (genomes_dir / "genome2taxid.tsv").is_file()
 
     def _host_genome_ready(self, accession: str) -> bool:
         return (self.parent_dir / "host_genomes" / f"{accession}.fasta").is_file()
@@ -100,25 +95,6 @@ class ViralUnityDatabasesService:
             )
         diamond_dir = self.parent_dir / "diamond"
         return diamond_dir / "viral.dmnd", diamond_dir / "protein2taxid.tsv"
-
-    def install_virus_genomes(
-        self,
-        taxon: str = "Viruses",
-        refseq: bool = True,
-        skip_makeblastdb: bool = False,
-        force: bool = True,
-    ) -> tuple[Path, Path]:
-        if force or not self._virus_genomes_ready():
-            self._invoke(
-                "get-databases virus-genome",
-                get_virus_genome.callback,
-                path=str(self.parent_dir),
-                taxon=taxon,
-                refseq=refseq,
-                skip_makeblastdb=skip_makeblastdb,
-            )
-        genomes_dir = self.parent_dir / "virus_genomes"
-        return genomes_dir / "viral.genomes.fasta", genomes_dir / "genome2taxid.tsv"
 
     def install_host_genome(self, accession: str, force: bool = True) -> Path:
         if force or not self._host_genome_ready(accession):

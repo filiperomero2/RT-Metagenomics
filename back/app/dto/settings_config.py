@@ -1,11 +1,4 @@
-from pydantic import BaseModel, ConfigDict, Field
-
-
-class ViralDatabasePaths(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
-
-    genomes: str = ""
-    taxids: str = ""
+from pydantic import BaseModel, Field
 
 
 class Kraken2DatabaseConfig(BaseModel):
@@ -19,7 +12,6 @@ class DatabasePaths(BaseModel):
     taxdump: str = ""
     kraken2: list[Kraken2DatabaseConfig] = Field(default_factory=list)
     diamond: str = ""
-    viral: ViralDatabasePaths = Field(default_factory=ViralDatabasePaths)
     deacon: str = ""
 
 
