@@ -37,9 +37,8 @@ class PathsService:
     def get_config_path(self, run: Run) -> str:
         return f"{self.get_output_path(run)}/config.yaml"
 
-    def get_sample_output_dir(self, run: Run, sample_name: str) -> str:
-        root = self.get_pipeline_output_root(run)
-        return os.path.join(root, "samples", f"sample-{sample_name}")
+    def get_sample_output_dir(self, run: Run, kind: str) -> str:
+        return f"{self.get_pipeline_output_root(run)}/metagenomics/taxonomic_assignments/{kind}/"
 
     def get_krona_html_path(self, run: Run, sample_name: str, kind: str) -> str:
         """
@@ -62,6 +61,7 @@ class PathsService:
     def get_kraken2_reads_report_path(self, run: Run, sample_name: str) -> str:
         """Symlinked Kraken2 reads report under samples/ (after organize_files)."""
         return os.path.join(
-            self.get_sample_output_dir(run, sample_name),
-            "kraken2_reads.report.txt",
+            self.get_sample_output_dir(run, "kraken2_reads"),
+            "results",
+            f"sample-{sample_name}.report.txt",
         )
