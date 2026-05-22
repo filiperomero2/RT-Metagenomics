@@ -15,7 +15,7 @@ class GetMetagenomicsResultUseCase:
         run = self.repository.get_run(run_id)
         sample = next(x for x in run.samples if x.id == sample_id)
         if sample is not None:
-            file_path = f"{self.paths_service.get_krona_path(run)}/reports/sample-{sample.name}.output.krona.html"
+            file_path = self.paths_service.get_krona_html_path(run, sample.name, "kraken2_reads")
             
             # Check if file exists
             if not os.path.exists(file_path):

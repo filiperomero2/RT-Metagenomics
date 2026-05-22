@@ -22,7 +22,7 @@ class PathsService:
 
     def get_output_path(self, run: Run) -> str:
         """Base output directory (ViralUnity `output` argument before run_name)."""
-        return f"{run.parameters.path}/../{run.id}_output_{run.name}"
+        return f"{self.get_app_data_base_dir()}/output/{run.id}_output_{run.name}"
 
     def get_run_name_for_pipeline(self, run: Run) -> str:
         """Subfolder name written by ViralUnity ConfigGenerator (parameters id + run name)."""
@@ -45,10 +45,7 @@ class PathsService:
         """
         kind: kraken2_reads | kraken2_contigs | diamond_reads | diamond_contigs
         """
-        return os.path.join(
-            self.get_sample_output_dir(run, sample_name),
-            f"{kind}.krona.html",
-        )
+        return f"{self.get_pipeline_output_root(run)}/metagenomics/taxonomic_assignments/{kind}/reports/sample-{sample_name}.output.krona.html"
 
     def get_kraken2_reads_krona_txt_path(self, run: Run, sample_name: str) -> str:
         """Kraken2 reads ktImport input (taxonomy counts) before per-sample symlinks."""
