@@ -30,7 +30,9 @@ const api = {
     return ipcRenderer.invoke("window:reattachBackendMonitor");
   },
   getBackendMonitorWindowState: () => {
-    return ipcRenderer.invoke("window:getBackendMonitorState") as Promise<boolean>;
+    return ipcRenderer.invoke(
+      "window:getBackendMonitorState",
+    ) as Promise<boolean>;
   },
   onIsMaximized: (callback: (isMaximized: boolean) => void) => {
     const listener = (_: unknown, isMaximized: boolean) =>
@@ -63,7 +65,8 @@ const api = {
     return ipcRenderer.invoke("backend:clearLogs") as Promise<void>;
   },
   onBackendProcessEvent: (callback: (event: BackendProcessEvent) => void) => {
-    const listener = (_: unknown, event: BackendProcessEvent) => callback(event);
+    const listener = (_: unknown, event: BackendProcessEvent) =>
+      callback(event);
     ipcRenderer.on("backend:process-event", listener);
     return () => {
       ipcRenderer.off("backend:process-event", listener);

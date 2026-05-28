@@ -1,6 +1,7 @@
 export type BackendState = {
   isRunning: boolean;
   pid: number | null;
+  ownership: "managed" | "attached" | null;
 };
 
 export type BackendLogType =
@@ -23,6 +24,10 @@ export type BackendProcessEvent =
       pid: number | null;
     }
   | {
+      type: "attached";
+      pid: number | null;
+    }
+  | {
       type: "exit";
       code: number | null;
       signal: string | null;
@@ -31,4 +36,5 @@ export type BackendProcessEvent =
 export type BackendStartResult = {
   alreadyRunning: boolean;
   pid: number | null;
+  ownership: "managed" | "attached";
 };

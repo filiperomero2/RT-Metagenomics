@@ -6,12 +6,10 @@ export interface Kraken2DatabaseConfig {
 
 export interface DatabasePaths {
   krona: string;
+  taxdump: string;
   kraken2: Kraken2DatabaseConfig[];
-  diamond: {
-    taxdump: string;
-    "assembly-summary": string;
-    "taxid-to-family": string;
-  };
+  diamond: string;
+  deacon: string;
 }
 
 export interface SettingsData {
@@ -25,12 +23,10 @@ export const DEFAULT_SETTINGS: SettingsData = {
   iteration_interval: 10,
   databases: {
     krona: "",
+    taxdump: "",
     kraken2: [],
-    diamond: {
-      taxdump: "",
-      "assembly-summary": "",
-      "taxid-to-family": "",
-    },
+    diamond: "",
+    deacon: "",
   },
 };
 
@@ -43,10 +39,12 @@ export function mergeSettings(
     databases: {
       ...DEFAULT_SETTINGS.databases,
       ...settings?.databases,
-      diamond: {
-        ...DEFAULT_SETTINGS.databases.diamond,
-        ...settings?.databases?.diamond,
-      },
+      taxdump:
+        settings?.databases?.taxdump ?? DEFAULT_SETTINGS.databases.taxdump,
+      diamond:
+        settings?.databases?.diamond ?? DEFAULT_SETTINGS.databases.diamond,
+      deacon:
+        settings?.databases?.deacon ?? DEFAULT_SETTINGS.databases.deacon,
     },
   };
 }

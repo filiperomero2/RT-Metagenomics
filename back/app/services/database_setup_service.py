@@ -1,7 +1,5 @@
-import shutil
-import subprocess
 from pathlib import Path
-from typing import Dict
+from typing import Callable, Dict, Optional
 
 from config import config
 from dto.settings_config import Kraken2DatabaseConfig
@@ -9,45 +7,69 @@ from entities.config import Config
 from entities.enum import ConfigType
 from repositories.config_repository import ConfigRepository
 
+from services.paths_service import PathsService
+from services.viralunity_databases_service import ViralUnityDatabasesService
+
 
 class DatabaseSetupService:
     """
     Helper service to install/update external databases used by RT-Metagenomics.
     """
 
-    def __init__(self, config_repository: ConfigRepository) -> None:
+    def __init__(
+        self,
+        config_repository: ConfigRepository,
+        paths_service: PathsService,
+    ) -> None:
         self.config_repository = config_repository
-        # Base directory for tool databases (under the service user's home directory)
-        self.base_dir = Path.home() / ".rt-metagenomics"
-        self.base_dir.mkdir(parents=True, exist_ok=True)
+        self.vu_databases_service = ViralUnityDatabasesService(
+            paths_service.get_external_databases_dir()
+        )
 
     def get_kraken2_base_dir(self) -> Path:
-        kraken2_dir = self.base_dir / config.kraken2.default_path
+        kraken2_dir = self.vu_databases_service.parent_dir / "kraken2"
         kraken2_dir.mkdir(parents=True, exist_ok=True)
         return kraken2_dir
 
     def list_kraken2_databases(self) -> list[Kraken2DatabaseConfig]:
         kraken2_dir = self.get_kraken2_base_dir()
-        stored_databases = {
-            config.value: config
-            for config in self.config_repository.list_config(ConfigType.KRAKEN2)
-        }
+        stored_databases = list(self.config_repository.list_config(ConfigType.KRAKEN2))
+        stored_by_value = {item.value: item for item in stored_databases if item.value}
+        candidates: dict[str, Kraken2DatabaseConfig] = {}
 
-        databases = [
-            Kraken2DatabaseConfig(
+        if (kraken2_dir / "hash.k2d").is_file():
+            stored_root = stored_by_value.get(str(kraken2_dir))
+            candidates[str(kraken2_dir)] = Kraken2DatabaseConfig(
+                name=kraken2_dir.name,
+                value=str(kraken2_dir),
+                is_default=stored_root.is_default if stored_root else False,
+            )
+
+        for database_dir in kraken2_dir.iterdir():
+            if not database_dir.is_dir():
+                continue
+            if not (database_dir / "hash.k2d").is_file():
+                continue
+            stored_child = stored_by_value.get(str(database_dir))
+            candidates[str(database_dir)] = Kraken2DatabaseConfig(
                 name=database_dir.name,
                 value=str(database_dir),
-                is_default=(
-                    stored_databases[str(database_dir)].is_default
-                    if str(database_dir) in stored_databases
-                    else False
-                ),
+                is_default=stored_child.is_default if stored_child else False,
             )
-            for database_dir in kraken2_dir.iterdir()
-            if database_dir.is_dir()
-        ]
 
-        return sorted(databases, key=lambda database: database.name.lower())
+        for saved in stored_databases:
+            if (
+                saved.value
+                and Path(saved.value).exists()
+                and saved.value not in candidates
+            ):
+                candidates[saved.value] = Kraken2DatabaseConfig(
+                    name=saved.name,
+                    value=saved.value,
+                    is_default=saved.is_default,
+                )
+
+        return sorted(candidates.values(), key=lambda database: database.name.lower())
 
     def install_kraken2_database(self, url: str | None) -> Dict[str, str]:
         """
@@ -57,42 +79,10 @@ class DatabaseSetupService:
         Returns:
             Dict with the final database directory path and status.
         """
-        # Remove
-
-        kraken2_dir = self.get_kraken2_base_dir()
-
         archive_url = url if url else config.kraken2.default_download_url
-        try:
-            archive_name = archive_url.split("/")[-1]
-            extract_folder_name = archive_name.split(".")[0]
-        except Exception as _:
-            archive_name = "k2"
-            extract_folder_name = "k2"
-
-        file_path = kraken2_dir / archive_name
-        extract_path = kraken2_dir / extract_folder_name
-
-        # Remove the directory and its contents if it is already present
-        if extract_path.is_dir():
-            shutil.rmtree(extract_path)
-            extract_path.mkdir(parents=True, exist_ok=True)
-
-        # Remove the file if it is already present
-        if file_path.is_file():
-            file_path.unlink()
-
-        subprocess.run(
-            ["wget", "-O", str(file_path), archive_url],
-            check=True,
-            cwd=str(kraken2_dir),
-        )
-
-        extract_path.mkdir(parents=True, exist_ok=True)
-        # Extract the archive
-        subprocess.run(
-            ["tar", "-xzf", str(file_path)],
-            check=True,
-            cwd=str(extract_path),
+        kraken2_path = self.vu_databases_service.install_kraken2(
+            url=archive_url,
+            force=True,
         )
 
         has_default = any(
@@ -101,17 +91,17 @@ class DatabaseSetupService:
         )
         self.config_repository.save_config(
             Config(
-                name=extract_folder_name,
+                name=kraken2_path.name,
                 type=ConfigType.KRAKEN2,
-                value=str(extract_path),
+                value=str(kraken2_path),
                 is_default=not has_default,
             )
         )
 
         return {
             "status": "installed",
-            "name": extract_folder_name,
-            "kraken2Database": str(extract_path),
+            "name": kraken2_path.name,
+            "kraken2Database": str(kraken2_path),
         }
 
     def update_krona_database(self) -> Dict[str, str]:
@@ -121,29 +111,24 @@ class DatabaseSetupService:
         Returns:
             Dict with the database directory path (best guess) and status.
         """
-        krona_dir = self.base_dir / config.krona.default_path
-        krona_dir.mkdir(parents=True, exist_ok=True)
-        # Run the standard Krona update command. This assumes that the FastAPI
-        # process is running inside the conda environment where Krona is installed
-        # and ktUpdateTaxonomy.sh is available on PATH.
-        subprocess.run(
-            ["ktUpdateTaxonomy.sh", krona_dir],
-            check=True,
-        )
-
+        krona_dir = self.vu_databases_service.install_krona(force=True)
         self.config_repository.save_config(
-            Config(name="Krona Taxonomy", type=ConfigType.KRONA, value=str(krona_dir))
+            Config(
+                name="databases.krona",
+                type=ConfigType.KRONA,
+                value=str(krona_dir),
+            )
         )
 
         return {
             "status": "updated",
-            "kronaDatabase": krona_dir,
+            "kronaDatabase": str(krona_dir),
         }
 
     def install_taxdump(self, url: str | None) -> Dict[str, str]:
         """
         Download and extract the NCBI taxdump, making it available
-        to the application for Diamond pipeline taxonomy annotation.
+        to the application for Kraken2/Diamond taxonomic summaries in metagenomics.
 
         Args:
             url: Optional custom URL to download from. If None, uses the default.
@@ -151,56 +136,18 @@ class DatabaseSetupService:
         Returns:
             Dict with the taxdump directory path and status.
         """
-        taxdump_dir = self.base_dir / config.taxdump.default_path
-        taxdump_dir.mkdir(parents=True, exist_ok=True)
-
         archive_url = url if url else config.taxdump.default_download_url
-        archive_name = "taxdump.tar.gz"
-        file_path = taxdump_dir / archive_name
-
-        # Clean slate: remove existing archive and any prior dump files
-        if file_path.is_file():
-            file_path.unlink()
-
-        # Remove existing taxonomy files if present
-        for existing_file in taxdump_dir.iterdir():
-            if existing_file.is_file():
-                existing_file.unlink()
-            elif existing_file.is_dir():
-                shutil.rmtree(existing_file)
-
-        # Download the archive
-        subprocess.run(
-            ["wget", "-O", str(file_path), archive_url],
-            check=True,
-            cwd=str(taxdump_dir),
+        taxdump_dir = self.vu_databases_service.install_taxdump(
+            url=archive_url,
+            force=True,
         )
-
-        # Extract the archive (files unpack flat at tarball root)
-        subprocess.run(
-            ["tar", "-xzf", str(file_path)],
-            check=True,
-            cwd=str(taxdump_dir),
-        )
-
-        # Clean up the archive
-        if file_path.is_file():
-            file_path.unlink()
-
-        # Validate required files exist
-        nodes_path = taxdump_dir / "nodes.dmp"
-        names_path = taxdump_dir / "names.dmp"
-        if not nodes_path.is_file() or not names_path.is_file():
-            raise RuntimeError(
-                f"Taxdump extraction failed: nodes.dmp or names.dmp not found in {taxdump_dir}"
-            )
 
         # Persist with the exact config name used by settings
-        # Must match SETTINGS_CONFIG_NAMES[ConfigType.DIAMOND_TAXDUMP] in settings_service.py
+        # Must match SETTINGS_CONFIG_NAMES[ConfigType.TAXDUMP] in settings_service.py
         self.config_repository.save_config(
             Config(
-                name="databases.diamond.taxdump",
-                type=ConfigType.DIAMOND_TAXDUMP,
+                name="databases.taxdump",
+                type=ConfigType.TAXDUMP,
                 value=str(taxdump_dir),
             )
         )
@@ -208,4 +155,58 @@ class DatabaseSetupService:
         return {
             "status": "installed",
             "taxdump": str(taxdump_dir),
+        }
+
+    def bootstrap_all_databases(
+        self,
+        on_progress: Optional[Callable[[int, int, str], None]] = None,
+    ) -> Dict[str, str]:
+        paths = self.vu_databases_service.install_all(
+            force=False, on_progress=on_progress
+        )
+
+        has_default = any(
+            database.is_default
+            for database in self.config_repository.list_config(ConfigType.KRAKEN2)
+        )
+        self.config_repository.save_config(
+            Config(
+                name="kraken2",
+                type=ConfigType.KRAKEN2,
+                value=paths["kraken2_database"],
+                is_default=not has_default,
+            )
+        )
+        self.config_repository.save_config(
+            Config(
+                name="databases.krona",
+                type=ConfigType.KRONA,
+                value=paths["krona_database"],
+            )
+        )
+        self.config_repository.save_config(
+            Config(
+                name="databases.taxdump",
+                type=ConfigType.TAXDUMP,
+                value=paths["taxdump"],
+            )
+        )
+        self.config_repository.save_config(
+            Config(
+                name="databases.diamond",
+                type=ConfigType.DIAMOND,
+                value=paths["diamond_database"],
+            )
+        )
+        self.config_repository.save_config(
+            Config(
+                name="databases.deacon",
+                type=ConfigType.DEACON,
+                value=paths["deacon_index"],
+            )
+        )
+
+        return {
+            "status": "installed",
+            **paths,
         }

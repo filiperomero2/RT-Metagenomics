@@ -31,7 +31,9 @@ import {
   META_GENOMIC_FORM_STORAGE_KEY,
 } from "@/constants/local-storage";
 import { useSettings } from "@/hooks/use-settings";
-import { getDefaultKraken2DatabasePath } from "@/types/settings";
+import {
+  getDefaultKraken2DatabasePath,
+} from "@/types/settings";
 import { useModal } from "@/hooks/use-modal";
 import { cn } from "@/utils/cn";
 import { Link } from "@tanstack/react-router";
@@ -57,6 +59,7 @@ const schema = z.object({
   kronaDatabase: z
     .string()
     .min(1, { message: "Krona Database Path is required" }),
+  taxdump: z.string().min(1, { message: "Taxdump path is required" }),
   diamondDatabase: z
     .string()
     .min(1, { message: "Diamond Database Path is required" }),
@@ -90,6 +93,15 @@ export function NewRunForm() {
     z.infer<typeof schema> | undefined
   >(META_GENOMIC_FORM_STORAGE_KEY, undefined, { initializeWithValue: false });
   const { data: globalSettings, isLoading: isSettingsLoading } = useSettings();
+
+  const taxdumpDefault =
+    (globalSettings?.databases?.taxdump ?? "").trim() ||
+    (storedForm?.taxdump ?? "").trim() ||
+    "";
+  const viralDmndRaw =
+    (globalSettings?.databases?.diamond ?? "").trim() ||
+    (storedForm?.diamondDatabase ?? "").trim() ||
+    "";
 
   const { mutateAsync, isPending } = useMutation({
     mutationFn: (data: MetaGenomic) => api.post("/v1/metagenomics/run", data),
@@ -125,10 +137,8 @@ export function NewRunForm() {
         "",
       kronaDatabase:
         globalSettings?.databases?.krona ?? storedForm?.kronaDatabase ?? "",
-      diamondDatabase:
-        globalSettings?.databases?.diamond?.taxdump ??
-        storedForm?.diamondDatabase ??
-        "",
+      taxdump: taxdumpDefault,
+      diamondDatabase: viralDmndRaw,
       samples: Array.from({ length: 3 })
         .fill(0)
         .map((_, i) => ({ name: "", barcode: "", isNegativeControl: false })),
@@ -140,10 +150,16 @@ export function NewRunForm() {
     control: form.control,
     name: "samples",
   });
-  const hasDatabases =
+  const settingsTaxdump =
+    (globalSettings?.databases?.taxdump ?? "").trim() || "";
+  const settingsViral =
+    (globalSettings?.databases?.diamond ?? "").trim() || "";
+  const hasDatabases = Boolean(
     getDefaultKraken2DatabasePath(globalSettings?.databases?.kraken2) &&
-    globalSettings?.databases?.krona &&
-    globalSettings?.databases?.diamond?.taxdump;
+      (globalSettings?.databases?.krona ?? "").trim() &&
+      settingsTaxdump &&
+      settingsViral,
+  );
 
   const handleSubmit = async (data: z.infer<typeof schema>) => {
     setStoredForm(data);
@@ -289,7 +305,7 @@ export function NewRunForm() {
                           </Accordion.Trigger>
                         </Accordion.Heading>
                         <Accordion.Panel>
-                          <Accordion.Body className="grid grid-cols-3 gap-2">
+                          <Accordion.Body className="grid grid-cols-2 gap-2">
                             <Input
                               name="kraken2Database"
                               label="Kraken2 Database"
@@ -301,13 +317,18 @@ export function NewRunForm() {
                               isDisabled
                             />
                             <Input
+                              name="taxdump"
+                              label="Diamond taxdump"
+                              isDisabled
+                            />
+                            <Input
                               name="diamondDatabase"
                               label="Diamond Database"
                               isDisabled
                             />
                             <Alert
                               status="accent"
-                              className="bg-surface-secondary col-span-3 w-full"
+                              className="bg-surface-secondary col-span-2 w-full"
                             >
                               <Alert.Indicator />
                               <Alert.Content>

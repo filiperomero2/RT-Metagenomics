@@ -40,8 +40,6 @@ class CreateMetagenomicsRunInput:
         diamond: bool,
         denovoAssembly: bool,
         taxdump: str,
-        assemblySummary: str,
-        taxidToFamily: str,
     ):
         self.dataType = dataType
         self.samples = samples
@@ -60,10 +58,8 @@ class CreateMetagenomicsRunInput:
         self.diamond = diamond
         self.denovoAssembly = denovoAssembly
         self.taxdump = taxdump
-        self.assemblySummary = assemblySummary
-        self.taxidToFamily = taxidToFamily
     def __repr__(self):
-        return f"CreateMetagenomicsRunInput(dataType={self.dataType}, samples={self.samples}, runName={self.runName}, trim={self.trim}, threads={self.threads}, threadsTotal={self.threadsTotal}, removeHumanReads={self.removeHumanReads}, removeUnclassifiedReads={self.removeUnclassifiedReads}, minimumReadLength={self.minimumReadLength}, kraken2Database={self.kraken2Database}, kronaDatabase={self.kronaDatabase}, diamondDatabase={self.diamondDatabase}, diamond={self.diamond}, denovoAssembly={self.denovoAssembly}, taxdump={self.taxdump}, assemblySummary={self.assemblySummary}, taxidToFamily={self.taxidToFamily})"
+        return f"CreateMetagenomicsRunInput(dataType={self.dataType}, samples={self.samples}, runName={self.runName}, trim={self.trim}, threads={self.threads}, threadsTotal={self.threadsTotal}, removeHumanReads={self.removeHumanReads}, removeUnclassifiedReads={self.removeUnclassifiedReads}, minimumReadLength={self.minimumReadLength}, kraken2Database={self.kraken2Database}, kronaDatabase={self.kronaDatabase}, diamondDatabase={self.diamondDatabase}, diamond={self.diamond}, denovoAssembly={self.denovoAssembly}, taxdump={self.taxdump})"
 
 
 class CreateMetagenomicsRunUseCase:
@@ -99,8 +95,6 @@ class CreateMetagenomicsRunUseCase:
                 diamond=metagenomics_parameters.diamond,
                 denovoAssembly=metagenomics_parameters.denovoAssembly,
                 taxdump=metagenomics_parameters.taxdump,
-                assemblySummary=metagenomics_parameters.assemblySummary,
-                taxidToFamily=metagenomics_parameters.taxidToFamily,
             ),
             samples=[
                 Sample(name=sample.name, sampleLib=sample.barcode)
@@ -127,5 +121,3 @@ class CreateMetagenomicsRunUseCase:
                 raise ParameterValidationError(f"Diamond database is required")
             if metagenomics_parameters.taxdump is None:
                 raise ParameterValidationError(f"Taxdump is required")
-            if metagenomics_parameters.assemblySummary is None:
-                raise ParameterValidationError(f"Assembly summary is required")

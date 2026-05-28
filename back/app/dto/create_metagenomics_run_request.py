@@ -23,5 +23,3 @@ class CreateMetagenomicsRunRequest(BaseModel):
     diamondDatabase: str | None = None
     diamond: bool | None = None
     taxdump: str | None = None
-    assemblySummary: str | None = None
-    taxidToFamily: str | None = None

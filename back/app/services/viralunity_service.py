@@ -8,7 +8,7 @@ from entities.run import Run
 from entities.enum import RunState
 from entities.run_parameters import RunParameters
 from repositories.metagenomics_run_repository import MetagenomicsRunRepository
-from viralunity.viralunity.viralunity_meta import main as vu_metagenomics
+from viralunity.viralunity_meta import main as vu_metagenomics
 from services.file_hash_calculator_service import FileHashCalculatorService
 from config import config
 
@@ -44,6 +44,7 @@ class ViralUnityService:
                         self.repository.save_run(next_task) # Forces update of the next_scheduled_run_at
                         continue
                     params = self.prepare_metagenomics_params(next_task)
+                    logger.debug(f"Params: {params}")
                     next_task.state = RunState.RUNNING
                     next_task.iteration += 1
                     next_task.executionHash = task_hash
@@ -102,6 +103,4 @@ class ViralUnityService:
             "diamond": run.parameters.diamond,
             "denovo_assembly": run.parameters.denovoAssembly,
             "taxdump": run.parameters.taxdump,
-            "assembly_summary": run.parameters.assemblySummary,
-            "taxid_to_family": run.parameters.taxidToFamily,
         }

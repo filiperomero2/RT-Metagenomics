@@ -69,9 +69,11 @@ def get_metrics_service(
     """Get MetricsService instance."""
     return MetricsService(paths_service)
 
-def get_export_result_service() -> ExportResultService:
+def get_export_result_service(
+    paths_service: Annotated[PathsService, Depends(get_paths_service)],
+) -> ExportResultService:
     """Get ExportResultService instance."""
-    return ExportResultService()
+    return ExportResultService(paths_service)
 
 
 # Use case dependencies
@@ -127,10 +129,11 @@ def get_stop_metagenomics_usecase(
     return StopMetagenomicsUseCase(repository)
 
 def get_database_setup_service(
-    config_repository: Annotated[ConfigRepository, Depends(get_config_repository)]
+    config_repository: Annotated[ConfigRepository, Depends(get_config_repository)],
+    paths_service: Annotated[PathsService, Depends(get_paths_service)],
 ) -> DatabaseSetupService:
     """Get DatabaseSetupService instance."""
-    return DatabaseSetupService(config_repository)
+    return DatabaseSetupService(config_repository, paths_service)
 
 def get_settings_service(
     config_repository: Annotated[ConfigRepository, Depends(get_config_repository)],

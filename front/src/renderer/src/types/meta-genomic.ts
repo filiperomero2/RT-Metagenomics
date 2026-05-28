@@ -1,7 +1,8 @@
 export interface MetaGenomic {
   dataType: "illumina" | "nanopore";
-  samples: { name: string; barcode: string }[];
+  samples: { name: string; barcode: string; isNegativeControl?: boolean }[];
   runName: string;
+  path: string;
   trim: number;
   threads: number;
   threadsTotal: number;
@@ -10,4 +11,7 @@ export interface MetaGenomic {
   minimumReadLength: number;
   kraken2Database: string;
   kronaDatabase: string;
+  diamondDatabase: string;
+  taxdump: string;
+  diamond?: boolean | null;
 }

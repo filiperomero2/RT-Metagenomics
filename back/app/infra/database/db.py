@@ -17,10 +17,11 @@ engine = create_engine(
 
 
 def create_db_and_tables():
-    logger.debug("Creating database and tables...")
+    logger.debug("Ensuring database schema...")
+
     SQLModel.metadata.create_all(engine)
     _ensure_config_schema()
-    logger.debug("Database and tables created successfully.")
+    logger.debug("Database schema ready.")
 
 
 def _ensure_config_schema():

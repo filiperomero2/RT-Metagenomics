@@ -1,9 +1,6 @@
 import { api } from "@/lib/axios";
 import { queryKeys } from "@/utils/query-keys-factory";
-import {
-  type SettingsData,
-  mergeSettings,
-} from "@/types/settings";
+import { type SettingsData, mergeSettings } from "@/types/settings";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
 export function useSettings() {

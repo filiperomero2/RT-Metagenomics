@@ -2,23 +2,24 @@ from typing import Annotated, Optional
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import FileResponse, StreamingResponse
 from dto.health_check_response import HealthCheckResponse
+from services.startup_status_service import startup_status_service
 from dto.settings_config import SettingsConfig
 from usecases.create_metagenomic_usecase import CreateMetagenomicsRunInput, CreateMetagenomicsSampleInput
 
 from dto import CreateMetagenomicsRunRequest
 from infra.dependencies import (
     CreateMetagenomicsUseCaseDependency,
+    ExportResultUseCaseDependency,
+    GetMetagenomicsMetricsUseCaseDependency,
+    GetMetagenomicsResultUseCaseDependency,
     GetSettingsUseCaseDependency,
     ListMetagenomicsUseCaseDependency,
-    GetMetagenomicsResultUseCaseDependency,
-    GetMetagenomicsMetricsUseCaseDependency,
-    ExportResultUseCaseDependency,
     SaveSettingsUseCaseDependency,
     StartMetagenomicsUseCaseDependency,
     StopMetagenomicsUseCaseDependency,
     UpdateKraken2DbUseCaseDependency,
     UpdateKronaDbUseCaseDependency,
-    UpdateTaxdumpDbUseCaseDependency
+    UpdateTaxdumpDbUseCaseDependency,
 )
 
 router = APIRouter(prefix='/v1')
@@ -104,7 +105,7 @@ async def save_app_config(
 @router.post("/metagenomics/run", response_model=dict)
 async def start_metagenomics(
     metagenomics_run: CreateMetagenomicsRunRequest,
-    usecase: CreateMetagenomicsUseCaseDependency
+    usecase: CreateMetagenomicsUseCaseDependency,
 ):
     """
     Start a new metagenomics analysis run.
@@ -133,8 +134,6 @@ async def start_metagenomics(
         diamond=metagenomics_run.diamond,
         denovoAssembly=False,
         taxdump=metagenomics_run.taxdump,
-        assemblySummary=metagenomics_run.assemblySummary,
-        taxidToFamily=metagenomics_run.taxidToFamily,
     ))
     
     return run.dict()
@@ -234,7 +233,9 @@ async def health_check():
     Health check endpoint to verify API status.
     
     Returns:
-        HealthCheckResponse: API status and timestamp
+        HealthCheckResponse: API status, timestamp, and startup phase for the UI.
     """
-    health_response = HealthCheckResponse()
+    health_response = HealthCheckResponse(
+        startup=startup_status_service.snapshot().to_dict(),
+    )
     return health_response.dict()

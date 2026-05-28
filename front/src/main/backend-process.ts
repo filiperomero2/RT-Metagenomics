@@ -17,6 +17,8 @@ import type {
 } from "../shared/types/backend";
 import { getCondaEnvDir, getEnvBin, isEnvReady } from "./env-setup";
 
+const BACKEND_HEALTHCHECK_URL = "http://127.0.0.1:8000/v1/health";
+
 /**
  * In production with a bundled conda env, call uvicorn directly (all platforms).
  * In development, activate conda via the platform's shell.
@@ -62,6 +64,7 @@ let backendLogs: BackendLogEntry[] = [];
 let nextBackendLogId = 0;
 let stdoutBuffer = "";
 let stderrBuffer = "";
+let backendOwnership: "managed" | "attached" | null = null;
 
 const execFileAsync = promisify(execFile);
 
@@ -161,8 +164,9 @@ function flushBufferedOutput(stream: "stdout" | "stderr") {
 
 export function getBackendState(): BackendState {
   return {
-    isRunning: backendProcess !== null,
+    isRunning: backendProcess !== null || backendOwnership === "attached",
     pid: backendProcess?.pid ?? null,
+    ownership: backendOwnership,
   };
 }
 
@@ -174,7 +178,24 @@ export function clearBackendLogs() {
   resetBackendLogs();
 }
 
-export function startBackendProcess(): BackendStartResult {
+async function isBackendHealthy() {
+  try {
+    const response = await fetch(BACKEND_HEALTHCHECK_URL, {
+      signal: AbortSignal.timeout(1200),
+    });
+
+    if (!response.ok) {
+      return false;
+    }
+
+    const payload = (await response.json()) as { status?: unknown };
+    return typeof payload.status === "string";
+  } catch {
+    return false;
+  }
+}
+
+export async function startBackendProcess(): Promise<BackendStartResult> {
   const currentState = getBackendState();
   if (currentState.isRunning) {
     appendBackendLog(
@@ -183,6 +204,21 @@ export function startBackendProcess(): BackendStartResult {
     return {
       alreadyRunning: true,
       pid: currentState.pid,
+      ownership: currentState.ownership === "attached" ? "attached" : "managed",
+    };
+  }
+
+  if (await isBackendHealthy()) {
+    backendOwnership = "attached";
+    appendBackendLog("[system] Attached to externally running backend.");
+    broadcastBackendEvent({
+      type: "attached",
+      pid: null,
+    });
+    return {
+      alreadyRunning: true,
+      pid: null,
+      ownership: "attached",
     };
   }
 
@@ -220,6 +256,7 @@ export function startBackendProcess(): BackendStartResult {
 
   resetBuffers();
   backendProcess = child;
+  backendOwnership = "managed";
   child.stdout.setEncoding("utf8");
   child.stderr.setEncoding("utf8");
 
@@ -251,6 +288,7 @@ export function startBackendProcess(): BackendStartResult {
 
     if (backendProcess === child) {
       backendProcess = null;
+      backendOwnership = null;
     }
 
     appendBackendLog(
@@ -267,6 +305,7 @@ export function startBackendProcess(): BackendStartResult {
   return {
     alreadyRunning: false,
     pid: child.pid ?? null,
+    ownership: "managed",
   };
 }
 
@@ -277,9 +316,23 @@ function sleep(ms: number) {
 }
 
 export async function stopBackendProcess() {
+  if (backendOwnership === "attached") {
+    appendBackendLog(
+      "[system] Detached from externally managed backend. Process was not stopped.",
+    );
+    backendOwnership = null;
+    broadcastBackendEvent({
+      type: "exit",
+      code: null,
+      signal: null,
+    });
+    return;
+  }
+
   const child = backendProcess;
   if (!child?.pid) {
     backendProcess = null;
+    backendOwnership = null;
     return;
   }
 
@@ -333,7 +386,7 @@ export function registerBackendIpcHandlers() {
 
   ipcMain.handle("backend:start", async () => {
     try {
-      return startBackendProcess();
+      return await startBackendProcess();
     } catch (error) {
       appendBackendLog(
         `[system] Failed to start backend: ${error instanceof Error ? error.message : "Unknown error"}`,
