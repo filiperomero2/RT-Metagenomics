@@ -53,7 +53,7 @@ app.whenReady().then(async () => {
     optimizer.watchWindowShortcuts(window);
   });
 
-  // First-run: extract the bundled conda environment (production only).
+  // Extract the bundled conda environment on first run or after a version upgrade.
   if (!is.dev && !isEnvReady()) {
     createSetupWindow();
     try {
