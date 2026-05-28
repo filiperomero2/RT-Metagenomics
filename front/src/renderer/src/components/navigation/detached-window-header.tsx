@@ -1,6 +1,7 @@
 import { cn } from "@/utils/cn";
 import { isMac } from "@/utils/platform";
 import { WindowControls } from "./window-controls";
+import logoWebp from "@/../public/logo.webp";
 
 export function DetachedWindowHeader() {
   return (
@@ -15,7 +16,7 @@ export function DetachedWindowHeader() {
           <WindowControls closeAction="reattach" />
         ) : (
           <>
-            <img className="h-8 w-8" src="/logo.webp" />
+            <img className="h-8 w-8" src={logoWebp} />
             <span className="text-sm font-semibold">Backend Monitor</span>
           </>
         )}
@@ -29,7 +30,7 @@ export function DetachedWindowHeader() {
         {isMac ? (
           <>
             <span className="text-sm font-semibold">Backend Monitor</span>
-            <img className="h-8 w-8" src="/logo.webp" />
+            <img className="h-8 w-8" src={logoWebp} />
           </>
         ) : (
           <WindowControls closeAction="reattach" />

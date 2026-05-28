@@ -1,6 +1,9 @@
 {
   "name": "rt-metagenomics",
   "version": "0.1.0",
+  "description": "Real-time metagenomics analysis desktop application",
+  "author": "RT-Metagenomics Team",
+  "homepage": "https://github.com/RT-Metagenomics/RT-Metagenomics",
   "private": true,
   "type": "module",
   "main": "./out/main/index.js",

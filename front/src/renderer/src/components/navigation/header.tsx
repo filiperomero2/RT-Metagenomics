@@ -5,6 +5,7 @@ import { ChartPie, Info, Settings } from "lucide-react";
 import { isMac } from "@/utils/platform";
 import { WindowControls } from "./window-controls";
 import { BackendStatusButton } from "./backend-status-button";
+import logoWebp from "@/../public/logo.webp";
 
 export function Header() {
   const navigate = useNavigate();
@@ -28,7 +29,7 @@ export function Header() {
             variant="ghost"
             onPress={() => navigate({ to: "/" })}
           >
-            <img className="h-8 w-8" src="/logo.webp" />
+            <img className="h-8 w-8" src={logoWebp} />
           </Button>
         )}
       </div>
@@ -67,7 +68,7 @@ export function Header() {
             onPress={() => navigate({ to: "/" })}
             className="ml-2"
           >
-            <img className="h-8 w-8" src="/logo.webp" />
+            <img className="h-8 w-8" src={logoWebp} />
           </Button>
         ) : (
           <WindowControls />

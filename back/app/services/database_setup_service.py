@@ -1,3 +1,4 @@
+import shutil
 import subprocess
 from pathlib import Path
 from typing import Dict
@@ -7,7 +8,7 @@ from dto.settings_config import Kraken2DatabaseConfig
 from entities.config import Config
 from entities.enum import ConfigType
 from repositories.config_repository import ConfigRepository
-import shutil
+
 
 class DatabaseSetupService:
     """
@@ -56,17 +57,17 @@ class DatabaseSetupService:
         Returns:
             Dict with the final database directory path and status.
         """
-        # Remove 
+        # Remove
 
         kraken2_dir = self.get_kraken2_base_dir()
 
         archive_url = url if url else config.kraken2.default_download_url
-        archive_name = None
-        try: 
+        try:
             archive_name = archive_url.split("/")[-1]
             extract_folder_name = archive_name.split(".")[0]
         except Exception as _:
             archive_name = "k2"
+            extract_folder_name = "k2"
 
         file_path = kraken2_dir / archive_name
         extract_path = kraken2_dir / extract_folder_name
@@ -130,7 +131,9 @@ class DatabaseSetupService:
             check=True,
         )
 
-        self.config_repository.save_config(Config(name='Krona Taxonomy', type=ConfigType.KRONA, value=str(krona_dir)))
+        self.config_repository.save_config(
+            Config(name="Krona Taxonomy", type=ConfigType.KRONA, value=str(krona_dir))
+        )
 
         return {
             "status": "updated",

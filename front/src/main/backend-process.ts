@@ -1,9 +1,6 @@
 import { app, BrowserWindow, ipcMain } from "electron";
-import {
-  ChildProcessByStdio,
-  execFile,
-  spawn
-} from "node:child_process";
+import { is } from "@electron-toolkit/utils";
+import { ChildProcessByStdio, execFile, spawn } from "node:child_process";
 import { existsSync } from "node:fs";
 import path from "node:path";
 import { Stream } from "node:stream";
@@ -18,12 +15,43 @@ import type {
   BackendStartResult,
   BackendState,
 } from "../shared/types/backend";
+import { getCondaEnvDir, getEnvBin, isEnvReady } from "./env-setup";
 
-const BACKEND_CMD = [
-  'eval "$(conda shell.bash hook)"',
-  "conda activate rt-meta",
-  "exec uvicorn main:app --host 0.0.0.0 --port 8000 --reload --log-level debug",
-].join(" && ");
+/**
+ * In production with a bundled conda env, call uvicorn directly (all platforms).
+ * In development, activate conda via the platform's shell.
+ */
+function getBackendSpawnArgs(): { cmd: string; args: string[] } {
+  if (!is.dev && isEnvReady()) {
+    return {
+      cmd: getEnvBin("uvicorn"),
+      args: [
+        "main:app",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "8000",
+        "--log-level",
+        "info",
+      ],
+    };
+  }
+
+  // Development fallback — platform-specific shell
+  if (process.platform === "win32") {
+    const WIN_CMD =
+      "conda activate rt-meta && uvicorn main:app --host 0.0.0.0 --port 8000 --reload --log-level debug";
+    return { cmd: "cmd.exe", args: ["/c", WIN_CMD] };
+  }
+
+  const UNIX_CMD = [
+    'eval "$(conda shell.bash hook)"',
+    "conda activate rt-meta",
+    "exec uvicorn main:app --host 0.0.0.0 --port 8000 --reload --log-level debug",
+  ].join(" && ");
+
+  return { cmd: "bash", args: ["-lc", UNIX_CMD] };
+}
 
 let backendProcess: ChildProcessByStdio<
   null,
@@ -69,7 +97,14 @@ function appendBackendLog(line: string) {
   broadcastBackendLog(entry);
 }
 
-function resolveBackendCwd() {
+function resolveBackendCwd(): string {
+  // Production: backend source is bundled in extraResources
+  if (!is.dev) {
+    const resourcesBackend = path.join(process.resourcesPath, "back", "app");
+    if (existsSync(resourcesBackend)) return resourcesBackend;
+  }
+
+  // Development: look relative to the project root
   const candidates = [
     path.resolve(app.getAppPath(), "../back/app"),
     path.resolve(process.cwd(), "../back/app"),
@@ -152,12 +187,34 @@ export function startBackendProcess(): BackendStartResult {
   }
 
   resetBackendLogs();
-  appendBackendLog("[system] Activating conda env and starting uvicorn...");
 
-  const child = spawn("bash", ["-lc", BACKEND_CMD], {
-    cwd: resolveBackendCwd(),
+  const cwd = resolveBackendCwd();
+  const { cmd, args } = getBackendSpawnArgs();
+
+  appendBackendLog(`[system] Starting backend from: ${cwd}`);
+  appendBackendLog(`[system] Command: ${cmd} ${args.join(" ")}`);
+
+  // In production, prepend the conda env's bin/ to PATH so that shebangs
+  // like "#!/usr/bin/env python3.11" resolve to the bundled interpreter.
+  // Also set DATABASE_URL so the backend writes its SQLite database to a
+  // writable location instead of the read-only AppImage mount.
+  const spawnEnv = { ...process.env };
+  if (!is.dev && isEnvReady()) {
+    const envBinDir =
+      process.platform === "win32"
+        ? path.join(getCondaEnvDir(), "Scripts")
+        : path.join(getCondaEnvDir(), "bin");
+    const sep = process.platform === "win32" ? ";" : ":";
+    spawnEnv.PATH = `${envBinDir}${sep}${process.env.PATH ?? ""}`;
+
+    const dbPath = path.join(app.getPath("userData"), "rtmeta.db");
+    spawnEnv.DATABASE_URL = `sqlite:///${dbPath}`;
+  }
+
+  const child = spawn(cmd, args, {
+    cwd,
     detached: process.platform !== "win32",
-    env: process.env,
+    env: spawnEnv,
     stdio: ["ignore", "pipe", "pipe"],
   });
 
