@@ -42,14 +42,14 @@ function getBackendSpawnArgs(): { cmd: string; args: string[] } {
   // Development fallback — platform-specific shell
   if (process.platform === "win32") {
     const WIN_CMD =
-      "conda activate rt-meta && uvicorn main:app --host 0.0.0.0 --port 8000 --reload --log-level debug";
+      "conda activate rt-meta && uvicorn main:app --host 0.0.0.0 --port 8000 --log-level debug";
     return { cmd: "cmd.exe", args: ["/c", WIN_CMD] };
   }
 
   const UNIX_CMD = [
     'eval "$(conda shell.bash hook)"',
     "conda activate rt-meta",
-    "exec uvicorn main:app --host 0.0.0.0 --port 8000 --reload --log-level debug",
+    "exec uvicorn main:app --host 0.0.0.0 --port 8000 --log-level debug",
   ].join(" && ");
 
   return { cmd: "bash", args: ["-lc", UNIX_CMD] };

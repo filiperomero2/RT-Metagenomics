@@ -65,10 +65,10 @@ class ViralUnityService:
                         next_task.state = RunState.PENDING
                     self.repository.save_run(next_task)
                 except Exception as e:
+                    logger.error(f"Error during metagenomics run: {e}")
                     next_task.state = RunState.FAILED
                     next_task.errorMessage = str(e)
                     self.repository.save_run(next_task)
-                    logger.error(f"Error during metagenomics run: {e}")
             except Exception as e:
                 logger.error(f"Error in ViralUnityService main thread: {e}")
 
