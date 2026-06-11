@@ -65,3 +65,10 @@ class PathsService:
             "results",
             f"sample-{sample_name}.report.txt",
         )
+
+    def get_kraken2_reads_taxa_summary_bleed_path(self, run: Run) -> str:
+        """Aggregated Kraken2 reads taxa table with RPM and bleed filter (all samples)."""
+        return os.path.join(
+            self.get_sample_output_dir(run, "kraken2_reads"),
+            "kraken2_reads_taxa_summary_RPM.bleed.tsv",
+        )

@@ -1,9 +1,10 @@
 import logging
 import os
 import csv
-import random
 from typing import List, Dict, Optional, Any, TypedDict
+
 from services.paths_service import PathsService
+from services.taxonomy_utils import load_taxdump_nodes, get_taxid_at_rank
 from entities.run import Run
 from config import config
 
@@ -43,26 +44,24 @@ class MetricsService:
     def __init__(self, paths_service: PathsService):
         """Initialize the MetricsService."""
         self.paths_service = paths_service
-    
-    # Constants for better maintainability
-    TAXONOMIC_CATEGORIES = ["U", "R", "D", "K", "P", "C", "O", "F", "G", "S"]
-    FAMILY_CATEGORY = "F"
+
     SAMPLE_PREFIX = "sample-"
-    
+    KRAKEN2_TOOL = "kraken2"
+    READS_MODE = "reads"
+    FAMILY_RANK = "family"
+    SPECIES_RANK = "species"
+
     def get_sample_file_path_from_sample_name(self, run: Run, sample_name: str) -> str:
         return self.paths_service.get_kraken2_reads_krona_txt_path(run, sample_name)
-
-    def get_sample_report_file_path_from_sample_name(self, run: Run, sample_name: str) -> str:
-        return self.paths_service.get_kraken2_reads_report_path(run, sample_name)
 
     def get_summary_metrics(self, run: Run) -> Dict[str, Any]:
         """
         Extract summary metrics from the metagenomics summary file.
-        
+
         Args:
             run_id: The run identifier
             run_name: The run name
-            
+
         Returns:
             List of summary metrics dictionaries or None if file doesn't exist
         """
@@ -83,25 +82,24 @@ class MetricsService:
             "lastAnalysisTime": run.lastElapsedTimeOfAnalysisExecutionSeconds,
             "iteration": run.iteration,
             "executionHashTime": run.executionHashTime,
-        }   
-        
+        }
+
         return summary_metrics
-    
+
     def extract_sample_name(self, file_name: str) -> str:
         """
         Extract sample name from file path.
-        
+
         Args:
             file_name: Full file path containing sample name
-            
+
         Returns:
             Extracted sample name (e.g., 'dengue' from 'sample-dengue.report.txt')
         """
-        # e.g. .../sample-dengue.output.krona.txt or .../sample-dengue.report.txt
         filename = file_name.split("/")[-1]
         base = filename.split(".")[0]
         return base.replace(self.SAMPLE_PREFIX, "")
-                
+
     def get_sample_metrics(self, run: Run, sample_name: str) -> Optional[Dict[str, SampleMetrics]]:
         """
         Get comprehensive metrics for a specific sample.
@@ -114,29 +112,118 @@ class MetricsService:
             Dictionary containing sample metrics or None if files don't exist
         """
         sample_file_path = self.get_sample_file_path_from_sample_name(run, sample_name)
-        report_file_path = self.get_sample_report_file_path_from_sample_name(run, sample_name)
 
         if not os.path.exists(sample_file_path):
             logger.warning(f"Sample file not found: {sample_file_path}")
             return None
-        
+
         sample_metrics = {}
-        
-        # Process sequence identification metrics
+
         sequence_metrics = self._process_sequence_metrics(sample_file_path)
         if sequence_metrics is None:
             return None
         sample_metrics.update(sequence_metrics)
-        
-        # Process pathogen/pathology data
-        if os.path.exists(report_file_path):
-            pathologies = self._process_pathology_data(report_file_path)
+
+        summary_path = self.paths_service.get_kraken2_reads_taxa_summary_bleed_path(run)
+        taxdump_dir = self._resolve_taxdump_dir(run)
+        if os.path.exists(summary_path):
+            pathologies = self._process_pathology_data_from_taxa_summary(
+                summary_path, sample_name, taxdump_dir
+            )
             sample_metrics["pathologies"] = pathologies
         else:
-            logger.warning(f"Report file not found: {report_file_path}")
+            logger.warning(f"Taxa summary file not found: {summary_path}")
             sample_metrics["pathologies"] = []
-            
+
         return sample_metrics
+
+    def _resolve_taxdump_dir(self, run: Run) -> Optional[str]:
+        candidates = []
+        if run.parameters.taxdump:
+            candidates.append(run.parameters.taxdump)
+        candidates.append(config.taxdump.default_path)
+        candidates.append(
+            str(self.paths_service.get_external_databases_dir() / "taxdump")
+        )
+
+        for path in candidates:
+            if path and os.path.isfile(os.path.join(path, "nodes.dmp")):
+                return path
+
+        logger.warning("Taxdump not found; species will not be linked to families")
+        return None
+
+    @staticmethod
+    def _is_bleed_pass(value: Optional[str]) -> bool:
+        if value is None:
+            return False
+        return str(value).strip().lower() in ("true", "1", "yes")
+
+    def _process_pathology_data_from_taxa_summary(
+        self,
+        summary_path: str,
+        sample_name: str,
+        taxdump_dir: Optional[str],
+    ) -> List[Pathology]:
+        """Build pathologies from kraken2_reads_taxa_summary_RPM.bleed.tsv."""
+        sample_key = f"{self.SAMPLE_PREFIX}{sample_name}"
+        families_by_taxid: Dict[str, Pathology] = {}
+        nodes = None
+
+        if taxdump_dir:
+            try:
+                nodes = load_taxdump_nodes(taxdump_dir)
+            except OSError as e:
+                logger.error(f"Error loading taxdump from {taxdump_dir}: {e}")
+
+        try:
+            with open(summary_path, "r") as file:
+                reader = csv.DictReader(file, delimiter="\t")
+                for row in reader:
+                    if row.get("sample") != sample_key:
+                        continue
+                    if row.get("tool") != self.KRAKEN2_TOOL:
+                        continue
+                    if row.get("mode") != self.READS_MODE:
+                        continue
+                    if not self._is_bleed_pass(row.get("bleed_pass")):
+                        continue
+
+                    rank = row.get("rank", "")
+                    taxid = row.get("taxid", "")
+                    name = row.get("name", "")
+                    try:
+                        count = int(row.get("count", "0"))
+                    except ValueError:
+                        continue
+
+                    if rank == self.FAMILY_RANK:
+                        families_by_taxid[taxid] = {
+                            "name": name,
+                            "nReads": count,
+                            "pathogens": [],
+                        }
+                    elif rank == self.SPECIES_RANK and nodes is not None:
+                        family_taxid = get_taxid_at_rank(taxid, self.FAMILY_RANK, nodes)
+                        if family_taxid and family_taxid in families_by_taxid:
+                            families_by_taxid[family_taxid]["pathogens"].append({
+                                "pathogen": name,
+                                "nReads": count,
+                            })
+
+            pathologies = list(families_by_taxid.values())
+            for pathology in pathologies:
+                pathology["pathogens"].sort(
+                    key=lambda p: p["nReads"], reverse=True
+                )
+            pathologies.sort(key=lambda p: p["nReads"], reverse=True)
+            return pathologies
+
+        except (IOError, ValueError) as e:
+            logger.error(
+                f"Error processing pathology data from {summary_path}: {e}"
+            )
+            return []
 
     def _process_sequence_metrics(self, sample_file_path: str) -> Optional[SequenceMetrics]:
         """Process sequence identification metrics from krona file."""
@@ -145,14 +232,14 @@ class MetricsService:
                 reader = csv.reader(file, delimiter="\t")
                 n_sequences = 0
                 n_identified_sequences = 0
-                
+
                 for row in reader:
                     n_sequences += 1
                     if len(row) > 1 and row[1] != "0":
                         n_identified_sequences += 1
-                
+
                 percentage_identified = n_identified_sequences / n_sequences if n_sequences > 0 else 0
-                
+
                 return {
                     "nSequences": n_sequences,
                     "nIdentifiedSequences": n_identified_sequences,
@@ -164,75 +251,3 @@ class MetricsService:
         except (IOError, IndexError, ValueError) as e:
             logger.error(f"Error processing sequence metrics from {sample_file_path}: {e}")
             return None
-
-    def _process_pathology_data(self, report_file_path: str) -> List[Pathology]:
-        """Process pathology data from report file."""
-        pathologies = []
-        family_index = self.TAXONOMIC_CATEGORIES.index(self.FAMILY_CATEGORY)
-        
-        try:
-            with open(report_file_path, 'r') as file:
-                reader = csv.reader(file, delimiter="\t")
-                previous_row = next(reader)
-                current_family = None
-                
-                for row in reader:
-                    if len(row) < 8:
-                        continue
-                        
-                    current_indentation = self._count_report_padding(row[7])
-                    previous_indentation = self._count_report_padding(previous_row[7])
-                    
-                    # Add pathogen to current family if indentation indicates it's a leaf
-                    if (previous_indentation >= current_indentation and 
-                        current_family is not None):
-                        current_family["pathogens"].append({
-                            "pathogen": previous_row[7].lstrip(), 
-                            "nReads": int(previous_row[2])
-                        })
-
-                    # Check if we need to close current family and start new one
-                    category = row[5]
-                    if category[0] in self.TAXONOMIC_CATEGORIES:
-                        category_index = self.TAXONOMIC_CATEGORIES.index(category[0])
-                        
-                        if category_index < family_index:
-                            if current_family is not None:
-                                pathologies.append(current_family)
-                                current_family = None
-                        elif category == self.FAMILY_CATEGORY:
-                            if current_family is not None:
-                                pathologies.append(current_family)
-                            current_family = {
-                                "name": row[7].lstrip(),
-                                "nReads": int(row[1]),
-                                "pathogens": []
-                            }
-                    
-                    previous_row = row
-                
-                # Add the last pathogen and family
-                if current_family is not None:
-                    current_family["pathogens"].append({
-                        "pathogen": previous_row[7].lstrip(),
-                        "nReads": int(previous_row[2])
-                    })
-                    pathologies.append(current_family)
-                    
-        except (IOError, IndexError, ValueError) as e:
-            logger.error(f"Error processing pathology data from {report_file_path}: {e}")
-            return []
-            
-        return pathologies
-           
-    def _count_report_padding(self, string: str) -> int:
-        """
-        Count the number of leading spaces in a string to determine indentation level.
-        
-        Args:
-            string: The string to analyze
-            
-        Returns:
-            Number of leading spaces
-        """
-        return len(string) - len(string.lstrip())
