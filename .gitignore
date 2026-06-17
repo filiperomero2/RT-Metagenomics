@@ -4,3 +4,5 @@
 **/output
 **/.snakemake
 **/*.db
+**/.tmp
+databases

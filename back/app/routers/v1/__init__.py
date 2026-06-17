@@ -1,25 +1,111 @@
-from fastapi import APIRouter
+from typing import Annotated, Optional
+from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import FileResponse, StreamingResponse
 from dto.health_check_response import HealthCheckResponse
+from services.startup_status_service import startup_status_service
+from dto.settings_config import SettingsConfig
 from usecases.create_metagenomic_usecase import CreateMetagenomicsRunInput, CreateMetagenomicsSampleInput
 
 from dto import CreateMetagenomicsRunRequest
 from infra.dependencies import (
     CreateMetagenomicsUseCaseDependency,
-    ListMetagenomicsUseCaseDependency,
-    GetMetagenomicsResultUseCaseDependency,
-    GetMetagenomicsMetricsUseCaseDependency,
     ExportResultUseCaseDependency,
+    GetMetagenomicsMetricsUseCaseDependency,
+    GetMetagenomicsResultUseCaseDependency,
+    GetSettingsUseCaseDependency,
+    ListMetagenomicsUseCaseDependency,
+    SaveSettingsUseCaseDependency,
     StartMetagenomicsUseCaseDependency,
-    StopMetagenomicsUseCaseDependency
+    StopMetagenomicsUseCaseDependency,
+    UpdateKraken2DbUseCaseDependency,
+    UpdateKronaDbUseCaseDependency,
+    UpdateTaxdumpDbUseCaseDependency,
 )
 
 router = APIRouter(prefix='/v1')
 
+@router.post("/databases/kraken2/install", response_model=dict)
+async def install_kraken2_database(
+    usecase: UpdateKraken2DbUseCaseDependency,
+    url: Optional[str] = Query(default=None),
+):
+    """
+    Download and install the viral Kraken2 database FROM URL and return 200 if successful.
+    """
+    try:
+        result = usecase.execute(url)
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "error": "Kraken2InstallError",
+                "message": str(exc),
+            },
+        ) from exc
+
+    return result
+
+
+@router.post("/databases/krona/update", response_model=dict)
+async def update_krona_database(usecase: UpdateKronaDbUseCaseDependency):
+    """
+    Update the Krona taxonomy database using 'ktUpdateTaxonomy.sh' and
+    return 200 if successful.
+    """
+    try:
+        result = usecase.execute()
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "error": "KronaUpdateError",
+                "message": str(exc),
+            },
+        ) from exc
+
+    return {"status": "success"}
+
+
+@router.post("/databases/taxdump/install", response_model=dict)
+async def install_taxdump_database(
+    usecase: UpdateTaxdumpDbUseCaseDependency,
+    url: Optional[str] = Query(default=None),
+):
+    """
+    Download and install the NCBI taxdump from URL and return 200 if successful.
+    The taxdump is used for Diamond pipeline taxonomy annotation.
+    """
+    try:
+        result = usecase.execute(url)
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "error": "TaxdumpInstallError",
+                "message": str(exc),
+            },
+        ) from exc
+
+    return result
+
+
+@router.get("/config", response_model=SettingsConfig)
+async def get_app_config(usecase: GetSettingsUseCaseDependency):
+    return usecase.execute()
+
+
+@router.put("/config", response_model=SettingsConfig)
+async def save_app_config(
+    settings: SettingsConfig,
+    usecase: SaveSettingsUseCaseDependency
+):
+    return usecase.execute(settings)
+
+
 @router.post("/metagenomics/run", response_model=dict)
 async def start_metagenomics(
     metagenomics_run: CreateMetagenomicsRunRequest,
-    usecase: CreateMetagenomicsUseCaseDependency
+    usecase: CreateMetagenomicsUseCaseDependency,
 ):
     """
     Start a new metagenomics analysis run.
@@ -43,6 +129,11 @@ async def start_metagenomics(
         minimumReadLength=metagenomics_run.minimumReadLength,
         kraken2Database=metagenomics_run.kraken2Database,
         kronaDatabase=metagenomics_run.kronaDatabase,
+        # Parameters for the diamond pipeline
+        diamondDatabase=metagenomics_run.diamondDatabase,
+        diamond=metagenomics_run.diamond,
+        denovoAssembly=False,
+        taxdump=metagenomics_run.taxdump,
     ))
     
     return run.dict()
@@ -142,7 +233,9 @@ async def health_check():
     Health check endpoint to verify API status.
     
     Returns:
-        HealthCheckResponse: API status and timestamp
+        HealthCheckResponse: API status, timestamp, and startup phase for the UI.
     """
-    health_response = HealthCheckResponse()
+    health_response = HealthCheckResponse(
+        startup=startup_status_service.snapshot().to_dict(),
+    )
     return health_response.dict()

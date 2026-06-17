@@ -1,3 +1,4 @@
 [submodule "back/app/viralunity"]
 	path = back/app/viralunity
-	url = https://github.com/filiperomero2/ViralUnity.git
+	url = https://github.com/InstitutoTodosPelaSaude/ViralUnity.git
+	branch = main

@@ -7,13 +7,27 @@ from routers import router as api_router
 from exceptions import MetagenomicsError, handle_metagenomics_exception
 from config import config
 from infra.database.db import create_db_and_tables, get_session
-from infra.dependencies import get_file_hash_calculator, get_metagenomics_run_repository, get_paths_service
+from infra.dependencies import (
+    get_config_repository,
+    get_file_hash_calculator,
+    get_metagenomics_run_repository,
+    get_paths_service,
+)
 from services.viralunity_service import ViralUnityService
+from services.database_setup_service import DatabaseSetupService
+from services.startup_status_service import startup_status_service
 import threading
 import logging
 
 # Initialize logger
 logger = logging.getLogger(__name__)
+
+# ViralUnity and Snakemake use their own logger namespaces (not uvicorn.error).
+# Align them with app LOG_LEVEL so pipeline INFO/ERROR reaches the same handlers as the API.
+_level_name = (config.logging.level or "INFO").upper()
+_pipeline_log_level = getattr(logging, _level_name, logging.INFO)
+logging.getLogger("viralunity").setLevel(_pipeline_log_level)
+logging.getLogger("snakemake").setLevel(_pipeline_log_level)
 
 # Initialize database
 create_db_and_tables()
@@ -22,15 +36,86 @@ create_db_and_tables()
 async def lifespan(app: FastAPI):
     # Startup
     logger.info("Starting up...")
+    startup_status_service.update(
+        phase="starting",
+        progress_step=0,
+        progress_total=0,
+        progress_text="Backend starting...",
+        error=None,
+    )
     
     # Start background service
     db_session = next(get_session())
     repository = get_metagenomics_run_repository(db_session)
     file_hash_calculator = get_file_hash_calculator()
     paths_service = get_paths_service()
+    startup_status_service.update(
+        phase="starting_worker",
+        progress_text="Starting background worker...",
+        error=None,
+    )
     viralunity_service = ViralUnityService(repository, file_hash_calculator, paths_service)
     thread = threading.Thread(target=viralunity_service.main, daemon=True)
     thread.start()
+
+    startup_status_service.update(
+        phase="bootstrapping_databases",
+        progress_step=0,
+        progress_total=7,
+        progress_text="Preparing database bootstrap...",
+        error=None,
+    )
+
+    def bootstrap_databases_in_background() -> None:
+        thread_session = next(get_session())
+        try:
+            config_repository = get_config_repository(thread_session)
+            database_setup_service = DatabaseSetupService(
+                config_repository,
+                get_paths_service(),
+            )
+            logger.info("Running startup database bootstrap via ViralUnity get-databases...")
+            bootstrap_result = database_setup_service.bootstrap_all_databases(
+                on_progress=lambda step, total, message: startup_status_service.update(
+                    phase="bootstrapping_databases",
+                    progress_step=step,
+                    progress_total=total,
+                    progress_text=message,
+                    error=None,
+                )
+            )
+            logger.info(
+                "Startup database bootstrap completed. Kraken2=%s Krona=%s Taxdump=%s",
+                bootstrap_result.get("kraken2_database"),
+                bootstrap_result.get("krona_database"),
+                bootstrap_result.get("taxdump"),
+            )
+            startup_status_service.update(
+                phase="ready",
+                progress_step=7,
+                progress_total=7,
+                progress_text="Backend ready.",
+                error=None,
+            )
+        except Exception as exc:  # noqa: BLE001
+            startup_status_service.update(
+                phase="degraded",
+                progress_text="Database bootstrap failed, backend running in degraded mode.",
+                error=str(exc),
+            )
+            logger.warning(
+                "Startup database bootstrap failed, continuing startup: %s",
+                exc,
+                exc_info=True,
+            )
+        finally:
+            thread_session.close()
+
+    bootstrap_thread = threading.Thread(
+        target=bootstrap_databases_in_background,
+        daemon=True,
+    )
+    bootstrap_thread.start()
     
     yield
     

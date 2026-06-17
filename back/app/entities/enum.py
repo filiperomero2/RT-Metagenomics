@@ -9,3 +9,12 @@ class RunState(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     CANCELLED = "cancelled"
+
+class ConfigType(str, Enum):
+    KRAKEN2 = "kraken2_database"
+    KRONA = "krona_database"
+    POLLING_INTERVAL = "polling_interval"
+    ITERATION_INTERVAL = "iteration_interval"
+    TAXDUMP = "taxdump"
+    DIAMOND = "diamond_database"
+    DEACON = "deacon_database"

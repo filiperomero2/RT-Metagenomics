@@ -8,7 +8,7 @@ from entities.run import Run
 from entities.enum import RunState
 from entities.run_parameters import RunParameters
 from repositories.metagenomics_run_repository import MetagenomicsRunRepository
-from viralunity.viralunity.viralunity_meta import main as vu_metagenomics
+from viralunity.viralunity_meta import main as vu_metagenomics
 from services.file_hash_calculator_service import FileHashCalculatorService
 from config import config
 
@@ -32,7 +32,7 @@ class ViralUnityService:
             try:
                 next_task = self.repository.get_pending_run()
                 if next_task is None:
-                    logger.debug("No task to process, waiting for new tasks...")
+                    # logger.debug("No task to process, waiting for new tasks...")
                     time.sleep(config.service.polling_interval)
                     continue
                 try:
@@ -44,6 +44,7 @@ class ViralUnityService:
                         self.repository.save_run(next_task) # Forces update of the next_scheduled_run_at
                         continue
                     params = self.prepare_metagenomics_params(next_task)
+                    logger.debug(f"Params: {params}")
                     next_task.state = RunState.RUNNING
                     next_task.iteration += 1
                     next_task.executionHash = task_hash
@@ -64,10 +65,10 @@ class ViralUnityService:
                         next_task.state = RunState.PENDING
                     self.repository.save_run(next_task)
                 except Exception as e:
+                    logger.error(f"Error during metagenomics run: {e}")
                     next_task.state = RunState.FAILED
                     next_task.errorMessage = str(e)
                     self.repository.save_run(next_task)
-                    logger.error(f"Error during metagenomics run: {e}")
             except Exception as e:
                 logger.error(f"Error in ViralUnityService main thread: {e}")
 
@@ -97,4 +98,9 @@ class ViralUnityService:
             "create_config_only": False,
             "minimum_read_length": config.service.default_minimum_read_length,
             "trim": run.parameters.trim,
+            # Parameters for the diamond pipeline
+            "diamond_database": run.parameters.diamondDatabase,
+            "diamond": run.parameters.diamond,
+            "denovo_assembly": run.parameters.denovoAssembly,
+            "taxdump": run.parameters.taxdump,
         }

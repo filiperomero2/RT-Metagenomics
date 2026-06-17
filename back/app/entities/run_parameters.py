@@ -21,6 +21,11 @@ class RunParameters(SQLModel, table=True):
     removeHumanReads: bool = Field(default=None)
     removeUnclassifiedReads: bool = Field(default=None)
     minimumReadLength: int = Field(default=None)
+    # Parameters for the diamond pipeline
+    diamondDatabase: str | None = Field(default=None)
+    diamond: bool | None = Field(default=None)
+    denovoAssembly: bool = Field(default=None)
+    taxdump: str | None = Field(default=None)
 
     # Relationships
     run: "Run" = Relationship(back_populates="parameters")
@@ -36,8 +41,12 @@ class RunParameters(SQLModel, table=True):
             "kronaDatabase": self.kronaDatabase,
             "removeHumanReads": self.removeHumanReads,
             "removeUnclassifiedReads": self.removeUnclassifiedReads,
-            "minimumReadLength": self.minimumReadLength
+            "minimumReadLength": self.minimumReadLength,
+            "diamondDatabase": self.diamondDatabase,
+            "diamond": self.diamond,
+            "denovoAssembly": self.denovoAssembly,
+            "taxdump": self.taxdump,
         }
 
     def __repr__(self):
-        return f"RunParameters(dataType={self.dataType}, trim={self.trim}, threads={self.threads}, threadsTotal={self.threadsTotal}, kraken2Database={self.kraken2Database}, kronaDatabase={self.kronaDatabase}, removeHumanReads={self.removeHumanReads}, removeUnclassifiedReads={self.removeUnclassifiedReads}, minimumReadLength={self.minimumReadLength})"
+        return f"RunParameters(dataType={self.dataType}, trim={self.trim}, threads={self.threads}, threadsTotal={self.threadsTotal}, kraken2Database={self.kraken2Database}, kronaDatabase={self.kronaDatabase}, removeHumanReads={self.removeHumanReads}, removeUnclassifiedReads={self.removeUnclassifiedReads}, minimumReadLength={self.minimumReadLength}, diamondDatabase={self.diamondDatabase}, diamond={self.diamond}, denovoAssembly={self.denovoAssembly}, taxdump={self.taxdump})"
