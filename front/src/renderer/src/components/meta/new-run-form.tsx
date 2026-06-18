@@ -18,8 +18,10 @@ import {
   FormProvider,
   useFieldArray,
   useForm,
+  useFormContext,
   useWatch,
 } from "react-hook-form";
+import { useEffect } from "react";
 import { useLocalStorage } from "usehooks-ts";
 
 import { queryKeys } from "@/utils/query-keys-factory";
@@ -63,6 +65,10 @@ const schema = z.object({
   diamondDatabase: z
     .string()
     .min(1, { message: "Diamond Database Path is required" }),
+  taxids: z.string().optional(),
+  runDiamondReads: z.boolean(),
+  runDiamondContigs: z.boolean(),
+  runDenovoAssembly: z.boolean(),
   samples: z
     .array(
       z.object({
@@ -78,6 +84,14 @@ const schema = z.object({
       }),
     )
     .min(1, { message: "At least one sample is required" }),
+}).superRefine((data, ctx) => {
+  if (data.runDiamondContigs && !data.runDenovoAssembly) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "De novo assembly is required when Diamond on contigs is enabled",
+      path: ["runDenovoAssembly"],
+    });
+  }
 });
 
 const barcodes = Array.from({ length: 96 })
@@ -86,6 +100,72 @@ const barcodes = Array.from({ length: 96 })
     key: `barcode${i + 1 < 10 ? "0" + (i + 1) : i + 1}`,
     label: `barcode${i + 1 < 10 ? "0" + (i + 1) : i + 1}`,
   }));
+
+function PipelineOptions() {
+  const runDiamondContigs = useWatch({ name: "runDiamondContigs" });
+  const runDenovoAssembly = useWatch({ name: "runDenovoAssembly" });
+  const { setValue } = useFormContext<z.infer<typeof schema>>();
+
+  useEffect(() => {
+    if (runDiamondContigs && !runDenovoAssembly) {
+      setValue("runDenovoAssembly", true, { shouldValidate: true });
+    }
+  }, [runDiamondContigs, runDenovoAssembly, setValue]);
+
+  useEffect(() => {
+    if (!runDenovoAssembly && runDiamondContigs) {
+      setValue("runDiamondContigs", false, { shouldValidate: true });
+    }
+  }, [runDenovoAssembly, runDiamondContigs, setValue]);
+
+  return (
+    <>
+      <NumberInput
+        name="threads"
+        label="Threads"
+        className="col-span-2 @md:col-span-1"
+      />
+      <NumberInput
+        name="threadsTotal"
+        label="Threads Total"
+        className="col-span-2 @md:col-span-1"
+      />
+      <NumberInput
+        name="trim"
+        label="Trim"
+        className="col-span-2 @md:col-span-1"
+      />
+      <NumberInput
+        name="minimumReadLength"
+        label="Minimum Read Length"
+        className="col-span-2 @md:col-span-1"
+      />
+
+      <CheckBox
+        name="removeUnclassifiedReads"
+        label="Remove Unclassified Reads"
+      />
+      <CheckBox name="removeHumanReads" label="Remove Human Reads" />
+
+      <CheckBox
+        name="runDiamondReads"
+        label="Diamond on reads"
+        className="col-span-2"
+      />
+      <CheckBox
+        name="runDenovoAssembly"
+        label="De novo assembly"
+        className="col-span-2"
+      />
+      <CheckBox
+        name="runDiamondContigs"
+        label="Diamond on contigs"
+        className="col-span-2"
+        isDisabled={!runDenovoAssembly}
+      />
+    </>
+  );
+}
 
 export function NewRunForm() {
   const { modal, handleOpen, handleClose } = useModal();
@@ -101,6 +181,10 @@ export function NewRunForm() {
   const viralDmndRaw =
     (globalSettings?.databases?.diamond ?? "").trim() ||
     (storedForm?.diamondDatabase ?? "").trim() ||
+    "";
+  const taxidsDefault =
+    (globalSettings?.databases?.diamond_taxids ?? "").trim() ||
+    (storedForm?.taxids ?? "").trim() ||
     "";
 
   const { mutateAsync, isPending } = useMutation({
@@ -139,6 +223,10 @@ export function NewRunForm() {
         globalSettings?.databases?.krona ?? storedForm?.kronaDatabase ?? "",
       taxdump: taxdumpDefault,
       diamondDatabase: viralDmndRaw,
+      taxids: taxidsDefault,
+      runDiamondReads: storedForm?.runDiamondReads ?? false,
+      runDiamondContigs: storedForm?.runDiamondContigs ?? false,
+      runDenovoAssembly: storedForm?.runDenovoAssembly ?? false,
       samples: Array.from({ length: 3 })
         .fill(0)
         .map((_, i) => ({ name: "", barcode: "", isNegativeControl: false })),
@@ -264,35 +352,7 @@ export function NewRunForm() {
                         </Accordion.Heading>
                         <Accordion.Panel>
                           <Accordion.Body className="@container grid grid-cols-2 gap-2">
-                            <NumberInput
-                              name="threads"
-                              label="Threads"
-                              className="col-span-2 @md:col-span-1"
-                            />
-                            <NumberInput
-                              name="threadsTotal"
-                              label="Threads Total"
-                              className="col-span-2 @md:col-span-1"
-                            />
-                            <NumberInput
-                              name="trim"
-                              label="Trim"
-                              className="col-span-2 @md:col-span-1"
-                            />
-                            <NumberInput
-                              name="minimumReadLength"
-                              label="Minimum Read Length"
-                              className="col-span-2 @md:col-span-1"
-                            />
-
-                            <CheckBox
-                              name="removeUnclassifiedReads"
-                              label="Remove Unclassified Reads"
-                            />
-                            <CheckBox
-                              name="removeHumanReads"
-                              label="Remove Human Reads"
-                            />
+                            <PipelineOptions />
                           </Accordion.Body>
                         </Accordion.Panel>
                       </Accordion.Item>
@@ -324,6 +384,11 @@ export function NewRunForm() {
                             <Input
                               name="diamondDatabase"
                               label="Diamond Database"
+                              isDisabled
+                            />
+                            <Input
+                              name="taxids"
+                              label="Diamond taxids (protein2taxid.tsv)"
                               isDisabled
                             />
                             <Alert

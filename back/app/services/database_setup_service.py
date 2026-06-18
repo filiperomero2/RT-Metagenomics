@@ -200,6 +200,13 @@ class DatabaseSetupService:
         )
         self.config_repository.save_config(
             Config(
+                name="databases.diamond_taxids",
+                type=ConfigType.DIAMOND_TAXIDS,
+                value=paths["taxids"],
+            )
+        )
+        self.config_repository.save_config(
+            Config(
                 name="databases.deacon",
                 type=ConfigType.DEACON,
                 value=paths["deacon_index"],

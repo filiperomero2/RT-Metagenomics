@@ -13,6 +13,7 @@ SETTINGS_CONFIG_NAMES = {
     ConfigType.KRAKEN2: "databases.kraken2",
     ConfigType.TAXDUMP: "databases.taxdump",
     ConfigType.DIAMOND: "databases.diamond",
+    ConfigType.DIAMOND_TAXIDS: "databases.diamond_taxids",
     ConfigType.DEACON: "databases.deacon",
 }
 
@@ -39,6 +40,7 @@ class SettingsService:
             ConfigType.KRONA: settings.databases.krona,
             ConfigType.TAXDUMP: settings.databases.taxdump,
             ConfigType.DIAMOND: settings.databases.diamond,
+            ConfigType.DIAMOND_TAXIDS: settings.databases.diamond_taxids,
             ConfigType.DEACON: settings.databases.deacon,
         }
 
@@ -117,6 +119,10 @@ class SettingsService:
         diamond_path = self.config_repository.get_config_by_type(ConfigType.DIAMOND)
         if diamond_path and diamond_path.value:
             settings.databases.diamond = diamond_path.value
+
+        diamond_taxids_path = self.config_repository.get_config_by_type(ConfigType.DIAMOND_TAXIDS)
+        if diamond_taxids_path and diamond_taxids_path.value:
+            settings.databases.diamond_taxids = diamond_taxids_path.value
 
         deacon_path = self.config_repository.get_config_by_type(ConfigType.DEACON)
         if deacon_path and deacon_path.value:

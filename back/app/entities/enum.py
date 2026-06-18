@@ -17,4 +17,5 @@ class ConfigType(str, Enum):
     ITERATION_INTERVAL = "iteration_interval"
     TAXDUMP = "taxdump"
     DIAMOND = "diamond_database"
+    DIAMOND_TAXIDS = "diamond_taxids"
     DEACON = "deacon_database"

@@ -13,5 +13,8 @@ export interface MetaGenomic {
   kronaDatabase: string;
   diamondDatabase: string;
   taxdump: string;
-  diamond?: boolean | null;
+  taxids?: string | null;
+  runDiamondReads: boolean;
+  runDiamondContigs: boolean;
+  runDenovoAssembly: boolean;
 }

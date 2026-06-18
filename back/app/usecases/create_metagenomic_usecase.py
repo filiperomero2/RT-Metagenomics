@@ -1,4 +1,3 @@
-import json
 import logging
 from typing import List
 from entities.enum import DataType, RunState
@@ -7,6 +6,7 @@ from entities.sample import Sample
 from entities.run_parameters import RunParameters
 from repositories.metagenomics_run_repository import MetagenomicsRunRepository
 from services.viralunity_service import ViralUnityService
+from services.taxids_utils import resolve_taxids_path, taxids_file_exists
 from exceptions import ParameterValidationError, TaskExecutionError
 
 logger = logging.getLogger("uvicorn.error")
@@ -35,11 +35,12 @@ class CreateMetagenomicsRunInput:
         minimumReadLength: int,
         kraken2Database: str,
         kronaDatabase: str,
-        # Parameters for the diamond pipeline
-        diamondDatabase: str,
-        diamond: bool,
-        denovoAssembly: bool,
-        taxdump: str,
+        diamondDatabase: str | None,
+        taxdump: str | None,
+        taxids: str | None,
+        runDiamondReads: bool,
+        runDiamondContigs: bool,
+        runDenovoAssembly: bool,
     ):
         self.dataType = dataType
         self.samples = samples
@@ -53,13 +54,26 @@ class CreateMetagenomicsRunInput:
         self.minimumReadLength = minimumReadLength
         self.kraken2Database = kraken2Database
         self.kronaDatabase = kronaDatabase
-        # Parameters for the diamond pipeline
         self.diamondDatabase = diamondDatabase
-        self.diamond = diamond
-        self.denovoAssembly = denovoAssembly
         self.taxdump = taxdump
+        self.taxids = taxids
+        self.runDiamondReads = runDiamondReads
+        self.runDiamondContigs = runDiamondContigs
+        self.runDenovoAssembly = runDenovoAssembly
+
     def __repr__(self):
-        return f"CreateMetagenomicsRunInput(dataType={self.dataType}, samples={self.samples}, runName={self.runName}, trim={self.trim}, threads={self.threads}, threadsTotal={self.threadsTotal}, removeHumanReads={self.removeHumanReads}, removeUnclassifiedReads={self.removeUnclassifiedReads}, minimumReadLength={self.minimumReadLength}, kraken2Database={self.kraken2Database}, kronaDatabase={self.kronaDatabase}, diamondDatabase={self.diamondDatabase}, diamond={self.diamond}, denovoAssembly={self.denovoAssembly}, taxdump={self.taxdump})"
+        return (
+            f"CreateMetagenomicsRunInput(dataType={self.dataType}, samples={self.samples}, "
+            f"runName={self.runName}, trim={self.trim}, threads={self.threads}, "
+            f"threadsTotal={self.threadsTotal}, removeHumanReads={self.removeHumanReads}, "
+            f"removeUnclassifiedReads={self.removeUnclassifiedReads}, "
+            f"minimumReadLength={self.minimumReadLength}, "
+            f"kraken2Database={self.kraken2Database}, kronaDatabase={self.kronaDatabase}, "
+            f"diamondDatabase={self.diamondDatabase}, taxdump={self.taxdump}, "
+            f"taxids={self.taxids}, runDiamondReads={self.runDiamondReads}, "
+            f"runDiamondContigs={self.runDiamondContigs}, "
+            f"runDenovoAssembly={self.runDenovoAssembly})"
+        )
 
 
 class CreateMetagenomicsRunUseCase:
@@ -76,6 +90,11 @@ class CreateMetagenomicsRunUseCase:
 
         self.validate_metagenomics_parameters(metagenomics_parameters)
 
+        resolved_taxids = resolve_taxids_path(
+            metagenomics_parameters.diamondDatabase,
+            metagenomics_parameters.taxids,
+        )
+
         run = Run(
             name=metagenomics_parameters.runName,
             state=RunState.PENDING,
@@ -90,11 +109,12 @@ class CreateMetagenomicsRunUseCase:
                 minimumReadLength=metagenomics_parameters.minimumReadLength,
                 kraken2Database=metagenomics_parameters.kraken2Database,
                 kronaDatabase=metagenomics_parameters.kronaDatabase,
-                # Parameters for the diamond pipeline
                 diamondDatabase=metagenomics_parameters.diamondDatabase,
-                diamond=metagenomics_parameters.diamond,
-                denovoAssembly=metagenomics_parameters.denovoAssembly,
                 taxdump=metagenomics_parameters.taxdump,
+                taxids=resolved_taxids,
+                runDiamondReads=metagenomics_parameters.runDiamondReads,
+                runDiamondContigs=metagenomics_parameters.runDiamondContigs,
+                runDenovoAssembly=metagenomics_parameters.runDenovoAssembly,
             ),
             samples=[
                 Sample(name=sample.name, sampleLib=sample.barcode)
@@ -115,9 +135,38 @@ class CreateMetagenomicsRunUseCase:
             )
 
     def validate_metagenomics_parameters(self, metagenomics_parameters: CreateMetagenomicsRunInput):
-        #If diamond is enabled, validate the diamond parameters
-        if metagenomics_parameters.diamond:
-            if metagenomics_parameters.diamondDatabase is None:
-                raise ParameterValidationError(f"Diamond database is required")
-            if metagenomics_parameters.taxdump is None:
-                raise ParameterValidationError(f"Taxdump is required")
+        any_diamond = (
+            metagenomics_parameters.runDiamondReads
+            or metagenomics_parameters.runDiamondContigs
+        )
+
+        if metagenomics_parameters.runDiamondContigs and not metagenomics_parameters.runDenovoAssembly:
+            raise ParameterValidationError(
+                "De novo assembly must be enabled when Diamond on contigs is enabled"
+            )
+
+        if any_diamond:
+            if not metagenomics_parameters.diamondDatabase:
+                raise ParameterValidationError("Diamond database is required")
+            if not metagenomics_parameters.taxdump:
+                raise ParameterValidationError("Taxdump is required for Diamond pipeline")
+            if not metagenomics_parameters.kronaDatabase:
+                raise ParameterValidationError("Krona database is required for Diamond pipeline")
+
+            resolved_taxids = resolve_taxids_path(
+                metagenomics_parameters.diamondDatabase,
+                metagenomics_parameters.taxids,
+            )
+            if not taxids_file_exists(resolved_taxids):
+                raise ParameterValidationError(
+                    "Taxids mapping file (protein2taxid.tsv) is required for Diamond pipeline"
+                )
+
+        if not metagenomics_parameters.kraken2Database:
+            raise ParameterValidationError("Kraken2 database is required")
+
+        if not metagenomics_parameters.kronaDatabase:
+            raise ParameterValidationError("Krona database is required")
+
+        if not metagenomics_parameters.taxdump:
+            raise ParameterValidationError("Taxdump is required")

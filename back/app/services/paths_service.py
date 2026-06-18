@@ -5,6 +5,11 @@ from entities.run import Run
 
 
 class PathsService:
+    KRAKEN2_READS = "kraken2_reads"
+    KRAKEN2_CONTIGS = "kraken2_contigs"
+    DIAMOND_READS = "diamond_reads"
+    DIAMOND_CONTIGS = "diamond_contigs"
+
     def __init__(self):
         pass
 
@@ -38,13 +43,28 @@ class PathsService:
         return f"{self.get_output_path(run)}/config.yaml"
 
     def get_sample_output_dir(self, run: Run, kind: str) -> str:
-        return f"{self.get_pipeline_output_root(run)}/metagenomics/taxonomic_assignments/{kind}/"
+        return f"{self.get_pipeline_output_root(run)}metagenomics/taxonomic_assignments/{kind}/"
 
     def get_krona_html_path(self, run: Run, sample_name: str, kind: str) -> str:
         """
         kind: kraken2_reads | kraken2_contigs | diamond_reads | diamond_contigs
         """
-        return f"{self.get_pipeline_output_root(run)}/metagenomics/taxonomic_assignments/{kind}/reports/sample-{sample_name}.output.krona.html"
+        sample_key = f"sample-{sample_name}"
+        filenames = {
+            self.KRAKEN2_READS: f"{sample_key}.output.krona.html",
+            self.KRAKEN2_CONTIGS: f"{sample_key}.output.krona.html",
+            self.DIAMOND_READS: f"{sample_key}.diamond.filtered.krona.html",
+            self.DIAMOND_CONTIGS: f"{sample_key}.diamond.supported.filtered.krona.html",
+        }
+        filename = filenames.get(kind, f"{sample_key}.output.krona.html")
+        return os.path.join(
+            self.get_pipeline_output_root(run),
+            "metagenomics",
+            "taxonomic_assignments",
+            kind,
+            "reports",
+            filename,
+        )
 
     def get_kraken2_reads_krona_txt_path(self, run: Run, sample_name: str) -> str:
         """Kraken2 reads ktImport input (taxonomy counts) before per-sample symlinks."""
@@ -53,22 +73,62 @@ class PathsService:
             root,
             "metagenomics",
             "taxonomic_assignments",
-            "kraken2_reads",
+            self.KRAKEN2_READS,
             "results",
             f"sample-{sample_name}.output.krona.txt",
         )
 
+    def get_diamond_reads_krona_input_path(self, run: Run, sample_name: str) -> str:
+        """Diamond reads Krona input TSV used for sequence metrics."""
+        root = self.get_pipeline_output_root(run)
+        return os.path.join(
+            root,
+            "metagenomics",
+            "taxonomic_assignments",
+            self.DIAMOND_READS,
+            "results",
+            f"sample-{sample_name}.diamond.supported.krona_input.tsv",
+        )
+
+    def get_reads_krona_metrics_path(self, run: Run, sample_name: str, kind: str) -> str:
+        if kind == self.DIAMOND_READS:
+            return self.get_diamond_reads_krona_input_path(run, sample_name)
+        return self.get_kraken2_reads_krona_txt_path(run, sample_name)
+
     def get_kraken2_reads_report_path(self, run: Run, sample_name: str) -> str:
         """Symlinked Kraken2 reads report under samples/ (after organize_files)."""
         return os.path.join(
-            self.get_sample_output_dir(run, "kraken2_reads"),
+            self.get_sample_output_dir(run, self.KRAKEN2_READS),
             "results",
             f"sample-{sample_name}.report.txt",
         )
 
-    def get_kraken2_reads_taxa_summary_bleed_path(self, run: Run) -> str:
-        """Aggregated Kraken2 reads taxa table with RPM and bleed filter (all samples)."""
+    def get_taxa_summary_bleed_path(self, run: Run, kind: str) -> str:
+        """Aggregated taxa table with RPM and bleed filter (all samples)."""
         return os.path.join(
-            self.get_sample_output_dir(run, "kraken2_reads"),
-            "kraken2_reads_taxa_summary_RPM.bleed.tsv",
+            self.get_sample_output_dir(run, kind),
+            f"{kind}_taxa_summary_RPM.bleed.tsv",
         )
+
+    def get_kraken2_reads_taxa_summary_bleed_path(self, run: Run) -> str:
+        return self.get_taxa_summary_bleed_path(run, self.KRAKEN2_READS)
+
+    def get_diamond_reads_taxa_summary_bleed_path(self, run: Run) -> str:
+        return self.get_taxa_summary_bleed_path(run, self.DIAMOND_READS)
+
+    def get_preferred_reads_kinds(self, run: Run) -> list[str]:
+        """Read-level classification kinds to try, in priority order."""
+        kinds = [self.KRAKEN2_READS]
+        if run.parameters.runDiamondReads:
+            kinds.append(self.DIAMOND_READS)
+        return kinds
+
+    def get_preferred_krona_kinds(self, run: Run) -> list[str]:
+        kinds = [self.KRAKEN2_READS]
+        if run.parameters.runDiamondReads:
+            kinds.append(self.DIAMOND_READS)
+        if run.parameters.runDiamondContigs:
+            kinds.append(self.DIAMOND_CONTIGS)
+        if run.parameters.runDenovoAssembly:
+            kinds.append(self.KRAKEN2_CONTIGS)
+        return kinds

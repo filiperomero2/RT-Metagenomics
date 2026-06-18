@@ -9,6 +9,7 @@ export interface DatabasePaths {
   taxdump: string;
   kraken2: Kraken2DatabaseConfig[];
   diamond: string;
+  diamond_taxids: string;
   deacon: string;
 }
 
@@ -26,6 +27,7 @@ export const DEFAULT_SETTINGS: SettingsData = {
     taxdump: "",
     kraken2: [],
     diamond: "",
+    diamond_taxids: "",
     deacon: "",
   },
 };
@@ -43,6 +45,9 @@ export function mergeSettings(
         settings?.databases?.taxdump ?? DEFAULT_SETTINGS.databases.taxdump,
       diamond:
         settings?.databases?.diamond ?? DEFAULT_SETTINGS.databases.diamond,
+      diamond_taxids:
+        settings?.databases?.diamond_taxids ??
+        DEFAULT_SETTINGS.databases.diamond_taxids,
       deacon:
         settings?.databases?.deacon ?? DEFAULT_SETTINGS.databases.deacon,
     },

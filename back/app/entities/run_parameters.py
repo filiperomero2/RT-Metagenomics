@@ -1,7 +1,6 @@
 from sqlmodel import Field, SQLModel, Relationship
-import csv
 from entities.enum import DataType
-from typing import List, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from entities.run import Run
@@ -21,11 +20,12 @@ class RunParameters(SQLModel, table=True):
     removeHumanReads: bool = Field(default=None)
     removeUnclassifiedReads: bool = Field(default=None)
     minimumReadLength: int = Field(default=None)
-    # Parameters for the diamond pipeline
     diamondDatabase: str | None = Field(default=None)
-    diamond: bool | None = Field(default=None)
-    denovoAssembly: bool = Field(default=None)
     taxdump: str | None = Field(default=None)
+    taxids: str | None = Field(default=None)
+    runDiamondReads: bool = Field(default=False)
+    runDiamondContigs: bool = Field(default=False)
+    runDenovoAssembly: bool = Field(default=False)
 
     # Relationships
     run: "Run" = Relationship(back_populates="parameters")
@@ -43,10 +43,23 @@ class RunParameters(SQLModel, table=True):
             "removeUnclassifiedReads": self.removeUnclassifiedReads,
             "minimumReadLength": self.minimumReadLength,
             "diamondDatabase": self.diamondDatabase,
-            "diamond": self.diamond,
-            "denovoAssembly": self.denovoAssembly,
             "taxdump": self.taxdump,
+            "taxids": self.taxids,
+            "runDiamondReads": self.runDiamondReads,
+            "runDiamondContigs": self.runDiamondContigs,
+            "runDenovoAssembly": self.runDenovoAssembly,
         }
 
     def __repr__(self):
-        return f"RunParameters(dataType={self.dataType}, trim={self.trim}, threads={self.threads}, threadsTotal={self.threadsTotal}, kraken2Database={self.kraken2Database}, kronaDatabase={self.kronaDatabase}, removeHumanReads={self.removeHumanReads}, removeUnclassifiedReads={self.removeUnclassifiedReads}, minimumReadLength={self.minimumReadLength}, diamondDatabase={self.diamondDatabase}, diamond={self.diamond}, denovoAssembly={self.denovoAssembly}, taxdump={self.taxdump})"
+        return (
+            f"RunParameters(dataType={self.dataType}, trim={self.trim}, "
+            f"threads={self.threads}, threadsTotal={self.threadsTotal}, "
+            f"kraken2Database={self.kraken2Database}, kronaDatabase={self.kronaDatabase}, "
+            f"removeHumanReads={self.removeHumanReads}, "
+            f"removeUnclassifiedReads={self.removeUnclassifiedReads}, "
+            f"minimumReadLength={self.minimumReadLength}, "
+            f"diamondDatabase={self.diamondDatabase}, taxdump={self.taxdump}, "
+            f"taxids={self.taxids}, runDiamondReads={self.runDiamondReads}, "
+            f"runDiamondContigs={self.runDiamondContigs}, "
+            f"runDenovoAssembly={self.runDenovoAssembly})"
+        )

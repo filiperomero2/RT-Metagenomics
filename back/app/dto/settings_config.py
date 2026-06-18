@@ -12,6 +12,7 @@ class DatabasePaths(BaseModel):
     taxdump: str = ""
     kraken2: list[Kraken2DatabaseConfig] = Field(default_factory=list)
     diamond: str = ""
+    diamond_taxids: str = ""
     deacon: str = ""
 
 

@@ -129,11 +129,12 @@ async def start_metagenomics(
         minimumReadLength=metagenomics_run.minimumReadLength,
         kraken2Database=metagenomics_run.kraken2Database,
         kronaDatabase=metagenomics_run.kronaDatabase,
-        # Parameters for the diamond pipeline
         diamondDatabase=metagenomics_run.diamondDatabase,
-        diamond=metagenomics_run.diamond,
-        denovoAssembly=False,
         taxdump=metagenomics_run.taxdump,
+        taxids=metagenomics_run.taxids,
+        runDiamondReads=metagenomics_run.runDiamondReads,
+        runDiamondContigs=metagenomics_run.runDiamondContigs,
+        runDenovoAssembly=metagenomics_run.runDenovoAssembly,
     ))
     
     return run.dict()

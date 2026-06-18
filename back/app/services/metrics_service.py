@@ -47,12 +47,26 @@ class MetricsService:
 
     SAMPLE_PREFIX = "sample-"
     KRAKEN2_TOOL = "kraken2"
+    DIAMOND_TOOL = "diamond"
     READS_MODE = "reads"
     FAMILY_RANK = "family"
     SPECIES_RANK = "species"
 
+    def _tool_for_kind(self, kind: str) -> str:
+        if kind.startswith("diamond"):
+            return self.DIAMOND_TOOL
+        return self.KRAKEN2_TOOL
+
+    def _resolve_reads_classification_kind(self, run: Run) -> str:
+        for kind in self.paths_service.get_preferred_reads_kinds(run):
+            summary_path = self.paths_service.get_taxa_summary_bleed_path(run, kind)
+            if os.path.exists(summary_path):
+                return kind
+        return self.paths_service.KRAKEN2_READS
+
     def get_sample_file_path_from_sample_name(self, run: Run, sample_name: str) -> str:
-        return self.paths_service.get_kraken2_reads_krona_txt_path(run, sample_name)
+        kind = self._resolve_reads_classification_kind(run)
+        return self.paths_service.get_reads_krona_metrics_path(run, sample_name, kind)
 
     def get_summary_metrics(self, run: Run) -> Dict[str, Any]:
         """
@@ -124,11 +138,13 @@ class MetricsService:
             return None
         sample_metrics.update(sequence_metrics)
 
-        summary_path = self.paths_service.get_kraken2_reads_taxa_summary_bleed_path(run)
+        kind = self._resolve_reads_classification_kind(run)
+        summary_path = self.paths_service.get_taxa_summary_bleed_path(run, kind)
+        tool = self._tool_for_kind(kind)
         taxdump_dir = self._resolve_taxdump_dir(run)
         if os.path.exists(summary_path):
             pathologies = self._process_pathology_data_from_taxa_summary(
-                summary_path, sample_name, taxdump_dir
+                summary_path, sample_name, taxdump_dir, tool=tool
             )
             sample_metrics["pathologies"] = pathologies
         else:
@@ -164,8 +180,9 @@ class MetricsService:
         summary_path: str,
         sample_name: str,
         taxdump_dir: Optional[str],
+        tool: str = KRAKEN2_TOOL,
     ) -> List[Pathology]:
-        """Build pathologies from kraken2_reads_taxa_summary_RPM.bleed.tsv."""
+        """Build pathologies from a taxa_summary_RPM.bleed.tsv file."""
         sample_key = f"{self.SAMPLE_PREFIX}{sample_name}"
         families_by_taxid: Dict[str, Pathology] = {}
         nodes = None
@@ -182,7 +199,7 @@ class MetricsService:
                 for row in reader:
                     if row.get("sample") != sample_key:
                         continue
-                    if row.get("tool") != self.KRAKEN2_TOOL:
+                    if row.get("tool") != tool:
                         continue
                     if row.get("mode") != self.READS_MODE:
                         continue
