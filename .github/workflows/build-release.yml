@@ -84,6 +84,18 @@ jobs:
           name: conda-env-linux
           path: front/resources
 
+      - name: Verify Linux conda pack
+        shell: bash
+        run: |
+          ls -lhR front/resources/
+          if [ ! -f front/resources/conda-env-linux.tar.gz ]; then
+            found="$(find front/resources -name 'conda-env-linux.tar.gz' | head -1)"
+            if [ -n "$found" ]; then
+              cp "$found" front/resources/conda-env-linux.tar.gz
+            fi
+          fi
+          test -f front/resources/conda-env-linux.tar.gz
+
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
 

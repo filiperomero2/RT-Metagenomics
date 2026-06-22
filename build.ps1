@@ -257,16 +257,16 @@ try {
 
   Write-Banner "RT-Metagenomics - Build ($Platform)"
 
-  Initialize-CondaPath
   $bunExe = Get-BunExecutable
   Write-Host "Using bun: $bunExe" -ForegroundColor DarkGray
-  Write-Host "Using conda: $(Get-CondaExecutable)" -ForegroundColor DarkGray
 
   if ($Platform -eq "win") {
     Write-Step "[1/5] Validating Linux conda pack for WSL backend..."
     Ensure-WslLinuxCondaPack
   }
   else {
+    Initialize-CondaPath
+    Write-Host "Using conda: $(Get-CondaExecutable)" -ForegroundColor DarkGray
     Install-CondaRuntime
     Write-Step "[2/5] Packing conda environment '$CondaEnv'..."
     Invoke-CondaPack
