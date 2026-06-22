@@ -15,16 +15,47 @@ import type {
   BackendStartResult,
   BackendState,
 } from "../shared/types/backend";
-import { getCondaEnvDir, getEnvBin, isEnvReady } from "./env-setup";
+import {
+  getCondaEnvDir,
+  getEnvBin,
+  isEnvReadyAsync,
+  usesWslBackend,
+} from "./env-setup";
+import { buildWslBackendLaunchScript, runWslBash } from "./wsl";
 
 const BACKEND_HEALTHCHECK_URL = "http://127.0.0.1:8000/v1/health";
 
-/**
- * In production with a bundled conda env, call uvicorn directly (all platforms).
- * In development, activate conda via the platform's shell.
- */
-function getBackendSpawnArgs(): { cmd: string; args: string[] } {
-  if (!is.dev && isEnvReady()) {
+let envReadyCache: boolean | null = null;
+
+async function ensureProductionEnvReady(): Promise<boolean> {
+  if (is.dev) {
+    return false;
+  }
+  if (envReadyCache === true) {
+    return true;
+  }
+  const ready = await isEnvReadyAsync();
+  if (ready) {
+    envReadyCache = true;
+  }
+  return ready;
+}
+
+async function getBackendSpawnArgs(
+  cwd: string,
+): Promise<{ cmd: string; args: string[] }> {
+  if (!is.dev && (await ensureProductionEnvReady())) {
+    if (usesWslBackend()) {
+      const script = await buildWslBackendLaunchScript({
+        backendCwd: cwd,
+        appVersion: app.getVersion(),
+      });
+      return {
+        cmd: "wsl.exe",
+        args: ["-e", "bash", "-lc", script],
+      };
+    }
+
     return {
       cmd: getEnvBin("uvicorn"),
       args: [
@@ -39,7 +70,6 @@ function getBackendSpawnArgs(): { cmd: string; args: string[] } {
     };
   }
 
-  // Development fallback — platform-specific shell
   if (process.platform === "win32") {
     const WIN_CMD =
       "conda activate rt-meta && uvicorn main:app --host 0.0.0.0 --port 8000 --log-level debug";
@@ -65,6 +95,7 @@ let nextBackendLogId = 0;
 let stdoutBuffer = "";
 let stderrBuffer = "";
 let backendOwnership: "managed" | "attached" | null = null;
+let usingWslSpawn = false;
 
 const execFileAsync = promisify(execFile);
 
@@ -101,13 +132,11 @@ function appendBackendLog(line: string) {
 }
 
 function resolveBackendCwd(): string {
-  // Production: backend source is bundled in extraResources
   if (!is.dev) {
     const resourcesBackend = path.join(process.resourcesPath, "back", "app");
     if (existsSync(resourcesBackend)) return resourcesBackend;
   }
 
-  // Development: look relative to the project root
   const candidates = [
     path.resolve(app.getAppPath(), "../back/app"),
     path.resolve(process.cwd(), "../back/app"),
@@ -123,6 +152,35 @@ function resolveBackendCwd(): string {
   }
 
   return cwd;
+}
+
+async function buildBackendSpawnEnv(cwd: string): Promise<NodeJS.ProcessEnv> {
+  const spawnEnv = { ...process.env };
+
+  if (!is.dev && (await ensureProductionEnvReady())) {
+    if (usesWslBackend()) {
+      spawnEnv.RT_META_WSL = "1";
+      return spawnEnv;
+    }
+
+    const envBinDir =
+      process.platform === "win32"
+        ? path.join(getCondaEnvDir(), "Scripts")
+        : path.join(getCondaEnvDir(), "bin");
+    const sep = process.platform === "win32" ? ";" : ":";
+    spawnEnv.PATH = `${envBinDir}${sep}${process.env.PATH ?? ""}`;
+
+    const dbPath = path.join(app.getPath("userData"), "rtmeta.db");
+    spawnEnv.DATABASE_URL = `sqlite:///${dbPath.replace(/\\/g, "/")}`;
+
+    const viralunityPath = path.join(cwd, "viralunity");
+    const pythonPathEntries = [viralunityPath, process.env.PYTHONPATH].filter(
+      (entry): entry is string => Boolean(entry),
+    );
+    spawnEnv.PYTHONPATH = pythonPathEntries.join(sep);
+  }
+
+  return spawnEnv;
 }
 
 function resetBuffers() {
@@ -225,33 +283,22 @@ export async function startBackendProcess(): Promise<BackendStartResult> {
   resetBackendLogs();
 
   const cwd = resolveBackendCwd();
-  const { cmd, args } = getBackendSpawnArgs();
+  const { cmd, args } = await getBackendSpawnArgs(cwd);
+  usingWslSpawn = usesWslBackend() && !is.dev;
 
-  appendBackendLog(`[system] Starting backend from: ${cwd}`);
+  appendBackendLog(
+    `[system] Starting backend from: ${cwd}${usingWslSpawn ? " (via WSL2)" : ""}`,
+  );
   appendBackendLog(`[system] Command: ${cmd} ${args.join(" ")}`);
 
-  // In production, prepend the conda env's bin/ to PATH so that shebangs
-  // like "#!/usr/bin/env python3.11" resolve to the bundled interpreter.
-  // Also set DATABASE_URL so the backend writes its SQLite database to a
-  // writable location instead of the read-only AppImage mount.
-  const spawnEnv = { ...process.env };
-  if (!is.dev && isEnvReady()) {
-    const envBinDir =
-      process.platform === "win32"
-        ? path.join(getCondaEnvDir(), "Scripts")
-        : path.join(getCondaEnvDir(), "bin");
-    const sep = process.platform === "win32" ? ";" : ":";
-    spawnEnv.PATH = `${envBinDir}${sep}${process.env.PATH ?? ""}`;
-
-    const dbPath = path.join(app.getPath("userData"), "rtmeta.db");
-    spawnEnv.DATABASE_URL = `sqlite:///${dbPath}`;
-  }
+  const spawnEnv = await buildBackendSpawnEnv(cwd);
 
   const child = spawn(cmd, args, {
-    cwd,
-    detached: process.platform !== "win32",
+    cwd: usingWslSpawn ? undefined : cwd,
+    detached: process.platform !== "win32" && !usingWslSpawn,
     env: spawnEnv,
     stdio: ["ignore", "pipe", "pipe"],
+    windowsHide: true,
   });
 
   resetBuffers();
@@ -289,6 +336,7 @@ export async function startBackendProcess(): Promise<BackendStartResult> {
     if (backendProcess === child) {
       backendProcess = null;
       backendOwnership = null;
+      usingWslSpawn = false;
     }
 
     appendBackendLog(
@@ -333,10 +381,15 @@ export async function stopBackendProcess() {
   if (!child?.pid) {
     backendProcess = null;
     backendOwnership = null;
+    usingWslSpawn = false;
     return;
   }
 
   appendBackendLog("[system] Stopping backend...");
+
+  if (usingWslSpawn) {
+    await runWslBash("pkill -f 'uvicorn main:app' || true");
+  }
 
   if (process.platform === "win32") {
     try {
@@ -375,6 +428,10 @@ export async function stopBackendProcess() {
   } catch {
     // The shell process may already be gone.
   }
+
+  backendProcess = null;
+  backendOwnership = null;
+  usingWslSpawn = false;
 }
 
 export function registerBackendIpcHandlers() {

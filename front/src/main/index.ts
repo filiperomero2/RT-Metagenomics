@@ -6,11 +6,9 @@ import icon from "../renderer/public/logo.png";
 import { stopBackendProcess } from "./backend-process";
 import { setupEvents, setupIpcHandlers } from "./events";
 import { backendMonitorWindow } from "./backend-monitor-window";
-import { isEnvReady, setupCondaEnv } from "./env-setup";
+import { isFirstRunSetupComplete, runFirstRunSetup } from "./first-run-setup";
 import {
   closeSetupWindow,
-  createSetupWindow,
-  updateSetupStatus,
 } from "./setup-window";
 
 let mainWindow: BrowserWindow | null = null;
@@ -53,11 +51,14 @@ app.whenReady().then(async () => {
     optimizer.watchWindowShortcuts(window);
   });
 
-  // Extract the bundled conda environment on first run or after a version upgrade.
-  if (!is.dev && !isEnvReady()) {
-    createSetupWindow();
+  // First-run setup: WSL platform, Linux distro, and conda environment.
+  if (!is.dev && !(await isFirstRunSetupComplete())) {
     try {
-      await setupCondaEnv((msg) => updateSetupStatus(msg));
+      const setupResult = await runFirstRunSetup();
+      if (setupResult === "reboot") {
+        app.quit();
+        return;
+      }
     } catch (err) {
       closeSetupWindow();
       dialog.showErrorBox(
@@ -67,7 +68,6 @@ app.whenReady().then(async () => {
       app.quit();
       return;
     }
-    closeSetupWindow();
   }
 
   createWindow();

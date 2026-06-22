@@ -9,31 +9,42 @@ import {
 import { execFile, spawn } from "node:child_process";
 import { join } from "node:path";
 import { promisify } from "node:util";
+import {
+  getLinuxCondaTarballPath,
+  getWslInstalledEnvVersion,
+  isWslAvailable,
+  isWindowsPlatform,
+  runWslBash,
+  shellQuote,
+  shouldUseWslBackend,
+  WSL_CONDA_DIR,
+  windowsToWslPath,
+} from "./wsl";
+import { isWslDistroReady } from "./wsl-setup";
 
 const execFileAsync = promisify(execFile);
 
 const UNPACK_MARKER = ".rt-meta-ready";
-const isWindows = process.platform === "win32";
+const isWindows = isWindowsPlatform();
+
+export function usesWslBackend(): boolean {
+  return shouldUseWslBackend(process.resourcesPath);
+}
 
 export function getCondaEnvDir(): string {
+  if (usesWslBackend()) {
+    return join(app.getPath("userData"), "wsl-conda-env");
+  }
   return join(app.getPath("userData"), "conda-env");
 }
 
-/**
- * Read the version recorded in the marker file, or `null` when the
- * environment has never been unpacked.
- */
-function getInstalledEnvVersion(): string | null {
+function getNativeInstalledEnvVersion(): string | null {
   const markerPath = join(getCondaEnvDir(), UNPACK_MARKER);
   if (!existsSync(markerPath)) return null;
 
   try {
     const raw = readFileSync(markerPath, "utf-8").trim();
-    // Marker format (v2): first line is the app version.
-    // Legacy markers (v1) only contained a date – treat those as outdated.
     const firstLine = raw.split("\n")[0];
-    // A semver-ish string starts with a digit; an ISO date starts with a digit
-    // too, but always contains "T" or "-" after position 4.
     if (/^\d+\.\d+/.test(firstLine)) return firstLine;
     return null;
   } catch {
@@ -41,38 +52,50 @@ function getInstalledEnvVersion(): string | null {
   }
 }
 
-/**
- * The environment is ready when its marker version matches the running app.
- */
 export function isEnvReady(): boolean {
-  return getInstalledEnvVersion() === app.getVersion();
+  if (usesWslBackend()) {
+    return false;
+  }
+  return getNativeInstalledEnvVersion() === app.getVersion();
 }
 
-/**
- * Return the full path to a binary inside the unpacked conda env.
- * On Windows conda puts scripts in `Scripts/` with `.exe` extension;
- * on Linux/macOS they live in `bin/`.
- */
+export async function isEnvReadyAsync(): Promise<boolean> {
+  if (usesWslBackend()) {
+    const version = await getWslInstalledEnvVersion();
+    return version === app.getVersion();
+  }
+  return getNativeInstalledEnvVersion() === app.getVersion();
+}
+
 export function getEnvBin(binary: string): string {
+  if (usesWslBackend()) {
+    return `~/${WSL_CONDA_DIR}/bin/${binary}`;
+  }
+
   if (isWindows) {
     return join(getCondaEnvDir(), "Scripts", `${binary}.exe`);
   }
   return join(getCondaEnvDir(), "bin", binary);
 }
 
-function getCondaUnpackPath(): string {
+function getNativeCondaUnpackPath(): string {
   if (isWindows) {
     return join(getCondaEnvDir(), "Scripts", "conda-unpack.exe");
   }
   return join(getCondaEnvDir(), "bin", "conda-unpack");
 }
 
-export async function setupCondaEnv(
+function getBundledCondaTarball(): string {
+  if (usesWslBackend()) {
+    return getLinuxCondaTarballPath(process.resourcesPath);
+  }
+  return join(process.resourcesPath, "conda-env.tar.gz");
+}
+
+async function setupNativeCondaEnv(
   onProgress: (message: string) => void,
 ): Promise<void> {
-  if (isEnvReady()) return;
-
-  const tarball = join(process.resourcesPath, "conda-env.tar.gz");
+  const tarball = getBundledCondaTarball();
   if (!existsSync(tarball)) {
     throw new Error(
       `Bundled conda environment not found at: ${tarball}\n` +
@@ -82,9 +105,8 @@ export async function setupCondaEnv(
 
   const envDir = getCondaEnvDir();
 
-  // Remove a stale environment left by a previous version.
   if (existsSync(envDir)) {
-    const oldVersion = getInstalledEnvVersion();
+    const oldVersion = getNativeInstalledEnvVersion();
     onProgress(
       oldVersion
         ? `Removing outdated environment (${oldVersion})…`
@@ -95,7 +117,6 @@ export async function setupCondaEnv(
 
   mkdirSync(envDir, { recursive: true });
 
-  // `tar` is available on Windows 10+, macOS, and Linux
   onProgress("Extracting environment (this may take a few minutes)…");
   await new Promise<void>((resolve, reject) => {
     const tar = spawn("tar", ["-xzf", tarball, "-C", envDir], {
@@ -108,13 +129,78 @@ export async function setupCondaEnv(
     });
   });
 
-  // conda-unpack rewrites hardcoded prefix paths inside the environment
   onProgress("Configuring environment paths…");
-  await execFileAsync(getCondaUnpackPath());
+  await execFileAsync(getNativeCondaUnpackPath());
 
   writeFileSync(
     join(envDir, UNPACK_MARKER),
     `${app.getVersion()}\n${new Date().toISOString()}\n`,
   );
+}
+
+async function setupWslCondaEnv(
+  onProgress: (message: string) => void,
+): Promise<void> {
+  if (!(await isWslDistroReady())) {
+    throw new Error(
+      "WSL2 Linux environment is not ready. Complete the setup wizard first.",
+    );
+  }
+
+  if (!(await isWslAvailable())) {
+    throw new Error(
+      "WSL2 Linux environment is not responding. Restart the app and try again.",
+    );
+  }
+
+  const tarball = getBundledCondaTarball();
+  if (!existsSync(tarball)) {
+    throw new Error(
+      `Linux conda environment not found at: ${tarball}\n` +
+        `Rebuild the Windows installer with a Linux conda pack artifact.`,
+    );
+  }
+
+  const installedVersion = await getWslInstalledEnvVersion();
+  if (installedVersion === app.getVersion()) {
+    onProgress("Linux environment already configured in WSL.");
+    return;
+  }
+
+  onProgress("Preparing WSL environment…");
+  const wslTarball = await windowsToWslPath(tarball);
+  const version = app.getVersion();
+  const marker = `${new Date().toISOString()}`;
+
+  const setupScript = [
+    `set -euo pipefail`,
+    `rm -rf "$HOME/${WSL_CONDA_DIR}"`,
+    `mkdir -p "$HOME/${WSL_CONDA_DIR}"`,
+    `tar -xzf ${shellQuote(wslTarball)} -C "$HOME/${WSL_CONDA_DIR}"`,
+    `"$HOME/${WSL_CONDA_DIR}/bin/conda-unpack"`,
+    `printf '%s\\n%s\\n' ${shellQuote(version)} ${shellQuote(marker)} > "$HOME/${WSL_CONDA_DIR}/.rt-meta-ready"`,
+  ].join("\n");
+
+  onProgress("Extracting Linux environment inside WSL (may take a few minutes)…");
+  const exitCode = await runWslBash(setupScript);
+  if (exitCode !== 0) {
+    throw new Error(`WSL environment setup failed with exit code ${exitCode}`);
+  }
+}
+
+export async function setupCondaEnv(
+  onProgress: (message: string) => void,
+): Promise<void> {
+  if (await isEnvReadyAsync()) {
+    return;
+  }
+
+  if (usesWslBackend()) {
+    await setupWslCondaEnv(onProgress);
+    onProgress("Analysis tools ready!");
+    return;
+  }
+
+  await setupNativeCondaEnv(onProgress);
   onProgress("Environment ready!");
 }

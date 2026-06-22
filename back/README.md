@@ -1,166 +1,176 @@
 # RT-Metagenomics Backend API
 
-This is a FastAPI-based backend for the RT-Metagenomics project, providing a clean and organized way to build metagenomics analysis web applications.
+FastAPI backend for RT-Metagenomics. It exposes a REST API for managing metagenomics runs and delegates pipeline execution to [ViralUnity](https://github.com/filiperomero2/ViralUnity/) (Snakemake workflows).
 
-## Project Structure & Architecture
+## Platform support
 
-### Layers
-1. **Routers**: Handle HTTP requests and responses
-2. **Use Cases**: Application business logic
-3. **Services**: Domain services and external integrations
-4. **Entities**: Database models and domain objects
-5. **Infrastructure**: Database, external services, utilities
+| Platform | API | Metagenomics pipeline |
+|----------|-----|------------------------|
+| Linux | Native | Native (Conda/Bioconda) |
+| Windows (dev) | Native Conda | Not supported natively |
+| Windows (packaged app) | Via WSL2 | Linux Conda inside WSL |
 
-### Key Components
-- **ViralUnityService**: Background service for processing metagenomics tasks
-- **Exception Handling**: Centralized error handling with custom exceptions
-- **Response Models**: Type-safe response models for consistent API responses
-- **Configuration Management**: Environment-based configuration system
-- **Dependency Injection**: Centralized DI container using dependency-injector
+Snakemake and several Bioconda tools used by ViralUnity are **Linux-only**. The packaged Electron app on Windows runs this backend inside WSL2 with a bundled Linux Conda environment.
+
+When running under WSL, the main process sets `RT_META_WSL=1`. Path fields from the Windows UI (e.g. `D:\data\samples`) are normalized to WSL paths (e.g. `/mnt/d/data/samples`) via `infra/path_utils.py` before ViralUnity executes.
+
+## Project structure
 
 ```
 back/
 ├── app/
-│   ├── main.py              # Entry point of the FastAPI application
-│   ├── config.py            # Configuration management
-│   ├── exceptions.py        # Custom exception handling
-│   ├── routers/             # API route handlers
-│   │   └── v1/
-│   ├── schemas/             # Request/Response models
+│   ├── main.py              # FastAPI entry point
+│   ├── config.py            # Configuration
+│   ├── routers/v1/          # API routes
+│   ├── schemas/             # Request/response models
 │   ├── entities/            # Database models
-│   ├── services/            # Business logic services
-│   ├── usecases/            # Application use cases
-│   └── infra/               # Infrastructure layer
-├── environment.yaml         # Conda environment dependencies
-└── README.md               # This file
+│   ├── services/            # Domain services (incl. ViralUnityService)
+│   ├── usecases/            # Application logic
+│   └── infra/
+│       └── path_utils.py    # Windows → WSL path conversion
+├── environment.yml          # Base Conda dependencies
+└── README.md
 ```
 
-## Setup Instructions
+### Key components
 
-### 1. Clone the Repository
+- **ViralUnityService**: runs metagenomics workflows in a background thread
+- **path_utils**: converts Windows paths when `RT_META_WSL=1`
+- **Exception handling**: centralized API error responses
+- **Dependency injection**: `dependency-injector` container
+
+## Setup (Linux)
+
+### 1. Clone with submodules
+
 ```bash
 git clone --recurse-submodules <repository-url>
-cd back
+cd RT-Metagenomics/back
 ```
 
-**Important**: Make sure to use `--recurse-submodules` flag to clone the viralunity submodule, or if you've already cloned without it, run:
+If submodules are missing:
+
 ```bash
 git submodule update --init --recursive
 ```
 
-### 2. Create Virtual Environment
+### 2. Create Conda environment
+
 ```bash
 conda create -n rt-meta python=3.11
 conda activate rt-meta
 ```
 
-### 3. Install Dependencies
+### 3. Install dependencies
 
-#### 3.1. Install Main Dependencies
 ```bash
-conda env update -n rt-meta --file environment.yml && conda clean -a -y
+conda env update -n rt-meta --file environment.yml --prune
+conda env update -n rt-meta --file app/viralunity/environment.yml --prune
+pip install -e app/viralunity
 ```
 
-#### 3.2. Install ViralUnity Submodule Dependencies
-```bash
-conda env update -n rt-meta --file app/viralunity/environment.yml && conda clean -a -y
-```
+### 4. Environment variables
 
-#### 3.3. Install ViralUnity Package in Editable Mode
-**Important**: The viralunity submodule must be installed as an editable package for the application to work correctly:
-```bash
-cd app/viralunity
-pip install -e .
-cd ../..
-```
-
-### 4. Environment Configuration
-Create a `.env` file in the root directory with your environment variables:
+Create a `.env` file in `back/app/` (or set variables in the shell):
 
 ```env
-# Database Configuration
 DATABASE_URL=sqlite:///./rtmeta.db
 DATABASE_ECHO=false
-
-# Service Configuration
 POLLING_INTERVAL=1
 DEFAULT_MINIMUM_READ_LENGTH=50
-
-# API Configuration
 API_TITLE=RT-Metagenomics API
 API_VERSION=1.0.0
-API_DESCRIPTION=API for RT-Metagenomics analysis
-
-# Logging Configuration
 LOG_LEVEL=INFO
-LOG_FILE_PATH=logs/app.log
 ```
 
-## Usage
+In the packaged desktop app, `DATABASE_URL` is set automatically:
 
-### Running the Application
+- **Linux**: SQLite file in the Electron user data directory
+- **Windows (WSL)**: `sqlite:///$HOME/.rt-metagenomics/rtmeta.db` inside WSL
 
-Make sure you have:
-1. Activated the conda environment: `conda activate rt-meta`
-2. Completed all setup steps, including installing the viralunity submodule
-3. Created and configured your `.env` file (see step 4 above)
+## Running the API
 
-#### Development Mode
+### Development
+
 ```bash
+conda activate rt-meta
 cd app
 uvicorn main:app --host 0.0.0.0 --port 8000 --reload --log-level debug
 ```
 
-#### Canonical Startup Command (explicit import path)
-Use this command when you want deterministic module resolution independent of shell state:
+Deterministic import path (from repository root):
+
 ```bash
 cd back
-PYTHONPATH="$PWD/app" \
-  uvicorn \
-  main:app --app-dir app --host 0.0.0.0 --port 8000 --reload --log-level debug
+PYTHONPATH="$PWD/app" uvicorn main:app --app-dir app --host 0.0.0.0 --port 8000 --reload
 ```
-This command keeps backend modules on `sys.path` and relies on the editable `viralunity` install from step 3.3.
 
-#### Production Mode
+### Production (standalone)
+
 ```bash
+conda activate rt-meta
 cd app
-uvicorn main:app --host 0.0.0.0 --port 8000
+uvicorn main:app --host 127.0.0.1 --port 8000
 ```
 
-**Note**: The application must be run from the `app` directory as `main.py` is located there.
+The Electron app spawns uvicorn automatically in production. On Windows installers, it runs inside the `rt-meta` WSL distro with `PYTHONPATH` pointing at the bundled `viralunity` directory.
 
-### API Documentation
-- **Swagger UI**: `http://127.0.0.1:8000/docs`
-- **ReDoc**: `http://127.0.0.1:8000/redoc`
+## API documentation
 
-## Configuration
+- Swagger UI: http://127.0.0.1:8000/docs
+- ReDoc: http://127.0.0.1:8000/redoc
 
-The application uses a centralized configuration system with the following sections:
+## WSL setup (packaged Windows app)
 
-### Database Configuration
-- `DATABASE_URL`: Database connection string
-- `DATABASE_ECHO`: Enable SQL query logging
+The Electron main process runs a first-run wizard that:
 
-### Service Configuration
-- `POLLING_INTERVAL`: Background service polling interval (seconds)
-- `DEFAULT_MINIMUM_READ_LENGTH`: Default minimum read length
+1. Installs the WSL2 platform (elevated, with reboot handling)
+2. Creates a dedicated `rt-meta` WSL distro via `wsl --import`
+3. Extracts the Linux Conda pack to `~/.rt-metagenomics/conda-env`
 
-### API Configuration
-- `API_TITLE`: API title for documentation
-- `API_VERSION`: API version
-- `API_DESCRIPTION`: API description
+When running under WSL, the main process sets `RT_META_WSL=1` and `RT_META_WSL_DISTRO=rt-meta`.
 
-### Logging Configuration
-- `LOG_LEVEL`: Logging level (DEBUG, INFO, WARNING, ERROR)
-- `LOG_FILE_PATH`: Log file path (optional)
+## WSL path handling
 
+When `RT_META_WSL=1`, `normalize_path()` in `infra/path_utils.py` converts Windows-style paths before they reach ViralUnity:
+
+```python
+from infra.path_utils import normalize_path
+
+sample_root = normalize_path(run.parameters.path)
+```
+
+Conversion rules:
+
+- `D:\data\samples` → `/mnt/d/data/samples`
+- Paths already in Unix form are left unchanged
+
+## Windows development notes
+
+- You can run the FastAPI server on native Windows for UI/API development.
+- Installing the full ViralUnity Bioconda stack on native Windows is not supported (Snakemake/datrie build failures).
+- For pipeline testing on Windows, use **WSL2** with a Linux `rt-meta` environment, or use the packaged desktop app.
+
+## Configuration reference
+
+| Variable | Description |
+|----------|-------------|
+| `DATABASE_URL` | SQLAlchemy connection string |
+| `DATABASE_ECHO` | Log SQL queries |
+| `POLLING_INTERVAL` | Background service poll interval (seconds) |
+| `DEFAULT_MINIMUM_READ_LENGTH` | Default read length filter |
+| `RT_META_WSL` | Set to `1` when backend runs inside WSL (automatic in packaged Windows app) |
+| `RT_META_WSL_DISTRO` | WSL distro name (`rt-meta` in packaged Windows app) |
+| `RT_META_APP_VERSION` | App version string (set by Electron main process) |
+| `PYTHONPATH` | Must include `viralunity` package root in production |
 
 ## Contributing
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+2. Create a feature branch
+3. Test pipeline changes on **Linux** (or WSL2 on Windows)
+4. Open a pull request
 
 ## License
+
+TBD

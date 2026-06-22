@@ -8,11 +8,17 @@ from entities.run import Run
 from entities.enum import RunState
 from entities.run_parameters import RunParameters
 from repositories.metagenomics_run_repository import MetagenomicsRunRepository
-from viralunity.viralunity_meta import main as vu_metagenomics
 from services.file_hash_calculator_service import FileHashCalculatorService
 from config import config
+from infra.path_utils import normalize_path
 
 logger = logging.getLogger('uvicorn.error')
+
+
+def _run_vu_metagenomics(params: dict) -> int:
+    from viralunity.viralunity_meta import main as vu_metagenomics
+
+    return vu_metagenomics(params)
 
 
 class ViralUnityService:
@@ -52,7 +58,7 @@ class ViralUnityService:
                     self.repository.save_run(next_task)
                     
                     before = time.time()
-                    result = vu_metagenomics(params)
+                    result = _run_vu_metagenomics(params)
                     after = time.time()
                     next_task.lastElapsedTimeOfAnalysisExecutionSeconds = after - before
                     next_task.totalElapsedTimeOfAnalysisExecutionSeconds += next_task.lastElapsedTimeOfAnalysisExecutionSeconds
@@ -74,13 +80,16 @@ class ViralUnityService:
 
     def prepare_metagenomics_params(self, run: Run) -> dict:
         samples = {}
+        sample_root = normalize_path(run.parameters.path) or run.parameters.path
         for sample in run.samples:
-            folder_name = run.parameters.path + "/" + sample.sampleLib
-            if (os.path.exists(folder_name)):
+            folder_name = sample_root + "/" + sample.sampleLib
+            if os.path.exists(folder_name):
                 samples[sample.name] = [folder_name + "/*"]
             else:
-                logger.warning(f"Folder {folder_name} does not exist yet, skipping sample {sample.name} for this iteration")
-        
+                logger.warning(
+                    f"Folder {folder_name} does not exist yet, skipping sample {sample.name} for this iteration"
+                )
+
         base_output_path = self.paths_service.get_output_path(run)
         return {
             "data_type": run.parameters.dataType.value,
@@ -88,8 +97,10 @@ class ViralUnityService:
             "sample_sheet": None,
             "config_file": self.paths_service.get_config_path(run),
             "run_name": f"{run.parameters.id}_{run.name}",
-            "kraken2_database": run.parameters.kraken2Database,
-            "krona_database": run.parameters.kronaDatabase,
+            "kraken2_database": normalize_path(run.parameters.kraken2Database)
+            or run.parameters.kraken2Database,
+            "krona_database": normalize_path(run.parameters.kronaDatabase)
+            or run.parameters.kronaDatabase,
             "threads": run.parameters.threads,
             "threads_total": run.parameters.threadsTotal,
             "output": base_output_path,
@@ -98,9 +109,9 @@ class ViralUnityService:
             "create_config_only": False,
             "minimum_read_length": config.service.default_minimum_read_length,
             "trim": run.parameters.trim,
-            # Parameters for the diamond pipeline
-            "diamond_database": run.parameters.diamondDatabase,
+            "diamond_database": normalize_path(run.parameters.diamondDatabase)
+            or run.parameters.diamondDatabase,
             "diamond": run.parameters.diamond,
             "denovo_assembly": run.parameters.denovoAssembly,
-            "taxdump": run.parameters.taxdump,
+            "taxdump": normalize_path(run.parameters.taxdump) or run.parameters.taxdump,
         }

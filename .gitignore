@@ -5,4 +5,5 @@
 **/.snakemake
 **/*.db
 **/.tmp
+**/*.log
 databases

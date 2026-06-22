@@ -17,19 +17,58 @@ permissions:
 env:
   CONDA_ENV_NAME: rt-meta
   PYTHON_VERSION: "3.11"
+  CSC_IDENTITY_AUTO_DISCOVERY: false
 
 jobs:
+  pack-conda-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Miniforge
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          miniforge-version: latest
+          activate-environment: rt-meta
+          python-version: ${{ env.PYTHON_VERSION }}
+          channels: conda-forge,bioconda
+
+      - name: Build Linux conda environment
+        shell: bash -el {0}
+        run: |
+          conda env update -n rt-meta --file back/environment.yml --prune
+          conda env update -n rt-meta --file back/app/viralunity/environment.yml --prune
+          conda install -n rt-meta conda-pack -y
+          conda run -n rt-meta pip install "./back/app/viralunity"
+          mkdir -p front/resources
+          conda run -n rt-meta conda-pack \
+            -n rt-meta \
+            -o front/resources/conda-env-linux.tar.gz \
+            --ignore-editable-packages \
+            --force
+          ls -lh front/resources/conda-env-linux.tar.gz
+
+      - name: Upload Linux conda pack
+        uses: actions/upload-artifact@v4
+        with:
+          name: conda-env-linux
+          path: front/resources/conda-env-linux.tar.gz
+          if-no-files-found: error
+          retention-days: 5
+
   build:
+    needs: pack-conda-linux
     strategy:
       fail-fast: false
       matrix:
         include:
           - os: ubuntu-latest
             platform: linux
-            builder-flags: --linux
           - os: windows-latest
             platform: win
-            builder-flags: --win
 
     runs-on: ${{ matrix.os }}
 
@@ -39,34 +78,12 @@ jobs:
         with:
           submodules: recursive
 
-      # ── Conda ────────────────────────────────────────────────────────────
-      - name: Setup Miniforge
-        uses: conda-incubator/setup-miniconda@v3
+      - name: Download Linux conda pack
+        uses: actions/download-artifact@v4
         with:
-          miniforge-version: latest
-          activate-environment: rt-meta
-          python-version: ${{ env.PYTHON_VERSION }}
-          channels: conda-forge,bioconda
+          name: conda-env-linux
+          path: front/resources
 
-      - name: Install conda dependencies
-        shell: bash -el {0}
-        run: |
-          conda env update -n rt-meta --file back/environment.yml --prune
-          conda env update -n rt-meta --file back/app/viralunity/environment.yml --prune
-          conda install -n rt-meta conda-pack -y
-
-      - name: Pack conda environment
-        shell: bash -el {0}
-        run: |
-          mkdir -p front/resources
-          conda-pack \
-            -n rt-meta \
-            -o front/resources/conda-env.tar.gz \
-            --ignore-editable-packages \
-            --force
-          echo "Packed size: $(du -sh front/resources/conda-env.tar.gz | cut -f1)"
-
-      # ── Frontend ─────────────────────────────────────────────────────────
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
 
@@ -74,30 +91,25 @@ jobs:
         working-directory: front
         run: bun install --frozen-lockfile
 
-      - name: Copy backend source into resources
-        shell: bash {0}
-        run: |
-          rm -rf front/resources/back
-          mkdir -p front/resources/back/app
-          cp -r back/app/. front/resources/back/app/
-          find front/resources/back -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
-          find front/resources/back -name "*.pyc" -delete 2>/dev/null || true
-          rm -f front/resources/back/app/rtmeta.db
+      - name: Prepare Linux conda resource name
+        if: matrix.platform == 'linux'
+        shell: bash
+        run: cp front/resources/conda-env-linux.tar.gz front/resources/conda-env.tar.gz
 
-      - name: Build Electron app (electron-vite)
-        working-directory: front
-        run: bun run prebuild
+      - name: Build (Linux)
+        if: matrix.platform == 'linux'
+        shell: bash -el {0}
+        run: ./build.sh --linux --skip-conda
 
-      # ── Package ──────────────────────────────────────────────────────────
-      - name: Package with electron-builder
-        working-directory: front
-        run: bunx electron-builder ${{ matrix.builder-flags }} --publish never
+      - name: Build (Windows)
+        if: matrix.platform == 'win'
+        shell: pwsh
+        run: ./build.ps1 -Platform win
 
       - name: List build artifacts
         shell: bash {0}
-        run: ls -lh front/dist/ 2>/dev/null || dir front\\dist
+        run: ls -lh front/dist/ 2>/dev/null || ls front/dist/
 
-      # ── Upload ───────────────────────────────────────────────────────────
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -110,7 +122,6 @@ jobs:
           if-no-files-found: error
           retention-days: 5
 
-  # ── Release ──────────────────────────────────────────────────────────────
   release:
     needs: build
     runs-on: ubuntu-latest
@@ -129,6 +140,6 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          draft: ${{ inputs.draft == '' && true || inputs.draft }}
+          draft: ${{ github.event_name != 'workflow_dispatch' || inputs.draft }}
           generate_release_notes: true
           files: artifacts/*

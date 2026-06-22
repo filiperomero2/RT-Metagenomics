@@ -1,0 +1,51 @@
+name: Pack Conda Linux
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CONDA_ENV_NAME: rt-meta
+  PYTHON_VERSION: "3.11"
+
+jobs:
+  pack-conda-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Miniforge
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          miniforge-version: latest
+          activate-environment: rt-meta
+          python-version: ${{ env.PYTHON_VERSION }}
+          channels: conda-forge,bioconda
+
+      - name: Build Linux conda environment
+        shell: bash -el {0}
+        run: |
+          conda env update -n rt-meta --file back/environment.yml --prune
+          conda env update -n rt-meta --file back/app/viralunity/environment.yml --prune
+          conda install -n rt-meta conda-pack -y
+          conda run -n rt-meta pip install "./back/app/viralunity"
+          mkdir -p front/resources
+          conda run -n rt-meta conda-pack \
+            -n rt-meta \
+            -o front/resources/conda-env-linux.tar.gz \
+            --ignore-editable-packages \
+            --force
+          ls -lh front/resources/conda-env-linux.tar.gz
+
+      - name: Upload Linux conda pack
+        uses: actions/upload-artifact@v4
+        with:
+          name: conda-env-linux
+          path: front/resources/conda-env-linux.tar.gz
+          if-no-files-found: error
+          retention-days: 14

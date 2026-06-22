@@ -1,7 +1,8 @@
 appId: com.electron.app
 productName: RT-Metagenomics
+afterPack: scripts/after-pack.cjs
 directories:
-  buildResources: build
+  buildResources: src/renderer/public
 files:
   - "!**/.vscode/*"
   - "!src/*"
@@ -10,8 +11,6 @@ files:
   - "!{.env,.env.*,.npmrc,pnpm-lock.yaml}"
   - "!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}"
 extraResources:
-  - from: "resources/conda-env.tar.gz"
-    to: "conda-env.tar.gz"
   - from: "resources/back/app"
     to: "back/app"
     filter:
@@ -23,23 +22,34 @@ asarUnpack:
   - "resources/**"
 win:
   executableName: RT-Metagenomics
+  icon: logo.ico
+  signAndEditExecutable: false
   target:
     - nsis
     - portable
+  extraResources:
+    - from: "resources/conda-env-linux.tar.gz"
+      to: "conda-env-linux.tar.gz"
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}
   uninstallDisplayName: ${productName}
   createDesktopShortcut: always
+  installerIcon: src/renderer/public/logo.ico
+  uninstallerIcon: src/renderer/public/logo.ico
 mac:
   entitlementsInherit: build/entitlements.mac.plist
   notarize: false
 linux:
+  icon: logo.png
   target:
     - AppImage
     - deb
   maintainer: electronjs.org
   category: Science
+  extraResources:
+    - from: "resources/conda-env.tar.gz"
+      to: "conda-env.tar.gz"
 appImage:
   artifactName: ${name}-${version}.${ext}
 npmRebuild: false
