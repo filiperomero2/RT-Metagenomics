@@ -133,31 +133,66 @@ class ViralUnityDatabasesService:
                 on_progress(step, total, message)
 
         total_steps = 5
-        emit_progress(1, total_steps, "Installing Kraken2 database...")
-        kraken2_database = self.install_kraken2(url=kraken2_url, force=force)
-        emit_progress(2, total_steps, "Updating Krona taxonomy database...")
-        krona_database = self.install_krona(force=force)
-        emit_progress(3, total_steps, "Installing NCBI taxdump...")
-        taxdump = self.install_taxdump(url=taxdump_url, force=force)
-        emit_progress(4, total_steps, "Installing Diamond viral database...")
-        diamond_database, taxids = self.install_diamond(
-            taxon="Viruses",
-            refseq=refseq,
-            threads=threads,
-            skip_makedb=False,
-            force=force,
+        errors: list[str] = []
+        paths: dict[str, str] = {}
+
+        def run_step(step: int, label: str, action: Callable[[], tuple[str, str]]) -> None:
+            emit_progress(step, total_steps, label)
+            try:
+                key, value = action()
+                paths[key] = value
+            except Exception as exc:  # noqa: BLE001
+                errors.append(f"{label}: {exc}")
+
+        run_step(
+            1,
+            "Installing Kraken2 database...",
+            lambda: (
+                "kraken2_database",
+                str(self.install_kraken2(url=kraken2_url, force=force)),
+            ),
         )
-        emit_progress(5, total_steps, "Installing Deacon index...")
-        deacon_index_path = self.install_deacon_index(
-            index_name=deacon_index,
-            force=force,
+        run_step(
+            2,
+            "Updating Krona taxonomy database...",
+            lambda: ("krona_database", str(self.install_krona(force=force))),
+        )
+        run_step(
+            3,
+            "Installing NCBI taxdump...",
+            lambda: ("taxdump", str(self.install_taxdump(url=taxdump_url, force=force))),
+        )
+        run_step(
+            4,
+            "Installing Diamond viral database...",
+            lambda: (
+                "diamond_database",
+                str(
+                    self.install_diamond(
+                        taxon="Viruses",
+                        refseq=refseq,
+                        threads=threads,
+                        skip_makedb=False,
+                        force=force,
+                    )[0],
+                ),
+            ),
+        )
+        run_step(
+            5,
+            "Installing Deacon index...",
+            lambda: (
+                "deacon_index",
+                str(self.install_deacon_index(index_name=deacon_index, force=force)),
+            ),
         )
 
-        return {
-            "kraken2_database": str(kraken2_database),
-            "krona_database": str(krona_database),
-            "taxdump": str(taxdump),
-            "diamond_database": str(diamond_database),
-            "taxids": str(taxids),
-            "deacon_index": str(deacon_index_path),
-        }
+        if "taxids" not in paths and "diamond_database" in paths:
+            paths["taxids"] = str(self.parent_dir / "diamond" / "protein2taxid.tsv")
+
+        if errors:
+            raise RuntimeError(
+                "One or more database installs failed:\n" + "\n".join(f"- {item}" for item in errors)
+            )
+
+        return paths

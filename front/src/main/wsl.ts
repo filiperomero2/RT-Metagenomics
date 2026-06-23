@@ -1,8 +1,10 @@
 import { app } from "electron";
 import { execFile, spawn } from "node:child_process";
-import { existsSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { createReadStream, createWriteStream, existsSync, mkdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve, dirname } from "node:path";
+import { pipeline } from "node:stream/promises";
+import { createGunzip } from "node:zlib";
 import { promisify } from "node:util";
 
 const execFileAsync = promisify(execFile);
@@ -10,6 +12,8 @@ const execFileAsync = promisify(execFile);
 export const RT_META_DISTRO = "rt-meta";
 export const WSL_APP_DIR = ".rt-metagenomics";
 export const WSL_CONDA_DIR = `${WSL_APP_DIR}/conda-env`;
+export const WSL_BACKEND_DIR = `${WSL_APP_DIR}/back/app`;
+export const WSL_RUNTIME_MARKER = `${WSL_APP_DIR}/.rt-meta-ready`;
 export const WSL_DB_PATH = `${WSL_APP_DIR}/rtmeta.db`;
 
 const WINDOWS_REBOOT_EXIT_CODE = 3010;
@@ -40,6 +44,114 @@ function wslArgs(args: string[]): string[] {
   return ["-d", RT_META_DISTRO, ...args];
 }
 
+export function toWslPathSync(winPath: string): string {
+  const normalized = resolve(winPath.trim());
+  if (normalized.startsWith("/")) {
+    return normalized;
+  }
+
+  const driveMatch = /^([A-Za-z]):[/\\]?(.*)$/.exec(normalized);
+  if (driveMatch) {
+    const drive = driveMatch[1].toLowerCase();
+    const rest = (driveMatch[2] ?? "").replaceAll("\\", "/").replace(/\/+$/, "");
+    return rest ? `/mnt/${drive}/${rest}` : `/mnt/${drive}`;
+  }
+
+  return normalized.replaceAll("\\", "/");
+}
+
+function writeUnixScript(scriptPath: string, script: string): void {
+  mkdirSync(dirname(scriptPath), { recursive: true });
+  const normalized = script.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+  writeFileSync(scriptPath, normalized, { encoding: "utf8" });
+}
+
+export type RunWslScriptResult = {
+  code: number;
+  stdout: string;
+  stderr: string;
+};
+
+export async function runWslBashScript(
+  script: string,
+  options?: {
+    onStdout?: (chunk: string) => void;
+    onStderr?: (chunk: string) => void;
+    runAsRoot?: boolean;
+  },
+): Promise<RunWslScriptResult> {
+  const scriptDir = join(app.getPath("userData"), "wsl-scripts");
+  mkdirSync(scriptDir, { recursive: true });
+  const scriptPath = join(scriptDir, `rt-meta-${Date.now()}.sh`);
+  writeUnixScript(scriptPath, script);
+
+  const wslScriptPath = toWslPathSync(scriptPath);
+  const args = ["-d", RT_META_DISTRO];
+  if (options?.runAsRoot !== false) {
+    args.push("-u", "root");
+  }
+  args.push("-e", "bash", wslScriptPath);
+
+  let stdout = "";
+  let stderr = "";
+
+  const code = await new Promise<number>((resolve, reject) => {
+    const child = spawn("wsl.exe", args, {
+      stdio: ["ignore", "pipe", "pipe"],
+      windowsHide: true,
+    });
+
+    child.stdout.setEncoding("utf8");
+    child.stderr.setEncoding("utf8");
+
+    child.stdout.on("data", (chunk: string) => {
+      stdout += chunk;
+      options?.onStdout?.(chunk);
+    });
+
+    child.stderr.on("data", (chunk: string) => {
+      stderr += chunk;
+      options?.onStderr?.(chunk);
+    });
+
+    child.on("error", reject);
+    child.on("exit", (exitCode) => resolve(exitCode ?? 1));
+  });
+
+  return { code, stdout, stderr };
+}
+
+export async function bootstrapRtMetaDistro(): Promise<void> {
+  const result = await runWslBashScript(
+    [
+      "set -eu",
+      "export DEBIAN_FRONTEND=noninteractive",
+      "missing=",
+      "for cmd in tar gzip make; do",
+      "  if ! command -v \"$cmd\" >/dev/null 2>&1; then",
+      "    missing=\"$missing $cmd\"",
+      "  fi",
+      "done",
+      "if [ -n \"$missing\" ]; then",
+      "  apt-get update -qq || true",
+      "  apt-get install -y -qq tar gzip ca-certificates curl make",
+      "fi",
+      "command -v tar",
+      "command -v gzip",
+      "command -v make",
+    ].join("\n"),
+  );
+
+  if (result.code !== 0) {
+    const details = [result.stderr.trim(), result.stdout.trim()]
+      .filter(Boolean)
+      .join("\n");
+    throw new Error(
+      `Failed to prepare WSL packages (exit ${result.code}).${details ? `\n${details}` : ""}`,
+    );
+  }
+}
+
 export async function getWslDistroList(): Promise<string> {
   try {
     const { stdout } = await execFileAsync("wsl.exe", ["-l", "-v"], {
@@ -57,7 +169,49 @@ export function isDistroRegistered(
   distroName: string,
   distroList: string,
 ): boolean {
-  return distroList.toLowerCase().includes(distroName.toLowerCase());
+  const escaped = distroName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`\\b${escaped}\\b`, "i").test(distroList);
+}
+
+async function shutdownWsl(): Promise<void> {
+  try {
+    await execFileAsync("wsl.exe", ["--shutdown"], { windowsHide: true });
+  } catch {
+    // WSL may already be stopped.
+  }
+
+  await new Promise((resolve) => {
+    setTimeout(resolve, 1500);
+  });
+}
+
+async function unregisterDistroSafely(distroName: string): Promise<void> {
+  try {
+    await execFileAsync("wsl.exe", ["--terminate", distroName], {
+      windowsHide: true,
+    });
+  } catch {
+    // Distro may already be stopped.
+  }
+
+  try {
+    await execFileAsync("wsl.exe", ["--unregister", distroName], {
+      windowsHide: true,
+    });
+    return;
+  } catch {
+    // Retry after shutting WSL down (distro may be locked).
+  }
+
+  await shutdownWsl();
+
+  try {
+    await execFileAsync("wsl.exe", ["--unregister", distroName], {
+      windowsHide: true,
+    });
+  } catch {
+    // If the distro is already gone, import can proceed.
+  }
 }
 
 export async function isWslPlatformInstalled(): Promise<boolean> {
@@ -172,24 +326,44 @@ function getRtMetaDistroInstallDir(): string {
   return join(app.getPath("userData"), "wsl-distro", RT_META_DISTRO);
 }
 
+async function resolveWslImportRootfsTar(rootfsPath: string): Promise<string> {
+  if (!/\.tar\.gz$/i.test(rootfsPath)) {
+    return rootfsPath;
+  }
+
+  const tarPath = rootfsPath.replace(/\.gz$/i, "");
+  const minTarBytes = 100 * 1024 * 1024;
+
+  if (existsSync(tarPath) && statSync(tarPath).size >= minTarBytes) {
+    return tarPath;
+  }
+
+  await pipeline(
+    createReadStream(rootfsPath),
+    createGunzip(),
+    createWriteStream(tarPath),
+  );
+
+  if (!existsSync(tarPath) || statSync(tarPath).size < minTarBytes) {
+    rmSync(tarPath, { force: true });
+    throw new Error(
+      "Decompressed WSL rootfs tar is missing or too small. Retry setup.",
+    );
+  }
+
+  return tarPath;
+}
+
 export async function importRtMetaDistro(rootfsPath: string): Promise<void> {
   const installDir = getRtMetaDistroInstallDir();
   mkdirSync(installDir, { recursive: true });
 
   const list = await getWslDistroList();
   if (isDistroRegistered(RT_META_DISTRO, list)) {
-    try {
-      await execFileAsync("wsl.exe", ["--terminate", RT_META_DISTRO], {
-        windowsHide: true,
-      });
-    } catch {
-      // Distro may already be stopped.
-    }
-
-    await execFileAsync("wsl.exe", ["--unregister", RT_META_DISTRO], {
-      windowsHide: true,
-    });
+    await unregisterDistroSafely(RT_META_DISTRO);
   }
+
+  const importTar = await resolveWslImportRootfsTar(rootfsPath);
 
   await execFileAsync(
     "wsl.exe",
@@ -197,91 +371,23 @@ export async function importRtMetaDistro(rootfsPath: string): Promise<void> {
       "--import",
       RT_META_DISTRO,
       installDir,
-      rootfsPath,
+      importTar,
       "--version",
       "2",
     ],
     { windowsHide: true, timeout: 600_000 },
   );
 
-  await execFileAsync(
-    "wsl.exe",
-    wslArgs([
-      "-u",
-      "root",
-      "-e",
-      "bash",
-      "-lc",
-      "mkdir -p /root/.rt-metagenomics && echo rt-meta > /etc/rt-meta-distro",
-    ]),
-    { windowsHide: true, timeout: 60_000 },
-  );
-}
-
-export async function windowsToWslPath(winPath: string): Promise<string> {
-  const normalized = winPath.trim();
-  if (!normalized) {
-    return normalized;
-  }
-
-  if (normalized.startsWith("/")) {
-    return normalized;
-  }
-
-  if (await canRunCommandsInDistro()) {
-    try {
-      const { stdout } = await execFileAsync(
-        "wsl.exe",
-        wslArgs(["wslpath", "-a", normalized]),
-        { encoding: "utf8", windowsHide: true },
-      );
-      const converted = stdout.trim();
-      if (converted) {
-        return converted;
-      }
-    } catch {
-      // Fall back to manual conversion below.
-    }
-  }
-
-  const driveMatch = /^([A-Za-z]):[/\\]?(.*)$/.exec(normalized);
-  if (driveMatch) {
-    const drive = driveMatch[1].toLowerCase();
-    const rest = (driveMatch[2] ?? "").replaceAll("\\", "/").replace(/\/+$/, "");
-    return rest ? `/mnt/${drive}/${rest}` : `/mnt/${drive}`;
-  }
-
-  return normalized.replaceAll("\\", "/");
+  clearWslAvailabilityCache();
+  await bootstrapRtMetaDistro();
 }
 
 export async function runWslBash(
   script: string,
   options?: { onStdout?: (chunk: string) => void; onStderr?: (chunk: string) => void },
 ): Promise<number> {
-  return new Promise((resolve, reject) => {
-    const child = spawn(
-      "wsl.exe",
-      wslArgs(["-e", "bash", "-lc", script]),
-      {
-        stdio: ["ignore", "pipe", "pipe"],
-        windowsHide: true,
-      },
-    );
-
-    child.stdout.setEncoding("utf8");
-    child.stderr.setEncoding("utf8");
-
-    child.stdout.on("data", (chunk: string) => {
-      options?.onStdout?.(chunk);
-    });
-
-    child.stderr.on("data", (chunk: string) => {
-      options?.onStderr?.(chunk);
-    });
-
-    child.on("error", reject);
-    child.on("exit", (code) => resolve(code ?? 1));
-  });
+  const result = await runWslBashScript(script, options);
+  return result.code;
 }
 
 export async function getWslInstalledEnvVersion(): Promise<string | null> {
@@ -292,7 +398,7 @@ export async function getWslInstalledEnvVersion(): Promise<string | null> {
         "-e",
         "bash",
         "-lc",
-        `head -1 ~/${WSL_CONDA_DIR}/.rt-meta-ready 2>/dev/null || true`,
+        `head -1 ~/${WSL_RUNTIME_MARKER} 2>/dev/null || true`,
       ]),
       { encoding: "utf8", windowsHide: true },
     );
@@ -307,22 +413,59 @@ export function shellQuote(value: string): string {
   return `'${value.replaceAll("'", `'\\''`)}'`;
 }
 
-export async function buildWslBackendLaunchScript(options: {
+export function getWslBashLcArgs(script: string): string[] {
+  return ["-d", RT_META_DISTRO, "-u", "root", "-e", "bash", "-lc", script];
+}
+
+export function buildWslDevBackendLaunchScript(options: {
   backendCwd: string;
   appVersion: string;
-}): Promise<string> {
-  const wslCwd = await windowsToWslPath(options.backendCwd);
+}): string {
+  const wslCwd = toWslPathSync(options.backendCwd);
+  const envDir = `$HOME/${WSL_CONDA_DIR}`;
 
   return [
     `mkdir -p "$HOME/${WSL_APP_DIR}"`,
+    `test -f ${shellQuote(`${wslCwd}/main.py`)}`,
     `cd ${shellQuote(wslCwd)}`,
     `export RT_META_WSL=1`,
     `export RT_META_WSL_DISTRO=${shellQuote(RT_META_DISTRO)}`,
     `export RT_META_APP_VERSION=${shellQuote(options.appVersion)}`,
+    `export RT_META_DEV=1`,
     `export DATABASE_URL=sqlite:///$HOME/${WSL_DB_PATH}`,
     `export PYTHONPATH=${shellQuote(`${wslCwd}/viralunity`)}`,
-    `export PATH="$HOME/${WSL_CONDA_DIR}/bin:$PATH"`,
-    `exec "$HOME/${WSL_CONDA_DIR}/bin/uvicorn" main:app --host 127.0.0.1 --port 8000 --log-level info`,
+    `export CONDA_PREFIX="${envDir}"`,
+    `export CONDA_DEFAULT_ENV=rt-meta`,
+    `export PATH="${envDir}/bin:$PATH"`,
+    `PYTHON="${envDir}/bin/python"`,
+    `[ -x "$PYTHON" ] || PYTHON="${envDir}/bin/python3"`,
+    `test -x "$PYTHON"`,
+    `exec "$PYTHON" -m uvicorn main:app --host 127.0.0.1 --port 8000 --log-level debug`,
+  ].join(" && ");
+}
+
+export function buildWslBackendLaunchScript(options: {
+  appVersion: string;
+}): string {
+  const backendDir = `$HOME/${WSL_BACKEND_DIR}`;
+  const envDir = `$HOME/${WSL_CONDA_DIR}`;
+
+  return [
+    `mkdir -p "$HOME/${WSL_APP_DIR}"`,
+    `test -f "${backendDir}/main.py"`,
+    `cd "${backendDir}"`,
+    `export RT_META_WSL=1`,
+    `export RT_META_WSL_DISTRO=${shellQuote(RT_META_DISTRO)}`,
+    `export RT_META_APP_VERSION=${shellQuote(options.appVersion)}`,
+    `export DATABASE_URL=sqlite:///$HOME/${WSL_DB_PATH}`,
+    `export PYTHONPATH="${backendDir}/viralunity"`,
+    `export CONDA_PREFIX="${envDir}"`,
+    `export CONDA_DEFAULT_ENV=rt-meta`,
+    `export PATH="${envDir}/bin:$PATH"`,
+    `PYTHON="${envDir}/bin/python"`,
+    `[ -x "$PYTHON" ] || PYTHON="${envDir}/bin/python3"`,
+    `test -x "$PYTHON"`,
+    `exec "$PYTHON" -m uvicorn main:app --host 127.0.0.1 --port 8000 --log-level info`,
   ].join(" && ");
 }
 

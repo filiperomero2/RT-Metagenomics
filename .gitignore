@@ -6,4 +6,5 @@
 **/*.db
 **/.tmp
 **/*.log
+.wsl/
 databases

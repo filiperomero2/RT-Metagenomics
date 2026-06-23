@@ -64,8 +64,8 @@ conda activate rt-meta
 ### 3. Install dependencies
 
 ```bash
-conda env update -n rt-meta --file environment.yml --prune
-conda env update -n rt-meta --file app/viralunity/environment.yml --prune
+conda env update -n rt-meta --file app/viralunity/environment.yml
+conda env update -n rt-meta --file environment.yml
 pip install -e app/viralunity
 ```
 
@@ -113,7 +113,7 @@ cd app
 uvicorn main:app --host 127.0.0.1 --port 8000
 ```
 
-The Electron app spawns uvicorn automatically in production. On Windows installers, it runs inside the `rt-meta` WSL distro with `PYTHONPATH` pointing at the bundled `viralunity` directory.
+The Electron app spawns uvicorn automatically in production. On Windows installers, it runs inside the `rt-meta` WSL distro from `~/.rt-metagenomics/back/app` with `PYTHONPATH` pointing at the bundled `viralunity` directory.
 
 ## API documentation
 
@@ -126,11 +126,13 @@ The Electron main process runs a first-run wizard that:
 
 1. Installs the WSL2 platform (elevated, with reboot handling)
 2. Creates a dedicated `rt-meta` WSL distro via `wsl --import`
-3. Extracts the Linux Conda pack to `~/.rt-metagenomics/conda-env`
+3. Extracts the Linux Conda pack to `~/.rt-metagenomics/conda-env` and copies the backend to `~/.rt-metagenomics/back/app`
 
-When running under WSL, the main process sets `RT_META_WSL=1` and `RT_META_WSL_DISTRO=rt-meta`.
+When running under WSL, the main process sets `RT_META_WSL=1` and `RT_META_WSL_DISTRO=rt-meta`. The backend runs entirely from the WSL filesystem; the front connects via `http://127.0.0.1:8000`.
 
 ## WSL path handling
+
+Path conversion is only needed for **user-selected files** from Windows dialogs (e.g. sample folders). The backend code and conda environment live inside WSL at `~/.rt-metagenomics/`.
 
 When `RT_META_WSL=1`, `normalize_path()` in `infra/path_utils.py` converts Windows-style paths before they reach ViralUnity:
 

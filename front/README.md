@@ -34,7 +34,8 @@ This starts the Electron app in development mode with hot reload. The backend is
 front/
 ├── src/
 │   ├── main/           # Electron main process
-│   │   ├── wsl.ts      # WSL detection, path conversion, bash execution
+│   │   ├── wsl.ts      # WSL detection, bash execution, backend launch
+│   │   ├── wsl-conda-env.ts  # WSL runtime setup (conda + backend deploy)
 │   │   ├── env-setup.ts    # Conda pack extraction (native or WSL)
 │   │   ├── backend-process.ts  # Spawn/stop FastAPI backend
 │   │   └── index.ts    # App entry, first-run setup window
@@ -50,12 +51,12 @@ front/
 On first launch (non-dev), the app checks whether the bundled Conda environment matches the app version:
 
 - **Linux**: extracts `conda-env.tar.gz` to the user data directory
-- **Windows**: extracts `conda-env-linux.tar.gz` inside WSL to `~/.rt-metagenomics/conda-env`
+- **Windows**: installs conda + backend inside WSL at `~/.rt-metagenomics/` (conda env, `back/app`, database)
 
 The backend then runs:
 
 - **Linux**: native uvicorn from the extracted environment
-- **Windows**: `wsl.exe bash -lc` with uvicorn inside WSL (`RT_META_WSL=1`)
+- **Windows**: uvicorn inside WSL at `~/.rt-metagenomics/back/app`; front connects via `http://127.0.0.1:8000` (`RT_META_WSL=1`)
 
 The SQLite database lives in the Electron user data folder on Linux, and at `~/.rt-metagenomics/rtmeta.db` inside WSL on Windows.
 
@@ -101,7 +102,8 @@ On first launch, the packaged Windows app runs an automated setup:
 | 1. WSL2 platform | Elevated `wsl --install --no-distribution --web-download` |
 | 2. Restart | Offered when Windows requires reboot |
 | 3. `rt-meta` distro | Ubuntu rootfs download + `wsl --import` |
-| 4. Conda pack | Extract bundled bioinformatics environment |
+| 4. Conda pack | Extract bundled bioinformatics environment to WSL |
+| 5. Backend | Copy `back/app` to `~/.rt-metagenomics/back/app` in WSL |
 
 Implementation files:
 

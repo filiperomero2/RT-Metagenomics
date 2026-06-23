@@ -5,6 +5,7 @@ channels:
   - conda-forge
 dependencies:
   - fastapi=0.115.12
+  - uvicorn=0.34.3
   #- viralunity=1.0.4
   - sqlmodel=0.0.24
   - pydantic=2.11.7

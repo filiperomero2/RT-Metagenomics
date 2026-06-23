@@ -30,10 +30,11 @@ jobs:
       - name: Build Linux conda environment
         shell: bash -el {0}
         run: |
-          conda env update -n rt-meta --file back/environment.yml --prune
-          conda env update -n rt-meta --file back/app/viralunity/environment.yml --prune
+          conda env update -n rt-meta --file back/app/viralunity/environment.yml
+          conda env update -n rt-meta --file back/environment.yml
           conda install -n rt-meta conda-pack -y
           conda run -n rt-meta pip install "./back/app/viralunity"
+          conda run -n rt-meta python -c "import uvicorn, fastapi, sqlmodel, pydantic, dotenv"
           mkdir -p front/resources
           conda run -n rt-meta conda-pack \
             -n rt-meta \

@@ -10,6 +10,10 @@ on:
         description: "Create release as draft"
         type: boolean
         default: true
+      tag_name:
+        description: "Release tag (e.g. v0.1.0). Defaults to v{package.json version}"
+        type: string
+        required: false
 
 permissions:
   contents: write
@@ -39,10 +43,11 @@ jobs:
       - name: Build Linux conda environment
         shell: bash -el {0}
         run: |
-          conda env update -n rt-meta --file back/environment.yml --prune
-          conda env update -n rt-meta --file back/app/viralunity/environment.yml --prune
+          conda env update -n rt-meta --file back/app/viralunity/environment.yml
+          conda env update -n rt-meta --file back/environment.yml
           conda install -n rt-meta conda-pack -y
           conda run -n rt-meta pip install "./back/app/viralunity"
+          conda run -n rt-meta python -c "import uvicorn, fastapi, sqlmodel, pydantic, dotenv"
           mkdir -p front/resources
           conda run -n rt-meta conda-pack \
             -n rt-meta \
@@ -137,9 +142,25 @@ jobs:
   release:
     needs: build
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')
+    if: ${{ needs.build.result == 'success' && (startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch') }}
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Resolve release tag
+        id: release_tag
+        shell: bash
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            echo "tag=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          elif [[ -n "${{ inputs.tag_name }}" ]]; then
+            echo "tag=${{ inputs.tag_name }}" >> "$GITHUB_OUTPUT"
+          else
+            version="$(node -p "require('./front/package.json').version")"
+            echo "tag=v${version}" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Download all build artifacts
         uses: actions/download-artifact@v4
         with:
@@ -152,6 +173,8 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          draft: ${{ github.event_name != 'workflow_dispatch' || inputs.draft }}
+          tag_name: ${{ steps.release_tag.outputs.tag }}
+          name: RT-Metagenomics ${{ steps.release_tag.outputs.tag }}
+          draft: ${{ github.event_name == 'workflow_dispatch' && inputs.draft }}
           generate_release_notes: true
           files: artifacts/*

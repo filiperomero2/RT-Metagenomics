@@ -5,11 +5,14 @@
   Target platform: win, linux, or all. Defaults to win.
 .PARAMETER PackLinuxConda
   Build front/resources/conda-env-linux.tar.gz via WSL (required before Windows packaging).
+.PARAMETER ForceRefreshCache
+  Delete cached WSL rootfs downloads before packing Linux conda.
 #>
 param(
   [ValidateSet("win", "linux", "all")]
   [string]$Platform = "win",
-  [switch]$PackLinuxConda
+  [switch]$PackLinuxConda,
+  [switch]$ForceRefreshCache
 )
 
 $ErrorActionPreference = "Stop"
@@ -167,6 +170,26 @@ function Install-CondaRuntime {
   Invoke-Conda @("install", "-n", $CondaEnv, "conda-pack", "-y")
 }
 
+function Test-LinuxCondaPack {
+  param([string]$TarballPath)
+
+  $listing = & tar -tzf $TarballPath 2>$null
+  if (-not $listing) {
+    throw "Could not read Linux conda pack: $TarballPath"
+  }
+
+  $hasUvicorn = $listing | Where-Object { $_ -match '(^|/)site-packages/uvicorn(/|$)' }
+  if (-not $hasUvicorn) {
+    throw @"
+Linux conda pack is missing uvicorn (outdated or incomplete).
+
+Rebuild it, then package Windows again:
+  .\build.ps1 -PackLinuxConda
+  .\build.ps1 -Platform win
+"@
+  }
+}
+
 function Ensure-WslLinuxCondaPack {
   if (-not (Test-Path $LinuxCondaTarball)) {
     throw @"
@@ -185,8 +208,10 @@ Option B — GitHub Actions (no local WSL):
 "@
   }
 
+  Test-LinuxCondaPack -TarballPath $LinuxCondaTarball
+
   $sizeMb = (Get-Item $LinuxCondaTarball).Length / 1MB
-  Write-Host ("      Linux conda pack ready: {0:N1} MB" -f $sizeMb)
+  Write-Host ("      Linux conda pack ready: {0:N1} MB (uvicorn present)" -f $sizeMb)
 }
 
 function Invoke-CondaPack {
@@ -251,7 +276,11 @@ Push-Location $Root
 
 try {
   if ($PackLinuxConda) {
-    & (Join-Path $Root "scripts\pack-conda-linux.ps1") -RepoRoot $Root
+    $packArgs = @{ RepoRoot = $Root }
+    if ($ForceRefreshCache) {
+      $packArgs.ForceRefreshCache = $true
+    }
+    & (Join-Path $Root "scripts\pack-conda-linux.ps1") @packArgs
     exit 0
   }
 

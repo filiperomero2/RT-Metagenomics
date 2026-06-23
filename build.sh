@@ -44,23 +44,26 @@ detect_platform() {
 
 install_conda_runtime() {
   echo "[1/5] Installing conda runtime dependencies..."
-  conda env update -n "$CONDA_ENV" --file back/environment.yml --prune
-  conda run -n "$CONDA_ENV" pip install biopython "pyyaml>=6.0" "click>=8.0"
-  conda run -n "$CONDA_ENV" pip install "./back/app/viralunity" --no-deps
 
   if [ "$PLATFORM" = "win" ]; then
     echo "      Skipping snakemake on Windows (requires MSVC build tools)."
     echo "      Backend will start; metagenomics pipeline runs need a Linux build."
+    conda env update -n "$CONDA_ENV" --file back/environment.yml --prune
+    conda run -n "$CONDA_ENV" pip install biopython "pyyaml>=6.0" "click>=8.0"
+    conda run -n "$CONDA_ENV" pip install "./back/app/viralunity" --no-deps
   else
-    conda env update -n "$CONDA_ENV" --file back/app/viralunity/environment.yml --prune
+    conda env update -n "$CONDA_ENV" --file back/app/viralunity/environment.yml
     conda run -n "$CONDA_ENV" pip install "./back/app/viralunity"
+    conda env update -n "$CONDA_ENV" --file back/environment.yml
   fi
 
   conda install -n "$CONDA_ENV" conda-pack -y
 }
 
 pack_conda_env() {
-  echo "[2/5] Packing conda environment '$CONDA_ENV'..."
+  echo "[2/5] Validating conda environment..."
+  conda run -n "$CONDA_ENV" python -c "import uvicorn, fastapi, sqlmodel, pydantic, dotenv"
+  echo "[3/5] Packing conda environment '$CONDA_ENV'..."
   mkdir -p front/resources
   conda run -n "$CONDA_ENV" conda-pack \
     -n "$CONDA_ENV" \

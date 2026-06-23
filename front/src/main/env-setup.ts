@@ -10,17 +10,15 @@ import { execFile, spawn } from "node:child_process";
 import { join } from "node:path";
 import { promisify } from "node:util";
 import {
+  isWslCondaEnvironmentReady,
+  setupWslRuntime,
+} from "./wsl-conda-env";
+import {
   getLinuxCondaTarballPath,
-  getWslInstalledEnvVersion,
-  isWslAvailable,
   isWindowsPlatform,
-  runWslBash,
-  shellQuote,
   shouldUseWslBackend,
   WSL_CONDA_DIR,
-  windowsToWslPath,
 } from "./wsl";
-import { isWslDistroReady } from "./wsl-setup";
 
 const execFileAsync = promisify(execFile);
 
@@ -61,8 +59,7 @@ export function isEnvReady(): boolean {
 
 export async function isEnvReadyAsync(): Promise<boolean> {
   if (usesWslBackend()) {
-    const version = await getWslInstalledEnvVersion();
-    return version === app.getVersion();
+    return isWslCondaEnvironmentReady();
   }
   return getNativeInstalledEnvVersion() === app.getVersion();
 }
@@ -90,6 +87,10 @@ function getBundledCondaTarball(): string {
     return getLinuxCondaTarballPath(process.resourcesPath);
   }
   return join(process.resourcesPath, "conda-env.tar.gz");
+}
+
+function getBundledBackendPath(): string {
+  return join(process.resourcesPath, "back", "app");
 }
 
 async function setupNativeCondaEnv(
@@ -141,18 +142,6 @@ async function setupNativeCondaEnv(
 async function setupWslCondaEnv(
   onProgress: (message: string) => void,
 ): Promise<void> {
-  if (!(await isWslDistroReady())) {
-    throw new Error(
-      "WSL2 Linux environment is not ready. Complete the setup wizard first.",
-    );
-  }
-
-  if (!(await isWslAvailable())) {
-    throw new Error(
-      "WSL2 Linux environment is not responding. Restart the app and try again.",
-    );
-  }
-
   const tarball = getBundledCondaTarball();
   if (!existsSync(tarball)) {
     throw new Error(
@@ -161,31 +150,20 @@ async function setupWslCondaEnv(
     );
   }
 
-  const installedVersion = await getWslInstalledEnvVersion();
-  if (installedVersion === app.getVersion()) {
-    onProgress("Linux environment already configured in WSL.");
+  const backend = getBundledBackendPath();
+  if (!existsSync(backend)) {
+    throw new Error(
+      `Backend application not found at: ${backend}\n` +
+        `Rebuild the Windows installer with bundled backend resources.`,
+    );
+  }
+
+  if (await isWslCondaEnvironmentReady()) {
+    onProgress("Analysis environment already configured in WSL.");
     return;
   }
 
-  onProgress("Preparing WSL environment…");
-  const wslTarball = await windowsToWslPath(tarball);
-  const version = app.getVersion();
-  const marker = `${new Date().toISOString()}`;
-
-  const setupScript = [
-    `set -euo pipefail`,
-    `rm -rf "$HOME/${WSL_CONDA_DIR}"`,
-    `mkdir -p "$HOME/${WSL_CONDA_DIR}"`,
-    `tar -xzf ${shellQuote(wslTarball)} -C "$HOME/${WSL_CONDA_DIR}"`,
-    `"$HOME/${WSL_CONDA_DIR}/bin/conda-unpack"`,
-    `printf '%s\\n%s\\n' ${shellQuote(version)} ${shellQuote(marker)} > "$HOME/${WSL_CONDA_DIR}/.rt-meta-ready"`,
-  ].join("\n");
-
-  onProgress("Extracting Linux environment inside WSL (may take a few minutes)…");
-  const exitCode = await runWslBash(setupScript);
-  if (exitCode !== 0) {
-    throw new Error(`WSL environment setup failed with exit code ${exitCode}`);
-  }
+  await setupWslRuntime(tarball, backend, onProgress);
 }
 
 export async function setupCondaEnv(
@@ -203,4 +181,19 @@ export async function setupCondaEnv(
 
   await setupNativeCondaEnv(onProgress);
   onProgress("Environment ready!");
+}
+
+export async function ensureWslCondaRuntime(
+  onProgress?: (message: string) => void,
+): Promise<void> {
+  if (!usesWslBackend()) {
+    return;
+  }
+
+  if (await isWslCondaEnvironmentReady()) {
+    return;
+  }
+
+  onProgress?.("Repairing WSL analysis environment…");
+  await setupWslCondaEnv((message) => onProgress?.(message));
 }

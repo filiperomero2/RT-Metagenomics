@@ -251,10 +251,23 @@ export function BackendMonitorPanel({
     scrollViewportToBottom();
   }, [autoScroll, logs, scrollViewportToBottom]);
 
+  useEffect(() => {
+    if (!backendStatus?.isRunningProcess || backendState.isRunning) {
+      return;
+    }
+
+    void window.api.getBackendState().then((state) => {
+      if (state.isRunning) {
+        setBackendState(state);
+      }
+    });
+  }, [backendStatus?.isRunningProcess, backendState.isRunning]);
+
   const status = backendStatus?.status ?? "offline";
   const health = backendStatus?.health;
-  const hasProcess = backendState.isRunning;
-  const stopLabel = backendState.ownership === "attached" ? "Detach" : "Stop";
+  const isBackendActive =
+    backendStatus?.isRunningProcess ?? backendState.isRunning;
+  const stopLabel = "Stop";
 
   const getStatusLabel = () => {
     if (status === "ready") return "Backend is running";
@@ -329,7 +342,7 @@ export function BackendMonitorPanel({
             <BrushCleaningIcon size={14} />
           </Button>
 
-          {hasProcess ? (
+          {isBackendActive ? (
             <Button size="sm" variant="danger-soft" onPress={stopBackend}>
               <Square size={14} />
               {stopLabel}

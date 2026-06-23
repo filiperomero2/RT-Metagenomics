@@ -50,9 +50,9 @@ export function useBackendStatus() {
       const state = await window.api.getBackendState();
       return state.isRunning;
     },
-    refetchOnWindowFocus: false,
+    refetchInterval: 3000,
+    refetchOnWindowFocus: true,
     retry: false,
-    staleTime: Number.POSITIVE_INFINITY,
   });
 
   const healthQuery = useQuery({
@@ -61,17 +61,17 @@ export function useBackendStatus() {
       const response = await api.get<BackendHealthResponse>("/v1/health");
       return response.data;
     },
-    enabled: processStateQuery.data === true,
     refetchInterval: 2000,
     refetchOnWindowFocus: false,
     retry: false,
   });
 
   const isRunningProcess = processStateQuery.data === true;
-  const health = healthQuery.data ?? null;
+  const health = healthQuery.isSuccess ? healthQuery.data : null;
+  const healthReachable = healthQuery.isSuccess;
 
   let status: BackendUiStatus = "offline";
-  if (isRunningProcess) {
+  if (isRunningProcess || healthReachable) {
     const phase = health?.phase;
     if (phase === "degraded") {
       status = "degraded";
@@ -86,11 +86,11 @@ export function useBackendStatus() {
     ...processStateQuery,
     data: {
       status,
-      isRunningProcess,
+      isRunningProcess: isRunningProcess || healthReachable,
       health,
     } as BackendStatusData,
-    isLoading: processStateQuery.isLoading || healthQuery.isLoading,
+    isLoading: processStateQuery.isLoading,
     isFetching: processStateQuery.isFetching || healthQuery.isFetching,
-    isError: processStateQuery.isError,
+    isError: processStateQuery.isError && healthQuery.isError,
   };
 }
