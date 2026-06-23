@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as MetaRouteImport } from './routes/meta'
+import { Route as BackendMonitorRouteImport } from './routes/backend-monitor'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 
@@ -22,6 +23,11 @@ const SettingsRoute = SettingsRouteImport.update({
 const MetaRoute = MetaRouteImport.update({
   id: '/meta',
   path: '/meta',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BackendMonitorRoute = BackendMonitorRouteImport.update({
+  id: '/backend-monitor',
+  path: '/backend-monitor',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AboutRoute = AboutRouteImport.update({
@@ -38,12 +44,14 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/backend-monitor': typeof BackendMonitorRoute
   '/meta': typeof MetaRoute
   '/settings': typeof SettingsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/backend-monitor': typeof BackendMonitorRoute
   '/meta': typeof MetaRoute
   '/settings': typeof SettingsRoute
 }
@@ -51,20 +59,22 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/backend-monitor': typeof BackendMonitorRoute
   '/meta': typeof MetaRoute
   '/settings': typeof SettingsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/meta' | '/settings'
+  fullPaths: '/' | '/about' | '/backend-monitor' | '/meta' | '/settings'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/meta' | '/settings'
-  id: '__root__' | '/' | '/about' | '/meta' | '/settings'
+  to: '/' | '/about' | '/backend-monitor' | '/meta' | '/settings'
+  id: '__root__' | '/' | '/about' | '/backend-monitor' | '/meta' | '/settings'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
+  BackendMonitorRoute: typeof BackendMonitorRoute
   MetaRoute: typeof MetaRoute
   SettingsRoute: typeof SettingsRoute
 }
@@ -83,6 +93,13 @@ declare module '@tanstack/react-router' {
       path: '/meta'
       fullPath: '/meta'
       preLoaderRoute: typeof MetaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/backend-monitor': {
+      id: '/backend-monitor'
+      path: '/backend-monitor'
+      fullPath: '/backend-monitor'
+      preLoaderRoute: typeof BackendMonitorRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/about': {
@@ -105,6 +122,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
+  BackendMonitorRoute: BackendMonitorRoute,
   MetaRoute: MetaRoute,
   SettingsRoute: SettingsRoute,
 }

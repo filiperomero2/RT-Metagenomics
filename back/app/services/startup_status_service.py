@@ -23,9 +23,14 @@ class StartupStatusSnapshot:
     error: Optional[str]
     started_at: str
     updated_at: str
+    download_label: Optional[str] = None
+    download_loaded: Optional[str] = None
+    download_total: Optional[str] = None
+    download_speed: Optional[str] = None
+    download_percent: Optional[int] = None
 
     def to_dict(self) -> dict[str, object]:
-        return {
+        payload: dict[str, object] = {
             "phase": self.phase,
             "progressStep": self.progress_step,
             "progressTotal": self.progress_total,
@@ -34,6 +39,17 @@ class StartupStatusSnapshot:
             "startedAt": self.started_at,
             "updatedAt": self.updated_at,
         }
+        if self.download_label:
+            payload["downloadLabel"] = self.download_label
+        if self.download_loaded:
+            payload["downloadLoaded"] = self.download_loaded
+        if self.download_total:
+            payload["downloadTotal"] = self.download_total
+        if self.download_speed:
+            payload["downloadSpeed"] = self.download_speed
+        if self.download_percent is not None:
+            payload["downloadPercent"] = self.download_percent
+        return payload
 
 
 class StartupStatusService:
@@ -45,6 +61,11 @@ class StartupStatusService:
         self._progress_total = 0
         self._progress_text = "Backend starting..."
         self._error: Optional[str] = None
+        self._download_label: Optional[str] = None
+        self._download_loaded: Optional[str] = None
+        self._download_total: Optional[str] = None
+        self._download_speed: Optional[str] = None
+        self._download_percent: Optional[int] = None
         self._started_at = now
         self._updated_at = now
 
@@ -69,7 +90,38 @@ class StartupStatusService:
                 self._progress_total = progress_total
             if progress_text is not None:
                 self._progress_text = progress_text
+                self._download_label = None
+                self._download_loaded = None
+                self._download_total = None
+                self._download_speed = None
+                self._download_percent = None
             self._error = error
+            self._updated_at = self._now_iso()
+
+    def update_download(
+        self,
+        *,
+        label: str,
+        loaded: Optional[str] = None,
+        total: Optional[str] = None,
+        speed: Optional[str] = None,
+        percent: Optional[int] = None,
+    ) -> None:
+        with self._lock:
+            self._download_label = label
+            self._download_loaded = loaded
+            self._download_total = total
+            self._download_speed = speed
+            self._download_percent = percent
+            self._updated_at = self._now_iso()
+
+    def clear_download(self) -> None:
+        with self._lock:
+            self._download_label = None
+            self._download_loaded = None
+            self._download_total = None
+            self._download_speed = None
+            self._download_percent = None
             self._updated_at = self._now_iso()
 
     def snapshot(self) -> StartupStatusSnapshot:
@@ -82,6 +134,11 @@ class StartupStatusService:
                 error=self._error,
                 started_at=self._started_at,
                 updated_at=self._updated_at,
+                download_label=self._download_label,
+                download_loaded=self._download_loaded,
+                download_total=self._download_total,
+                download_speed=self._download_speed,
+                download_percent=self._download_percent,
             )
 
 

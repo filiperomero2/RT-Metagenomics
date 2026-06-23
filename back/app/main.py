@@ -29,6 +29,15 @@ _pipeline_log_level = getattr(logging, _level_name, logging.INFO)
 logging.getLogger("viralunity").setLevel(_pipeline_log_level)
 logging.getLogger("snakemake").setLevel(_pipeline_log_level)
 
+
+class _HealthAccessLogFilter(logging.Filter):
+    def filter(self, record: logging.LogRecord) -> bool:
+        message = record.getMessage()
+        return '"/v1/health' not in message and '"/health' not in message
+
+
+logging.getLogger("uvicorn.access").addFilter(_HealthAccessLogFilter())
+
 # Initialize database
 create_db_and_tables()
 
@@ -61,10 +70,22 @@ async def lifespan(app: FastAPI):
     startup_status_service.update(
         phase="bootstrapping_databases",
         progress_step=0,
-        progress_total=7,
+        progress_total=5,
         progress_text="Preparing database bootstrap...",
         error=None,
     )
+
+    def on_bootstrap_progress(step: int, total: int, message: str) -> None:
+        from infra.download_progress import clear_download_progress
+
+        clear_download_progress()
+        startup_status_service.update(
+            phase="bootstrapping_databases",
+            progress_step=step,
+            progress_total=total,
+            progress_text=message,
+            error=None,
+        )
 
     def bootstrap_databases_in_background() -> None:
         thread_session = next(get_session())
@@ -76,13 +97,7 @@ async def lifespan(app: FastAPI):
             )
             logger.info("Running startup database bootstrap via ViralUnity get-databases...")
             bootstrap_result = database_setup_service.bootstrap_all_databases(
-                on_progress=lambda step, total, message: startup_status_service.update(
-                    phase="bootstrapping_databases",
-                    progress_step=step,
-                    progress_total=total,
-                    progress_text=message,
-                    error=None,
-                )
+                on_progress=on_bootstrap_progress,
             )
             logger.info(
                 "Startup database bootstrap completed. Kraken2=%s Krona=%s Taxdump=%s",
@@ -92,8 +107,8 @@ async def lifespan(app: FastAPI):
             )
             startup_status_service.update(
                 phase="ready",
-                progress_step=7,
-                progress_total=7,
+                progress_step=5,
+                progress_total=5,
                 progress_text="Backend ready.",
                 error=None,
             )

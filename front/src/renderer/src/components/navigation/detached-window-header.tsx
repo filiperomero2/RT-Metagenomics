@@ -1,7 +1,8 @@
 import { cn } from "@/utils/cn";
 import { isMac } from "@/utils/platform";
 import { WindowControls } from "./window-controls";
-import logoWebp from "@/../public/logo.webp";
+
+const logoWebp = "/logo.webp";
 
 export function DetachedWindowHeader() {
   return (

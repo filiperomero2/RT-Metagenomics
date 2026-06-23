@@ -1,5 +1,3 @@
-import { Providers } from "@/providers";
-import { DetachedBackendMonitorWindow } from "@/components/navigation/backend-monitor-panel";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import {
@@ -22,24 +20,13 @@ declare module "@tanstack/react-router" {
 }
 
 const rootElement = document.getElementById("root");
-const isBackendMonitorWindow =
-  new URLSearchParams(window.location.search).get("window") ===
-  "backend-monitor";
 
 if (!rootElement) {
   throw new Error("Root element not found");
 }
 
-const root = createRoot(rootElement);
-
-root.render(
+createRoot(rootElement).render(
   <StrictMode>
-    {isBackendMonitorWindow ? (
-      <Providers>
-        <DetachedBackendMonitorWindow />
-      </Providers>
-    ) : (
-      <RouterProvider router={router} />
-    )}
+    <RouterProvider router={router} />
   </StrictMode>,
 );

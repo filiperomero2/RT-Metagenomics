@@ -39,8 +39,12 @@ export function setupIpcHandlers(mainWindow: BrowserWindow) {
   ipcMain.removeHandler("window:getIsMaximized");
   ipcMain.removeHandler("dialog:selectFolder");
 
-  ipcMain.handle("window:openBackendMonitor", async () => {
-    openBackendMonitorWindow();
+  ipcMain.handle("window:openBackendMonitor", async (event) => {
+    const parentWindow = BrowserWindow.fromWebContents(event.sender);
+    await new Promise((resolve) => {
+      setTimeout(resolve, 150);
+    });
+    openBackendMonitorWindow(parentWindow);
   });
   ipcMain.handle("window:getBackendMonitorState", async () => {
     return isBackendMonitorWindowOpen();

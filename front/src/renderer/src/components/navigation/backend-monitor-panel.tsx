@@ -18,13 +18,14 @@ import type {
   BackendProcessEvent,
   BackendState,
 } from "../../../../shared/types/backend";
-import { DetachedWindowHeader } from "./detached-window-header";
+import { BackendBootstrapProgress } from "./backend-bootstrap-progress";
 
 type BackendMonitorPanelProps = {
   autoStart?: boolean;
   className?: string;
   detached?: boolean;
   logViewportClassName?: string;
+  onBeforeDetach?: () => void;
 };
 
 const LOG_TYPE_META: Record<
@@ -95,7 +96,7 @@ function mergeLogs(base: BackendLogEntry[], extra: BackendLogEntry[]) {
   return merged.slice(-MAX_BACKEND_LOG_LINES);
 }
 
-function isNearBottom(element: HTMLDivElement, threshold = 24) {
+function isNearBottom(element: HTMLDivElement, threshold = 48) {
   return (
     element.scrollHeight - element.scrollTop - element.clientHeight <= threshold
   );
@@ -106,6 +107,7 @@ export function BackendMonitorPanel({
   className,
   detached = false,
   logViewportClassName,
+  onBeforeDetach,
 }: BackendMonitorPanelProps) {
   const [logs, setLogs] = useState<BackendLogEntry[]>([]);
   const [backendState, setBackendState] = useState<BackendState>({
@@ -116,6 +118,9 @@ export function BackendMonitorPanel({
   const [autoScroll, setAutoScroll] = useState(true);
   const logViewportRef = useRef<HTMLDivElement>(null);
   const isProgrammaticScrollRef = useRef(false);
+  const programmaticScrollTimerRef = useRef<number | null>(null);
+  const lastScrollTopRef = useRef(0);
+  const userScrollIntentRef = useRef(false);
   const { data: backendStatus } = useBackendStatus();
 
   const scrollViewportToBottom = useCallback(() => {
@@ -124,14 +129,27 @@ export function BackendMonitorPanel({
       return;
     }
 
-    isProgrammaticScrollRef.current = true;
-    viewport.scrollTo({
-      top: viewport.scrollHeight,
-      behavior: "auto",
-    });
+    if (programmaticScrollTimerRef.current !== null) {
+      window.clearTimeout(programmaticScrollTimerRef.current);
+    }
 
+    isProgrammaticScrollRef.current = true;
+
+    const applyScroll = () => {
+      viewport.scrollTop = viewport.scrollHeight;
+      lastScrollTopRef.current = viewport.scrollTop;
+    };
+
+    applyScroll();
     requestAnimationFrame(() => {
-      isProgrammaticScrollRef.current = false;
+      applyScroll();
+      requestAnimationFrame(() => {
+        applyScroll();
+        programmaticScrollTimerRef.current = window.setTimeout(() => {
+          isProgrammaticScrollRef.current = false;
+          programmaticScrollTimerRef.current = null;
+        }, 80);
+      });
     });
   }, []);
 
@@ -244,6 +262,14 @@ export function BackendMonitorPanel({
   }, [appendLog, autoStart, startBackend]);
 
   useEffect(() => {
+    return () => {
+      if (programmaticScrollTimerRef.current !== null) {
+        window.clearTimeout(programmaticScrollTimerRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
     if (!autoScroll) {
       return;
     }
@@ -272,13 +298,14 @@ export function BackendMonitorPanel({
   const getStatusLabel = () => {
     if (status === "ready") return "Backend is running";
     if (status === "initializing") {
-      const step =
+      if (
         typeof health?.progressStep === "number" &&
         typeof health?.progressTotal === "number" &&
         health.progressTotal > 0
-          ? ` (${health.progressStep}/${health.progressTotal})`
-          : "";
-      return `Backend loading databases${step}`;
+      ) {
+        return `Database setup · step ${health.progressStep}/${health.progressTotal}`;
+      }
+      return "Backend loading databases";
     }
     if (status === "degraded") {
       return health?.error
@@ -310,7 +337,10 @@ export function BackendMonitorPanel({
             <Button
               size="sm"
               variant="ghost"
-              onPress={() => void window.api.openBackendMonitorWindow()}
+              onPress={() => {
+                onBeforeDetach?.();
+                void window.api.openBackendMonitorWindow();
+              }}
             >
               <ExternalLink size={14} />
               Detach
@@ -324,6 +354,7 @@ export function BackendMonitorPanel({
               setAutoScroll((current) => {
                 const next = !current;
                 if (next) {
+                  userScrollIntentRef.current = false;
                   requestAnimationFrame(scrollViewportToBottom);
                 }
                 return next;
@@ -356,6 +387,14 @@ export function BackendMonitorPanel({
         </div>
       </Card.Header>
 
+      {(status === "initializing" || status === "degraded") &&
+      typeof health?.progressTotal === "number" &&
+      health.progressTotal > 0 ? (
+        <div className="px-4 pb-2">
+          <BackendBootstrapProgress />
+        </div>
+      ) : null}
+
       <Card.Content className="min-h-0 flex-1">
         <div
           ref={logViewportRef}
@@ -363,16 +402,35 @@ export function BackendMonitorPanel({
             "bg-surface-secondary/50 text-surface-foreground overflow-y-auto rounded-md p-2 font-mono text-xs",
             logViewportClassName ?? "h-[70vh] w-[60vw]",
           )}
-          onScroll={(event) => {
-            if (!autoScroll) {
-              return;
+          onWheel={(event) => {
+            if (event.deltaY < 0) {
+              userScrollIntentRef.current = true;
             }
+          }}
+          onScroll={(event) => {
+            const viewport = event.currentTarget;
+            const scrollTop = viewport.scrollTop;
 
             if (isProgrammaticScrollRef.current) {
+              lastScrollTopRef.current = scrollTop;
               return;
             }
 
-            if (!isNearBottom(event.currentTarget)) {
+            if (!autoScroll) {
+              lastScrollTopRef.current = scrollTop;
+              return;
+            }
+
+            const scrolledUp = scrollTop + 2 < lastScrollTopRef.current;
+            lastScrollTopRef.current = scrollTop;
+
+            if (isNearBottom(viewport)) {
+              userScrollIntentRef.current = false;
+              return;
+            }
+
+            if (userScrollIntentRef.current || scrolledUp) {
+              userScrollIntentRef.current = false;
               setAutoScroll(false);
             }
           }}
@@ -403,21 +461,5 @@ export function BackendMonitorPanel({
         </div>
       </Card.Content>
     </Card>
-  );
-}
-
-export function DetachedBackendMonitorWindow() {
-  return (
-    <div className="text-foreground bg-surface min-h-screen font-sans select-none">
-      <DetachedWindowHeader />
-      <div className="border-accent/30 bg-background from-background to-surface/80 h-[calc(100vh-2.75rem)] overflow-hidden rounded-t-2xl border-t bg-gradient-to-b p-4">
-        <BackendMonitorPanel
-          detached
-          autoStart={false}
-          className="border-accent/20 h-full rounded-xl border shadow-lg"
-          logViewportClassName="h-full w-full"
-        />
-      </div>
-    </div>
   );
 }

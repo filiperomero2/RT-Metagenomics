@@ -207,9 +207,38 @@ async function buildBackendSpawnEnv(cwd: string): Promise<NodeJS.ProcessEnv> {
   return spawnEnv;
 }
 
+const ANSI_ESCAPE_RE = /\x1b\[[0-9?]*[ -/]*[@-~]/g;
+const DATASETS_DOWNLOAD_RE =
+  /Downloading:\s+(?<file>\S+)\s+(?<loaded>[\d.]+(?:MB|GB|KB|B))\s+(?<speed>[\d.]+(?:kB|MB|GB|B)\/s)/i;
+
+let lastDownloadLogSignature = "";
+
 function resetBuffers() {
   stdoutBuffer = "";
   stderrBuffer = "";
+  lastDownloadLogSignature = "";
+}
+
+function sanitizeBackendLogLine(line: string): string | null {
+  const cleaned = line.replace(ANSI_ESCAPE_RE, "").replace(/\r/g, "").trim();
+  if (!cleaned) {
+    return null;
+  }
+
+  const downloadMatch = cleaned.match(DATASETS_DOWNLOAD_RE);
+  if (downloadMatch?.groups) {
+    const { file, loaded, speed } = downloadMatch.groups;
+    const fileName = file.split(/[/\\]/).pop() ?? file;
+    const signature = `${fileName}|${loaded}|${speed}`;
+    if (signature === lastDownloadLogSignature) {
+      return null;
+    }
+    lastDownloadLogSignature = signature;
+    return `Downloading ${fileName} · ${loaded} · ${speed}`;
+  }
+
+  lastDownloadLogSignature = "";
+  return cleaned;
 }
 
 function setBuffer(stream: "stdout" | "stderr", value: string) {
@@ -230,16 +259,18 @@ function emitBufferedOutput(stream: "stdout" | "stderr", chunk: string) {
   setBuffer(stream, lines.pop() ?? "");
 
   for (const line of lines) {
-    if (line.trim()) {
-      appendBackendLog(line);
+    const sanitized = sanitizeBackendLogLine(line);
+    if (sanitized) {
+      appendBackendLog(sanitized);
     }
   }
 }
 
 function flushBufferedOutput(stream: "stdout" | "stderr") {
   const buffer = getBuffer(stream);
-  if (buffer.trim()) {
-    appendBackendLog(buffer);
+  const sanitized = sanitizeBackendLogLine(buffer);
+  if (sanitized) {
+    appendBackendLog(sanitized);
   }
   setBuffer(stream, "");
 }

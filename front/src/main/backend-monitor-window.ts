@@ -10,7 +10,7 @@ function broadcastBackendMonitorWindowStateChange() {
   const isOpen = isBackendMonitorWindowOpen();
 
   for (const window of BrowserWindow.getAllWindows()) {
-    if (!window.isDestroyed()) {
+    if (!window.isDestroyed() && window !== backendMonitorWindow) {
       window.webContents.send("window:backendMonitorState", isOpen);
     }
   }
@@ -22,20 +22,16 @@ export function isBackendMonitorWindowOpen() {
 
 function loadBackendMonitorWindow(window: BrowserWindow) {
   if (is.dev && process.env["ELECTRON_RENDERER_URL"]) {
-    const url = new URL(process.env["ELECTRON_RENDERER_URL"]);
-    url.searchParams.set("window", "backend-monitor");
-    void window.loadURL(url.toString());
+    void window.loadURL(`${process.env["ELECTRON_RENDERER_URL"]}#/backend-monitor`);
     return;
   }
 
   void window.loadFile(join(__dirname, "../renderer/index.html"), {
-    query: {
-      window: "backend-monitor",
-    },
+    hash: "/backend-monitor",
   });
 }
 
-export function openBackendMonitorWindow() {
+export function openBackendMonitorWindow(parentWindow?: BrowserWindow | null) {
   if (isBackendMonitorWindowOpen() && backendMonitorWindow) {
     if (backendMonitorWindow.isMinimized()) {
       backendMonitorWindow.restore();
@@ -59,16 +55,35 @@ export function openBackendMonitorWindow() {
     titleBarStyle: "hidden",
     autoHideMenuBar: true,
     roundedCorners: true,
-    // parent: parentWindow ?? undefined,
+    parent:
+      process.platform === "win32" ? undefined : (parentWindow ?? undefined),
     ...(process.platform === "linux" ? { icon } : { icon: iconIco }),
     webPreferences: {
       preload: join(__dirname, "../../out/preload/index.mjs"),
       sandbox: false,
+      contextIsolation: true,
     },
   });
 
   backendMonitorWindow.on("ready-to-show", () => {
     backendMonitorWindow?.show();
+    broadcastBackendMonitorWindowStateChange();
+  });
+
+  backendMonitorWindow.webContents.on(
+    "did-fail-load",
+    (_event, errorCode, errorDescription, validatedURL) => {
+      console.error(
+        "Backend monitor window failed to load:",
+        errorCode,
+        errorDescription,
+        validatedURL,
+      );
+    },
+  );
+
+  backendMonitorWindow.webContents.on("render-process-gone", (_event, details) => {
+    console.error("Backend monitor renderer process gone:", details);
   });
 
   backendMonitorWindow.on("maximize", () => {
@@ -84,7 +99,6 @@ export function openBackendMonitorWindow() {
     broadcastBackendMonitorWindowStateChange();
   });
 
-  broadcastBackendMonitorWindowStateChange();
   loadBackendMonitorWindow(backendMonitorWindow);
   return backendMonitorWindow;
 }
